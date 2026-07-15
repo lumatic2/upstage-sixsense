@@ -1,0 +1,18 @@
+{
+  "schema_version": 1,
+  "project": "upstage-sixsense",
+  "primary_mode": "product",
+  "modes_enabled": [
+    "product"
+  ],
+  "mode_kinds": {
+    "product": "web"
+  },
+  "last_bootstrap_mode": "product",
+  "last_bootstrap_kind": "web",
+  "updated_at": "2026-07-15T19:58:43+09:00",
+  "notes": [
+    "primary_mode is the original repo orientation unless intentionally changed.",
+    "modes_enabled are additive capabilities; /harness chooses per run intent and ROADMAP target."
+  ]
+}
