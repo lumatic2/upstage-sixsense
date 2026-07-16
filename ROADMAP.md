@@ -14,13 +14,15 @@
 
 ## Active Milestones
 
-<!-- harness:milestone id="M1" status="active" priority="P0" -->
+<!-- harness:milestone id="M1" status="completed" priority="P0" evidence="docs/mentoring/2026-07-15-presubmit.md" -->
 ### M1 — 멘토링 사전자료 제출 (마감 2026-07-15 23:59, 팀 직접 작성)
 - DoD: 자문 질문 목록 + 중간 산출물(한입지도 데모 + 방향)을 builderwillow@gmail.com 으로 발송
-- Evidence: 발송한 자료 사본을 `docs/mentoring/2026-07-15-presubmit.md` 에 보존
+- Evidence: docs/mentoring/2026-07-15-presubmit.md
 - Gap: 멘토는 아이디어 피드백을 하지 않음 — 산출물·개발 질문 필수
-- Status: [ ] (팀 소유 — 에이전트는 재료만 제공)
+- Status: [x]
 
+- Completed at: 2026-07-17
+- Summary: 멘토링 사전자료 7/15 발송 확인 — 발송본 레포 보존
 <!-- harness:milestone id="M2" status="pending" priority="P0" -->
 ### M2 — 메뉴판 파싱 PoC ★차별화 축 검증 (ADR-0001)
 - DoD: 실제 명륜동 메뉴판 사진 ≥3장 → Document Parse → 메뉴·가격 JSON 추출, 항목 단위 정확도 측정

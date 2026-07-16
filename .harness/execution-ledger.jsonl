@@ -1,0 +1,3 @@
+{"event": "done_claim", "task_id": "M1", "worker": "team", "changed_files": ["docs/mentoring/2026-07-15-presubmit.md"], "tests": ["manual: 사용자 제공 발송 메일 원문을 evidence 파일로 보존, 첨부(TRD·중간기획서) 존재 확인"], "evidence": ["docs/mentoring/2026-07-15-presubmit.md — builderwillow@gmail.com 발송본 (7/15 마감 내)"], "cleanup": ["no side effects"], "risks": ["발송 시각의 서버 기록은 팀 메일함에만 존재 — 레포 사본은 사용자 증언 기반"]}
+{"event": "adversarial_verify", "task_id": "M1", "verifier": "gate", "verdict": "confirmed", "evidence": ["발송본 원문에 질문 6개+중간 산출물(데모 URL·96곳 수집) 포함 — M1 DoD(자문 질문+중간 산출물 발송) 충족"], "repro": "cat docs/mentoring/2026-07-15-presubmit.md"}
+{"event": "task_completed", "task_id": "M1", "evidence": ["docs/mentoring/2026-07-15-presubmit.md"]}

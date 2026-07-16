@@ -1,3 +1,6 @@
+.env
+.env.*
+node_modules/
 .design/
 .design-harness.json
 src/theme.generated.css
