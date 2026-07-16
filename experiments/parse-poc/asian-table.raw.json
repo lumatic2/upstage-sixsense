@@ -1,0 +1,158 @@
+{
+  "api": "2.0",
+  "content": {
+    "html": "<table id='0' style='font-size:16px'><thead></thead><tbody><tr><td>Set Menu 팟타이 Set Set A 22.0 새우 팟타이 파크앗피오무피부2호방 +사이드메뉴ose 되는 or 음료 Set 8 27.0 새우 팟타이+ 뿌팟뚱커리 ·사이드메뉴(me 18.5 or 음료 Set C 27.0 새우 팟타이 +카오카우 +사이드메뉴 세탁 or 음료 동남아 맥주 Set Set'A 38.0 다어+튀긴 삼겹살과 모닝글로리 볶음 + 동남아맥주 2병 Set B 40.0 팟타이 + 버터새우+ 동남아맥주 2병</td></tr></tbody></table>\n<br><p id='1' data-category='paragraph' style='font-size:14px'>Sides<br>뒷만꿈 [ThaiStyle ShrimpCake) 5.0<br>동등한 새우살로 에 두 찬<br>제국의 새우 고로게<br>3 (Thai Park Meol Ball 5.0<br>돼지고기와 후추로 맛을 년<br>태국사 피트볼 튀김<br>쏠땀 ISan Tail<br>11.0<br>태국식 그린파파이 생산도 피쉬소스와 라임,<br>장공, 도마도를 그린째파이라 원무리 낸<br>태국의 대표적인 샐러드 요리<br>태국 아이스티 (Thai loud Tea) 5.0<br>태국의 혼자를 연유와 함께 끓여낸 태국식 밀크티<br>깔라만시 에이드 (Calamansi Ade) 5.0<br>상큼하고 개운한 깔라만시의 맛을 살린 에이드</p>\n<br><p id='2' data-category='paragraph' style='font-size:20px'>새우</p>\n<br><figure id='3'><img alt=\"\" data-coord=\"top-left:(226,33); bottom-right:(399,252)\" /></figure>\n<p id='4' data-category='paragraph' style='font-size:18px'>새봄</p>",
+    "markdown": "",
+    "text": ""
+  },
+  "elements": [
+    {
+      "id": 0,
+      "page": 1,
+      "category": "table",
+      "content": {
+        "html": "<table id='0' style='font-size:16px'><thead></thead><tbody><tr><td>Set Menu 팟타이 Set Set A 22.0 새우 팟타이 파크앗피오무피부2호방 +사이드메뉴ose 되는 or 음료 Set 8 27.0 새우 팟타이+ 뿌팟뚱커리 ·사이드메뉴(me 18.5 or 음료 Set C 27.0 새우 팟타이 +카오카우 +사이드메뉴 세탁 or 음료 동남아 맥주 Set Set'A 38.0 다어+튀긴 삼겹살과 모닝글로리 볶음 + 동남아맥주 2병 Set B 40.0 팟타이 + 버터새우+ 동남아맥주 2병</td></tr></tbody></table>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.0857,
+          "y": 0.1303
+        },
+        {
+          "x": 0.4505,
+          "y": 0.1303
+        },
+        {
+          "x": 0.4505,
+          "y": 0.8407
+        },
+        {
+          "x": 0.0857,
+          "y": 0.8407
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<br><p id='1' data-category='paragraph' style='font-size:14px'>Sides<br>뒷만꿈 [ThaiStyle ShrimpCake) 5.0<br>동등한 새우살로 에 두 찬<br>제국의 새우 고로게<br>3 (Thai Park Meol Ball 5.0<br>돼지고기와 후추로 맛을 년<br>태국사 피트볼 튀김<br>쏠땀 ISan Tail<br>11.0<br>태국식 그린파파이 생산도 피쉬소스와 라임,<br>장공, 도마도를 그린째파이라 원무리 낸<br>태국의 대표적인 샐러드 요리<br>태국 아이스티 (Thai loud Tea) 5.0<br>태국의 혼자를 연유와 함께 끓여낸 태국식 밀크티<br>깔라만시 에이드 (Calamansi Ade) 5.0<br>상큼하고 개운한 깔라만시의 맛을 살린 에이드</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.567,
+          "y": 0.1113
+        },
+        {
+          "x": 0.9975,
+          "y": 0.1113
+        },
+        {
+          "x": 0.9975,
+          "y": 0.842
+        },
+        {
+          "x": 0.567,
+          "y": 0.842
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<br><p id='2' data-category='paragraph' style='font-size:20px'>새우</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.0625,
+          "y": 0.7333
+        },
+        {
+          "x": 0.105,
+          "y": 0.7333
+        },
+        {
+          "x": 0.105,
+          "y": 0.7733
+        },
+        {
+          "x": 0.0625,
+          "y": 0.7733
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "page": 1,
+      "category": "figure",
+      "content": {
+        "html": "<br><figure id='3'><img alt=\"\" data-coord=\"top-left:(226,33); bottom-right:(399,252)\" /></figure>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.567,
+          "y": 0.1113
+        },
+        {
+          "x": 0.9975,
+          "y": 0.1113
+        },
+        {
+          "x": 0.9975,
+          "y": 0.842
+        },
+        {
+          "x": 0.567,
+          "y": 0.842
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<p id='4' data-category='paragraph' style='font-size:18px'>새봄</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.9213,
+          "y": 0.8953
+        },
+        {
+          "x": 0.9975,
+          "y": 0.8953
+        },
+        {
+          "x": 0.9975,
+          "y": 0.9547
+        },
+        {
+          "x": 0.9213,
+          "y": 0.9547
+        }
+      ]
+    }
+  ],
+  "model": "document-parse-260128",
+  "ocr": true,
+  "usage": {
+    "pages": 1,
+    "standard": [
+      1
+    ]
+  }
+}

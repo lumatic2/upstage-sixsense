@@ -1,0 +1,522 @@
+{
+  "api": "2.0",
+  "content": {
+    "html": "<p id='0' data-category='paragraph' style='font-size:22px'>무제스시</p>\n<br><p id='1' data-category='paragraph' style='font-size:18px'>11:30- 15:00편치타임</p>\n<p id='2' data-category='list' style='font-size:14px'>스시 A 15,000(9pcs)<br>- 흰살2,연어2.참치1 조새우1,계절생선2,계란1</p>\n<p id='3' data-category='paragraph' style='font-size:14px'>스시 B20,000(12pcs)<br>- 환살3,연어2.참치2 조새우1,홍새우1,계절생선3</p>\n<p id='4' data-category='list' style='font-size:14px'>스시C26,000(12pcs)<br>- 흰살3,연어2,참치1 참치뱃살1 홍새우안키모1,<br>계절생선2 . 장어1 혹은단새우1</p>\n<p id='5' data-category='paragraph' style='font-size:16px'>튀김우동 세트 15,000<br>본 우동 한 그릇 . 모듬튀김1인, 초밥4pcs</p>\n<br><p id='6' data-category='list'></p>\n<p id='7' data-category='paragraph' style='font-size:18px'>연어초밥 21 ,000(10pcs)</p>\n<br><p id='8' data-category='list'></p>\n<p id='9' data-category='paragraph' style='font-size:16px'>고등어봉초밥25,000</p>\n<br><p id='10' data-category='list'></p>\n<p id='11' data-category='paragraph' style='font-size:18px'>모듬튀김 1인 4,500(4pcs)<br>-새우1 , 연근1 , 계절야채2 혹은 계절이제1+생선1</p>\n<br><p id='12' data-category='list'></p>\n<p id='13' data-category='paragraph' style='font-size:20px'>모듬튀김 22,000</p>\n<p id='14' data-category='paragraph' style='font-size:18px'>무제정식 1인33,000<br>- 사시미, 초밥, 튀김,오늘의요리,식사</p>\n<p id='15' data-category='paragraph' style='font-size:18px'>무제정식(특) 1인55,000<br>1 사시미, , 초밥, 튀김,오늘의요리,식사</p>\n<p id='16' data-category='list' style='font-size:18px'>무제정식(상) 1인75,000<br>- 사시미, · 초밥, 튀김, 오늘의요리,식사</p>\n<p id='17' data-category='list' style='font-size:20px'>모듬 사시미 1인 25,000<br>= 제철 생선을 위주로구성된사시미</p>",
+    "markdown": "",
+    "text": ""
+  },
+  "elements": [
+    {
+      "id": 0,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<p id='0' data-category='paragraph' style='font-size:22px'>무제스시</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.4258,
+          "y": 0.0547
+        },
+        {
+          "x": 0.6586,
+          "y": 0.0456
+        },
+        {
+          "x": 0.6611,
+          "y": 0.1095
+        },
+        {
+          "x": 0.4283,
+          "y": 0.1188
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<br><p id='1' data-category='paragraph' style='font-size:18px'>11:30- 15:00편치타임</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.4464,
+          "y": 0.1223
+        },
+        {
+          "x": 0.6517,
+          "y": 0.1141
+        },
+        {
+          "x": 0.6529,
+          "y": 0.1415
+        },
+        {
+          "x": 0.4475,
+          "y": 0.1496
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "page": 1,
+      "category": "list",
+      "content": {
+        "html": "<p id='2' data-category='list' style='font-size:14px'>스시 A 15,000(9pcs)<br>- 흰살2,연어2.참치1 조새우1,계절생선2,계란1</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3529,
+          "y": 0.1764
+        },
+        {
+          "x": 0.7295,
+          "y": 0.1615
+        },
+        {
+          "x": 0.7316,
+          "y": 0.2151
+        },
+        {
+          "x": 0.355,
+          "y": 0.23
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<p id='3' data-category='paragraph' style='font-size:14px'>스시 B20,000(12pcs)<br>- 환살3,연어2.참치2 조새우1,홍새우1,계절생선3</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3529,
+          "y": 0.2449
+        },
+        {
+          "x": 0.747,
+          "y": 0.2294
+        },
+        {
+          "x": 0.749,
+          "y": 0.2819
+        },
+        {
+          "x": 0.355,
+          "y": 0.2974
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "page": 1,
+      "category": "list",
+      "content": {
+        "html": "<p id='4' data-category='list' style='font-size:14px'>스시C26,000(12pcs)<br>- 흰살3,연어2,참치1 참치뱃살1 홍새우안키모1,<br>계절생선2 . 장어1 혹은단새우1</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3548,
+          "y": 0.3131
+        },
+        {
+          "x": 0.7418,
+          "y": 0.2979
+        },
+        {
+          "x": 0.7446,
+          "y": 0.3705
+        },
+        {
+          "x": 0.3576,
+          "y": 0.3858
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<p id='5' data-category='paragraph' style='font-size:16px'>튀김우동 세트 15,000<br>본 우동 한 그릇 . 모듬튀김1인, 초밥4pcs</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3578,
+          "y": 0.4038
+        },
+        {
+          "x": 0.686,
+          "y": 0.3909
+        },
+        {
+          "x": 0.688,
+          "y": 0.4421
+        },
+        {
+          "x": 0.3598,
+          "y": 0.4551
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "page": 1,
+      "category": "list",
+      "content": {
+        "html": "<br><p id='6' data-category='list'></p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3578,
+          "y": 0.4038
+        },
+        {
+          "x": 0.686,
+          "y": 0.3909
+        },
+        {
+          "x": 0.688,
+          "y": 0.4421
+        },
+        {
+          "x": 0.3598,
+          "y": 0.4551
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<p id='7' data-category='paragraph' style='font-size:18px'>연어초밥 21 ,000(10pcs)</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3604,
+          "y": 0.4726
+        },
+        {
+          "x": 0.5863,
+          "y": 0.4638
+        },
+        {
+          "x": 0.5873,
+          "y": 0.4914
+        },
+        {
+          "x": 0.3615,
+          "y": 0.5003
+        }
+      ]
+    },
+    {
+      "id": 8,
+      "page": 1,
+      "category": "list",
+      "content": {
+        "html": "<br><p id='8' data-category='list'></p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3604,
+          "y": 0.4726
+        },
+        {
+          "x": 0.5863,
+          "y": 0.4638
+        },
+        {
+          "x": 0.5873,
+          "y": 0.4914
+        },
+        {
+          "x": 0.3615,
+          "y": 0.5003
+        }
+      ]
+    },
+    {
+      "id": 9,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<p id='9' data-category='paragraph' style='font-size:16px'>고등어봉초밥25,000</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3613,
+          "y": 0.5189
+        },
+        {
+          "x": 0.5458,
+          "y": 0.5116
+        },
+        {
+          "x": 0.5468,
+          "y": 0.5379
+        },
+        {
+          "x": 0.3623,
+          "y": 0.5451
+        }
+      ]
+    },
+    {
+      "id": 10,
+      "page": 1,
+      "category": "list",
+      "content": {
+        "html": "<br><p id='10' data-category='list'></p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3613,
+          "y": 0.5189
+        },
+        {
+          "x": 0.5458,
+          "y": 0.5116
+        },
+        {
+          "x": 0.5468,
+          "y": 0.5379
+        },
+        {
+          "x": 0.3623,
+          "y": 0.5451
+        }
+      ]
+    },
+    {
+      "id": 11,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<p id='11' data-category='paragraph' style='font-size:18px'>모듬튀김 1인 4,500(4pcs)<br>-새우1 , 연근1 , 계절야채2 혹은 계절이제1+생선1</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3614,
+          "y": 0.5641
+        },
+        {
+          "x": 0.7679,
+          "y": 0.548
+        },
+        {
+          "x": 0.7699,
+          "y": 0.5985
+        },
+        {
+          "x": 0.3634,
+          "y": 0.6146
+        }
+      ]
+    },
+    {
+      "id": 12,
+      "page": 1,
+      "category": "list",
+      "content": {
+        "html": "<br><p id='12' data-category='list'></p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3614,
+          "y": 0.5641
+        },
+        {
+          "x": 0.7679,
+          "y": 0.548
+        },
+        {
+          "x": 0.7699,
+          "y": 0.5985
+        },
+        {
+          "x": 0.3634,
+          "y": 0.6146
+        }
+      ]
+    },
+    {
+      "id": 13,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<p id='13' data-category='paragraph' style='font-size:20px'>모듬튀김 22,000</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3641,
+          "y": 0.6343
+        },
+        {
+          "x": 0.5158,
+          "y": 0.6283
+        },
+        {
+          "x": 0.5169,
+          "y": 0.6555
+        },
+        {
+          "x": 0.3652,
+          "y": 0.6614
+        }
+      ]
+    },
+    {
+      "id": 14,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<p id='14' data-category='paragraph' style='font-size:18px'>무제정식 1인33,000<br>- 사시미, 초밥, 튀김,오늘의요리,식사</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3645,
+          "y": 0.6803
+        },
+        {
+          "x": 0.6836,
+          "y": 0.6678
+        },
+        {
+          "x": 0.6856,
+          "y": 0.7196
+        },
+        {
+          "x": 0.3665,
+          "y": 0.7323
+        }
+      ]
+    },
+    {
+      "id": 15,
+      "page": 1,
+      "category": "paragraph",
+      "content": {
+        "html": "<p id='15' data-category='paragraph' style='font-size:18px'>무제정식(특) 1인55,000<br>1 사시미, , 초밥, 튀김,오늘의요리,식사</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3661,
+          "y": 0.7517
+        },
+        {
+          "x": 0.6883,
+          "y": 0.7391
+        },
+        {
+          "x": 0.6903,
+          "y": 0.7914
+        },
+        {
+          "x": 0.3681,
+          "y": 0.8041
+        }
+      ]
+    },
+    {
+      "id": 16,
+      "page": 1,
+      "category": "list",
+      "content": {
+        "html": "<p id='16' data-category='list' style='font-size:18px'>무제정식(상) 1인75,000<br>- 사시미, · 초밥, 튀김, 오늘의요리,식사</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3673,
+          "y": 0.8239
+        },
+        {
+          "x": 0.6914,
+          "y": 0.811
+        },
+        {
+          "x": 0.6935,
+          "y": 0.865
+        },
+        {
+          "x": 0.3694,
+          "y": 0.8779
+        }
+      ]
+    },
+    {
+      "id": 17,
+      "page": 1,
+      "category": "list",
+      "content": {
+        "html": "<p id='17' data-category='list' style='font-size:20px'>모듬 사시미 1인 25,000<br>= 제철 생선을 위주로구성된사시미</p>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.3691,
+          "y": 0.8923
+        },
+        {
+          "x": 0.6686,
+          "y": 0.8804
+        },
+        {
+          "x": 0.6708,
+          "y": 0.9345
+        },
+        {
+          "x": 0.3713,
+          "y": 0.9463
+        }
+      ]
+    }
+  ],
+  "model": "document-parse-260128",
+  "ocr": true,
+  "usage": {
+    "pages": 1,
+    "standard": [
+      1
+    ]
+  }
+}

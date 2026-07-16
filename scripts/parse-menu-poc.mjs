@@ -22,30 +22,53 @@ const API_URL = "https://api.upstage.ai/v1/document-digitization";
 const OUT_DIR = path.join(import.meta.dirname, "..", "experiments", "parse-poc");
 
 /** HTML 응답에서 메뉴명·가격 후보를 뽑는다.
- *  전략: 태그 제거 후 줄 단위로 훑으며 "텍스트 ... 가격패턴" 라인을 후보로.
- *  가격 패턴: 8,000 / 8000원 / 8,000원 / 8.0(천원 단위 표기) 등 흔한 한국 메뉴판 표기. */
+ *  전략: 태그 제거 + figure/img 의 alt(OCR 텍스트가 여기 실림)를 본문으로 승격한 뒤,
+ *  줄 단위로 가격 토큰을 전부 찾아 "직전 텍스트 = 메뉴명" 으로 짝짓는다 (한 줄 다항목 지원).
+ *  가격 패턴: 8,000 / 8000원 / 4. 000(OCR 공백) / 8.0·1.5(천원 단위 표기 → ×1000). */
 export function extractMenu(html) {
-  const lines = html
+  const altTexts = [...html.matchAll(/alt="([^"]*)"/g)].map((m) =>
+    m[1].replace(/&quot;/g, '"').replace(/&#39;/g, "'")
+  );
+  const body = html
     .replace(/<br\s*\/?>/gi, "\n")
     .replace(/<\/(td|th)>/gi, " ")   // 같은 행의 셀(메뉴명|가격)은 한 줄로 유지
     .replace(/<\/(tr|p|h\d|li)>/gi, "\n")
     .replace(/<[^>]+>/g, " ")
-    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ")
+    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">").replace(/&nbsp;/g, " ");
+  const lines = [body, ...altTexts]
+    .join("\n")
     .split("\n")
     .map((l) => l.replace(/\s+/g, " ").trim())
     .filter(Boolean);
 
   const items = [];
-  const priceRe = /(\d{1,3}(?:,\d{3})+|\d{4,6})\s*원?\s*$/;
+  // ① 1,000단위 구분(콤마/점/공백, OCR 공백 변형 "21 ,000"·"4 000" 허용) ② 맨자리 4~6자리
+  // ③ 3자리+원 ("500원") ④ 천원단위 소수 (3.0 → 3000)
+  const priceRe =
+    /(\d{1,3}(?:\s?[,.]\s?\d{3}|\s\d{3})+)\s*원?|(\d{4,6})\s*원?|(\d{1,3})\s*원|(\d{1,2}\.\d)(?!\d)/g;
   for (const line of lines) {
-    const m = line.match(priceRe);
-    if (!m) continue;
-    if (m.index > 0 && /[-\d:~]/.test(line[m.index - 1])) continue; // 전화번호·시각·범위의 일부 제외
-    const price = Number(m[1].replace(/,/g, ""));
-    if (price < 500 || price > 200000) continue; // 메뉴 가격으로 비현실적인 값 제외
-    const name = line.slice(0, m.index).trim().replace(/[·.…\-_]+$/g, "").trim();
-    if (!name || /^\d+$/.test(name)) continue;
-    items.push({ name, price });
+    let last = 0;
+    for (const m of line.matchAll(priceRe)) {
+      let price;
+      if (m[1] !== undefined) price = Number(m[1].replace(/[,.\s]/g, ""));
+      else if (m[2] !== undefined) price = Number(m[2]);
+      else if (m[3] !== undefined) price = Number(m[3]);
+      else price = Math.round(Number(m[4]) * 1000);
+      let name = line
+        .slice(last, m.index)
+        .trim()
+        .replace(/^[·.…\-_+)(]+/, "")
+        .replace(/[·.…\-_+]+$/g, "")
+        .trim();
+      // OCR 줄 병합 노이즈 제거: 앞에 붙은 가격 잔여("500원 ")·비한글 UI 토큰("OUT ", "ALL MENU ")
+      name = name.replace(/^\d+\s*원\s*/, "");
+      if (/[가-힣]/.test(name)) name = name.replace(/^[^가-힣]+/, "").trim();
+      last = m.index + m[0].length;
+      if (price < 500 || price > 200000) continue; // 메뉴 가격으로 비현실적인 값 제외
+      if (m.index > 0 && /[-\d:~]/.test(line[m.index - 1])) continue; // 전화번호·시각·범위의 일부 제외
+      if (!name || /^\d+$/.test(name) || /^\d[\d\s,.]*$/.test(name)) continue;
+      items.push({ name, price });
+    }
   }
   return items;
 }

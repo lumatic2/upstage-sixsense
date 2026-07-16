@@ -1,0 +1,46 @@
+{
+  "api": "2.0",
+  "content": {
+    "html": "",
+    "markdown": "![image](/image/placeholder)\nALL MENU\n닫는 메뉴 대마크아웃! 김밥 야채김밥 3.0 돼지고기김치찌개 백반 7.0 볶음밥 김치햄볶음밥 7.0\nALL MENU GMBAP 참치김밥 4.0 FRI'D RICE\nTAKE 오한메뉴 - 낙지볶음밥 7.0\nOUT 제육김밥 4.0\n새우볶음 밥 7.0\nTAKE 스팸치즈 4.0\nOUT 돈 ~ 까스 4.0 치킨데리야끼 7.0\n제육볶음 백반 7.0i\n꼬마김밥\nMNI GIVEAP\n물은셀프 FREE Wi-Fi 꼬마김밥\nWATER SELF\n네트워크: GIGA\n감사합니다 한줄 500원\n버스워드! Tghbhghos)\n(2줄 이상)\n삼겹 백반 10.0\n음료수 코카콜라 1.5 라면 300g 생고기기준\nDRINK\n칠성사이다 1.5 RAMEN\n삼성사이다\n팹시콜라 1.5 3,500원\nCocaC\n(제로라임)\n돈까스백반 17.0",
+    "text": "![image](/image/placeholder)\nALL MENU\n닫는 메뉴 대마크아웃! 김밥 야채김밥 3.0 돼지고기김치찌개 백반 7.0 볶음밥 김치햄볶음밥 7.0\nALL MENU GMBAP 참치김밥 4.0 FRI'D RICE\nTAKE 오한메뉴 - 낙지볶음밥 7.0\nOUT 제육김밥 4.0\n새우볶음 밥 7.0\nTAKE 스팸치즈 4.0\nOUT 돈 ~ 까스 4.0 치킨데리야끼 7.0\n제육볶음 백반 7.0i\n꼬마김밥\nMNI GIVEAP\n물은셀프 FREE Wi-Fi 꼬마김밥\nWATER SELF\n네트워크: GIGA\n감사합니다 한줄 500원\n버스워드! Tghbhghos)\n(2줄 이상)\n삼겹 백반 10.0\n음료수 코카콜라 1.5 라면 300g 생고기기준\nDRINK\n칠성사이다 1.5 RAMEN\n삼성사이다\n팹시콜라 1.5 3,500원\nCocaC\n(제로라임)\n돈까스백반 17.0"
+  },
+  "elements": [
+    {
+      "id": 0,
+      "page": 1,
+      "category": "figure",
+      "content": {
+        "html": "",
+        "markdown": "![image](/image/placeholder)\nALL MENU\n닫는 메뉴 대마크아웃! 김밥 야채김밥 3.0 돼지고기김치찌개 백반 7.0 볶음밥 김치햄볶음밥 7.0\nALL MENU GMBAP 참치김밥 4.0 FRI'D RICE\nTAKE 오한메뉴 - 낙지볶음밥 7.0\nOUT 제육김밥 4.0\n새우볶음 밥 7.0\nTAKE 스팸치즈 4.0\nOUT 돈 ~ 까스 4.0 치킨데리야끼 7.0\n제육볶음 백반 7.0i\n꼬마김밥\nMNI GIVEAP\n물은셀프 FREE Wi-Fi 꼬마김밥\nWATER SELF\n네트워크: GIGA\n감사합니다 한줄 500원\n버스워드! Tghbhghos)\n(2줄 이상)\n삼겹 백반 10.0\n음료수 코카콜라 1.5 라면 300g 생고기기준\nDRINK\n칠성사이다 1.5 RAMEN\n삼성사이다\n팹시콜라 1.5 3,500원\nCocaC\n(제로라임)\n돈까스백반 17.0",
+        "text": "![image](/image/placeholder)\nALL MENU\n닫는 메뉴 대마크아웃! 김밥 야채김밥 3.0 돼지고기김치찌개 백반 7.0 볶음밥 김치햄볶음밥 7.0\nALL MENU GMBAP 참치김밥 4.0 FRI'D RICE\nTAKE 오한메뉴 - 낙지볶음밥 7.0\nOUT 제육김밥 4.0\n새우볶음 밥 7.0\nTAKE 스팸치즈 4.0\nOUT 돈 ~ 까스 4.0 치킨데리야끼 7.0\n제육볶음 백반 7.0i\n꼬마김밥\nMNI GIVEAP\n물은셀프 FREE Wi-Fi 꼬마김밥\nWATER SELF\n네트워크: GIGA\n감사합니다 한줄 500원\n버스워드! Tghbhghos)\n(2줄 이상)\n삼겹 백반 10.0\n음료수 코카콜라 1.5 라면 300g 생고기기준\nDRINK\n칠성사이다 1.5 RAMEN\n삼성사이다\n팹시콜라 1.5 3,500원\nCocaC\n(제로라임)\n돈까스백반 17.0"
+      },
+      "coordinates": [
+        {
+          "x": 0,
+          "y": 0.0873
+        },
+        {
+          "x": 0.9988,
+          "y": 0.0873
+        },
+        {
+          "x": 0.9988,
+          "y": 0.9915
+        },
+        {
+          "x": 0,
+          "y": 0.9915
+        }
+      ]
+    }
+  ],
+  "model": "document-parse-260128",
+  "ocr": true,
+  "usage": {
+    "pages": 1,
+    "standard": [
+      1
+    ]
+  }
+}

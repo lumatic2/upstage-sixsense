@@ -1,0 +1,242 @@
+{
+  "api": "2.0",
+  "content": {
+    "html": "<figure id='0'><img style='font-size:16px' alt=\"ALL MENU\n닫는 메뉴 대마크아웃! 김밥 야채김밥 3.0\nALL MENU GMBAP 참치김밥 4.0\nTAKE 오한메뉴 -\nOUT 제육김밥 4.0\nTAKE 스팸치즈 4.0\nOUT 돈 ~ 까스 4.0\n꼬마김밥\nMNI GIVEAP\n물은셀프 FREE Wi-Fi 꼬마김밥\nWATER SELF\n네트워크: GIGA\n감사합니다 한줄 500원\n버스워드! Tghbhghos)\n(2줄 이상)\" data-coord=\"top-left:(0,62); bottom-right:(373,296)\" /></figure>\n<br><figure id='1'><img style='font-size:20px' alt=\"돼지고기김치찌개 백반 7.0\" data-coord=\"top-left:(424,67); bottom-right:(578,175)\" /></figure>\n<br><figure id='2'><img style='font-size:18px' alt=\"볶음밥 김치햄볶음밥 7.0\nFRI'D RICE\n낙지볶음밥 7.0\n새우볶음 밥 7.0\n치킨데리야끼 7.0\" data-coord=\"top-left:(628,64); bottom-right:(798,176)\" /></figure>\n<figure id='3'><img style='font-size:20px' alt=\"제육볶음 백반 7.0i\" data-coord=\"top-left:(443,199); bottom-right:(562,296)\" /></figure>\n<figure id='4'><img style='font-size:14px' alt=\"음료수 코카콜라 1.5\nDRINK\n칠성사이다 1.5\n삼성사이다\n팹시콜라 1.5\nCocaC\n(제로라임)\" data-coord=\"top-left:(11,334); bottom-right:(165,429)\" /></figure>\n<br><figure id='5'><img style='font-size:22px' alt=\"라면\nRAMEN\n3,500원\" data-coord=\"top-left:(221,333); bottom-right:(368,419)\" /></figure>\n<br><figure id='6'><img style='font-size:16px' alt=\"삼겹 백반 10.0\n300g 생고기기준\" data-coord=\"top-left:(425,324); bottom-right:(577,428)\" /></figure>\n<figure id='7'><img style='font-size:20px' alt=\"돈까스백반 17.0\" data-coord=\"top-left:(447,448); bottom-right:(559,544)\" /></figure>",
+    "markdown": "",
+    "text": ""
+  },
+  "elements": [
+    {
+      "id": 0,
+      "page": 1,
+      "category": "figure",
+      "content": {
+        "html": "<figure id='0'><img style='font-size:16px' alt=\"ALL MENU\n닫는 메뉴 대마크아웃! 김밥 야채김밥 3.0\nALL MENU GMBAP 참치김밥 4.0\nTAKE 오한메뉴 -\nOUT 제육김밥 4.0\nTAKE 스팸치즈 4.0\nOUT 돈 ~ 까스 4.0\n꼬마김밥\nMNI GIVEAP\n물은셀프 FREE Wi-Fi 꼬마김밥\nWATER SELF\n네트워크: GIGA\n감사합니다 한줄 500원\n버스워드! Tghbhghos)\n(2줄 이상)\" data-coord=\"top-left:(0,62); bottom-right:(373,296)\" /></figure>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.0001,
+          "y": 0.1038
+        },
+        {
+          "x": 0.4665,
+          "y": 0.1038
+        },
+        {
+          "x": 0.4665,
+          "y": 0.4943
+        },
+        {
+          "x": 0.0001,
+          "y": 0.4943
+        }
+      ]
+    },
+    {
+      "id": 1,
+      "page": 1,
+      "category": "figure",
+      "content": {
+        "html": "<br><figure id='1'><img style='font-size:20px' alt=\"돼지고기김치찌개 백반 7.0\" data-coord=\"top-left:(424,67); bottom-right:(578,175)\" /></figure>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.5309,
+          "y": 0.1123
+        },
+        {
+          "x": 0.7235,
+          "y": 0.1123
+        },
+        {
+          "x": 0.7235,
+          "y": 0.2917
+        },
+        {
+          "x": 0.5309,
+          "y": 0.2917
+        }
+      ]
+    },
+    {
+      "id": 2,
+      "page": 1,
+      "category": "figure",
+      "content": {
+        "html": "<br><figure id='2'><img style='font-size:18px' alt=\"볶음밥 김치햄볶음밥 7.0\nFRI'D RICE\n낙지볶음밥 7.0\n새우볶음 밥 7.0\n치킨데리야끼 7.0\" data-coord=\"top-left:(628,64); bottom-right:(798,176)\" /></figure>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.7858,
+          "y": 0.1068
+        },
+        {
+          "x": 0.9979,
+          "y": 0.1068
+        },
+        {
+          "x": 0.9979,
+          "y": 0.294
+        },
+        {
+          "x": 0.7858,
+          "y": 0.294
+        }
+      ]
+    },
+    {
+      "id": 3,
+      "page": 1,
+      "category": "figure",
+      "content": {
+        "html": "<figure id='3'><img style='font-size:20px' alt=\"제육볶음 백반 7.0i\" data-coord=\"top-left:(443,199); bottom-right:(562,296)\" /></figure>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.5543,
+          "y": 0.333
+        },
+        {
+          "x": 0.703,
+          "y": 0.333
+        },
+        {
+          "x": 0.703,
+          "y": 0.4948
+        },
+        {
+          "x": 0.5543,
+          "y": 0.4948
+        }
+      ]
+    },
+    {
+      "id": 4,
+      "page": 1,
+      "category": "figure",
+      "content": {
+        "html": "<figure id='4'><img style='font-size:14px' alt=\"음료수 코카콜라 1.5\nDRINK\n칠성사이다 1.5\n삼성사이다\n팹시콜라 1.5\nCocaC\n(제로라임)\" data-coord=\"top-left:(11,334); bottom-right:(165,429)\" /></figure>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.0144,
+          "y": 0.5575
+        },
+        {
+          "x": 0.2064,
+          "y": 0.5575
+        },
+        {
+          "x": 0.2064,
+          "y": 0.7163
+        },
+        {
+          "x": 0.0144,
+          "y": 0.7163
+        }
+      ]
+    },
+    {
+      "id": 5,
+      "page": 1,
+      "category": "figure",
+      "content": {
+        "html": "<br><figure id='5'><img style='font-size:22px' alt=\"라면\nRAMEN\n3,500원\" data-coord=\"top-left:(221,333); bottom-right:(368,419)\" /></figure>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.2763,
+          "y": 0.5555
+        },
+        {
+          "x": 0.4604,
+          "y": 0.5555
+        },
+        {
+          "x": 0.4604,
+          "y": 0.6997
+        },
+        {
+          "x": 0.2763,
+          "y": 0.6997
+        }
+      ]
+    },
+    {
+      "id": 6,
+      "page": 1,
+      "category": "figure",
+      "content": {
+        "html": "<br><figure id='6'><img style='font-size:16px' alt=\"삼겹 백반 10.0\n300g 생고기기준\" data-coord=\"top-left:(425,324); bottom-right:(577,428)\" /></figure>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.5319,
+          "y": 0.54
+        },
+        {
+          "x": 0.7215,
+          "y": 0.54
+        },
+        {
+          "x": 0.7215,
+          "y": 0.7137
+        },
+        {
+          "x": 0.5319,
+          "y": 0.7137
+        }
+      ]
+    },
+    {
+      "id": 7,
+      "page": 1,
+      "category": "figure",
+      "content": {
+        "html": "<figure id='7'><img style='font-size:20px' alt=\"돈까스백반 17.0\" data-coord=\"top-left:(447,448); bottom-right:(559,544)\" /></figure>",
+        "markdown": "",
+        "text": ""
+      },
+      "coordinates": [
+        {
+          "x": 0.5588,
+          "y": 0.7473
+        },
+        {
+          "x": 0.6989,
+          "y": 0.7473
+        },
+        {
+          "x": 0.6989,
+          "y": 0.9078
+        },
+        {
+          "x": 0.5588,
+          "y": 0.9078
+        }
+      ]
+    }
+  ],
+  "model": "document-parse-260128",
+  "ocr": true,
+  "usage": {
+    "pages": 1,
+    "standard": [
+      1
+    ]
+  }
+}
