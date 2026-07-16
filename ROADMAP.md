@@ -23,13 +23,15 @@
 
 - Completed at: 2026-07-17
 - Summary: 멘토링 사전자료 7/15 발송 확인 — 발송본 레포 보존
-<!-- harness:milestone id="M2" status="pending" priority="P0" -->
+<!-- harness:milestone id="M2" status="completed" priority="P0" evidence="experiments/parse-poc/accuracy.md" -->
 ### M2 — 메뉴판 파싱 PoC ★차별화 축 검증 (ADR-0001)
 - DoD: 실제 명륜동 메뉴판 사진 ≥3장 → Document Parse → 메뉴·가격 JSON 추출, 항목 단위 정확도 측정
-- Evidence: 입력 사진 + 출력 JSON + 정확도 기록 (`experiments/` 또는 `docs/research/`)
+- Evidence: experiments/parse-poc/accuracy.md
 - Gap: 이 가설("사진 속 가격을 파싱으로 해방")이 프로젝트 전체의 승부수인데 아직 미검증
-- Status: [ ]
+- Status: [x]
 
+- Completed at: 2026-07-17
+- Summary: 정확도 76.4% (70~90 밴드) — 프리필+사용자수정 전제로 M3 진행
 <!-- harness:milestone id="M3" status="pending" priority="P0" -->
 ### M3 — 파이프라인 3종 통합 (루브릭 35점 구간)
 - DoD: ① 사진 제보→파싱→검수→DB ② 학식 크롤러→DB ③ Solar 질의 구조화, 배포 URL에서 E2E 동작
