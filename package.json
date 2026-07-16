@@ -1,0 +1,6 @@
+{
+  "name": "upstage-sixsense",
+  "private": true,
+  "type": "module",
+  "engines": { "node": ">=18" }
+}
