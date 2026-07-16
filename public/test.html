@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>한입지도 파이프라인 E2E 검증</title>
+<!-- 무스타일 검증 도구 (M3 step-4) — 본 UI 는 hanipmap 이식 시 제보 폼에 연결 -->
+<style>body{font-family:sans-serif;max-width:720px;margin:2rem auto;padding:0 1rem}section{border:1px solid #ccc;padding:1rem;margin:1rem 0}pre{background:#f5f5f5;padding:.5rem;overflow-x:auto}li{margin:.2rem 0}</style>
+</head>
+<body>
+<h1>파이프라인 E2E 검증</h1>
+
+<section id="s1">
+  <h2>① 사진 제보 → Document Parse → 프리필</h2>
+  <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
+  <button id="parseBtn">파싱</button>
+  <span id="parseStatus"></span>
+  <form id="prefill"></form>
+  <button id="submitBtn" hidden>제보 제출 (pending)</button>
+  <pre id="pendingOut" hidden></pre>
+</section>
+
+<section id="s2">
+  <h2>② 자연어 검색 → Solar 구조화</h2>
+  <input type="text" id="query" size="40" value="8천원 이하 도보 5분 혼밥">
+  <button id="queryBtn">검색</button>
+  <pre id="queryOut"></pre>
+</section>
+
+<section id="s3">
+  <h2>③ 오늘의 학식 (크롤러 산출 fixture)</h2>
+  <ul id="cafeteria"></ul>
+</section>
+
+<script>
+const $ = (id) => document.getElementById(id);
+
+// ① 사진 → parse-menu → 프리필 (자동 저장 없음 — 사용자 수정 후 제출)
+$("parseBtn").onclick = async () => {
+  const f = $("photo").files[0];
+  if (!f) return alert("사진을 선택하세요");
+  $("parseStatus").textContent = "파싱 중…";
+  const b64 = await new Promise((ok) => {
+    const r = new FileReader();
+    r.onload = () => ok(r.result);
+    r.readAsDataURL(f);
+  });
+  const res = await fetch("/api/parse-menu", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ image: b64, filename: f.name }),
+  });
+  const j = await res.json();
+  if (!res.ok) {
+    $("parseStatus").textContent = `실패 (${res.status}): ${j.error} [${j.code}]`;
+    return;
+  }
+  $("parseStatus").textContent = `후보 ${j.items.length}개 — 틀린 항목을 고치고 제출하세요`;
+  $("prefill").innerHTML = j.items
+    .map((it, i) => `<li><input name="name${i}" value="${it.name.replace(/"/g, "&quot;")}"> <input name="price${i}" type="number" value="${it.price}" style="width:6rem"> 원</li>`)
+    .join("");
+  $("submitBtn").hidden = false;
+};
+$("submitBtn").onclick = (e) => {
+  e.preventDefault();
+  const items = [...$("prefill").querySelectorAll("li")].map((li) => {
+    const [n, p] = li.querySelectorAll("input");
+    return { name: n.value, price: Number(p.value) };
+  });
+  // Supabase 권한 도착 전 fixture 경로: status=pending insert 페이로드를 그대로 표시
+  $("pendingOut").hidden = false;
+  $("pendingOut").textContent = "INSERT restaurants_menu (status=pending) payload:\n" + JSON.stringify(items, null, 2);
+};
+
+// ② 자연어 → parse-query
+$("queryBtn").onclick = async () => {
+  $("queryOut").textContent = "…";
+  const res = await fetch("/api/parse-query", {
+    method: "POST",
+    headers: { "content-type": "application/json" },
+    body: JSON.stringify({ query: $("query").value }),
+  });
+  $("queryOut").textContent = JSON.stringify(await res.json(), null, 2);
+};
+
+// ③ 학식 fixture → 추천 풀 노출
+fetch("/cafeteria-sample.json")
+  .then((r) => r.json())
+  .then((d) => {
+    $("cafeteria").innerHTML = d.records
+      .map((r) => `<li><b>${r.cafeteria}</b>${r.corner ? " · " + r.corner : ""} (${r.menu_date} ${({B:"조식",L:"중식",D:"석식"})[r.meal]}) — ${r.items.slice(0, 4).join(", ")}${r.items.length > 4 ? " 외" : ""} · <b>${r.price ?? "?"}원</b></li>`)
+      .join("") || "<li>fixture 없음</li>";
+  })
+  .catch((e) => ($("cafeteria").innerHTML = `<li>로드 실패: ${e}</li>`));
+</script>
+</body>
+</html>

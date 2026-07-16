@@ -8,6 +8,7 @@
 
 | # | Changeset | 날짜 | Scope | Verification | Status |
 |---|-----------|------|-------|--------------|--------|
+| 4 | 20260717-staging-e2e | 2026-07-17 | test.html·vercel.json·deploy-staging.mjs·E2E 증거 | 3/3 | done |
 | 3 | 20260717-cafeteria-crawler | 2026-07-17 | crawl-cafeteria.mjs·db/schema.sql·fixture | 3/3 | done |
 | 2 | 20260717-parse-query-api | 2026-07-17 | api/parse-query.js (Solar+폴백) | 3/3 | done |
 | 1 | 20260717-parse-menu-api | 2026-07-17 | api/parse-menu.js·_lib/extract-menu.js·test-api-local.mjs | 3/3 (deploy는 step-4) | done |
