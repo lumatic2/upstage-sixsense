@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "active_work_id": "m3-pipeline",
+  "active_work_id": "m4-demo-deck",
   "works": {
     "m2-parse-poc": {
       "work_id": "m2-parse-poc",
@@ -55,11 +55,11 @@
       "work_id": "m3-pipeline",
       "horizon_id": "product-horizon",
       "milestone_id": "M3",
-      "status": "active",
+      "status": "completed",
       "plan_path": "docs/plans/2026-07-17-m3-pipeline.md",
       "changeset_path": "api",
-      "next_step": "step-5",
-      "current_step": "step-5",
+      "next_step": null,
+      "current_step": null,
       "steps": [
         {
           "id": "step-1",
@@ -84,7 +84,7 @@
         {
           "id": "step-5",
           "label": "step-5 M3 완료 처리",
-          "status": "pending"
+          "status": "completed"
         }
       ],
       "execution_mode": "continuous",

@@ -32,13 +32,15 @@
 
 - Completed at: 2026-07-17
 - Summary: 정확도 76.4% (70~90 밴드) — 프리필+사용자수정 전제로 M3 진행
-<!-- harness:milestone id="M3" status="pending" priority="P0" -->
+<!-- harness:milestone id="M3" status="completed" priority="P0" evidence="docs/research/2026-07-17-m3-e2e.md" -->
 ### M3 — 파이프라인 3종 통합 (루브릭 35점 구간)
 - DoD: ① 사진 제보→파싱→검수→DB ② 학식 크롤러→DB ③ Solar 질의 구조화, 배포 URL에서 E2E 동작
-- Evidence: 배포 URL + 재현 명령 + 시연 시나리오
+- Evidence: docs/research/2026-07-17-m3-e2e.md
 - Gap: "어떤 정보를 어디서 왜 가져와 어떻게 가공하는가" 스토리의 실체
-- Status: [ ]
+- Status: [x]
 
+- Completed at: 2026-07-17
+- Summary: 파이프라인 3종 스테이징 배포 URL E2E PASS (DB는 fixture — 팀 권한 대기)
 <!-- harness:milestone id="M4" status="pending" priority="P1" -->
 ### M4 — 데모데이 발표자료 (7/25)
 - DoD: 루브릭 6개 항목에 각각 대응하는 슬라이드 + "범용 챗봇 대비 왜 이 서비스인가" 답변 확정
