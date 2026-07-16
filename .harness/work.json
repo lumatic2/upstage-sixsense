@@ -58,8 +58,8 @@
       "status": "active",
       "plan_path": "docs/plans/2026-07-17-m3-pipeline.md",
       "changeset_path": "api",
-      "next_step": "step-3",
-      "current_step": "step-3",
+      "next_step": "step-4",
+      "current_step": "step-4",
       "steps": [
         {
           "id": "step-1",
@@ -74,7 +74,7 @@
         {
           "id": "step-3",
           "label": "step-3 학식 크롤러 + `cafeteria_menus` 스키마",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-4",
