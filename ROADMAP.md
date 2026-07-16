@@ -41,13 +41,15 @@
 
 - Completed at: 2026-07-17
 - Summary: 파이프라인 3종 스테이징 배포 URL E2E PASS (DB는 fixture — 팀 권한 대기)
-<!-- harness:milestone id="M4" status="pending" priority="P1" -->
+<!-- harness:milestone id="M4" status="completed" priority="P1" evidence="docs/presentation/" -->
 ### M4 — 데모데이 발표자료 (7/25)
 - DoD: 루브릭 6개 항목에 각각 대응하는 슬라이드 + "범용 챗봇 대비 왜 이 서비스인가" 답변 확정
-- Evidence: 발표자료 파일
+- Evidence: docs/presentation/
 - Gap: Presentation & Documentation 15점
-- Status: [ ]
+- Status: [x]
 
+- Completed at: 2026-07-17
+- Summary: 루브릭 6/6 발표 원고 + 시연 시나리오·Q&A (리허설 완료)
 ## Next Candidates
 - 영수증 파싱·잔여 예산 상태 관리 (리서치 C2 축 — ADR-0001에서 범위 제외로 보류)
 - 자연캠(율전) 확장 · 자연캠 학식 페이지 실사 마무리

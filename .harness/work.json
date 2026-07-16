@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "active_work_id": "m4-demo-deck",
+  "active_work_id": null,
   "works": {
     "m2-parse-poc": {
       "work_id": "m2-parse-poc",
@@ -114,26 +114,26 @@
       "work_id": "m4-demo-deck",
       "horizon_id": "product-horizon",
       "milestone_id": "M4",
-      "status": "active",
+      "status": "completed",
       "plan_path": "docs/plans/2026-07-17-m4-demo-deck.md",
       "changeset_path": "docs/presentation",
-      "next_step": "step-1",
-      "current_step": "step-1",
+      "next_step": null,
+      "current_step": null,
       "steps": [
         {
           "id": "step-1",
           "label": "step-1 발표 슬라이드 원고 (Marp)",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-2",
           "label": "step-2 시연 시나리오 + Q&A 확정 답변",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-3",
           "label": "step-3 M4 완료 처리",
-          "status": "pending"
+          "status": "completed"
         }
       ],
       "execution_mode": "continuous",
