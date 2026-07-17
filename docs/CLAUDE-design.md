@@ -7,7 +7,7 @@
 - **토큰은 semantic 만 코드에서 참조** — primitive 직접 사용 시 lint 실패.
 - **컴포넌트 새로 만들 때**: `DESIGN.md` § 7. Components 의 spec 부터 확인. 없으면 추가 후 구현.
 - **새 색·spacing 값 도입 금지** — 필요하면 `DESIGN.md` 에 먼저 토큰 추가, 그다음 코드.
-- **검증**: 커밋 전 `node ~/projects/design-manual/scripts/lint/index.js ./DESIGN.md` 실행 권장. CI 도 동일.
+- **검증**: 커밋 전 `node ~/.claude/skills/harness-bootstrap/design-pack/scripts/lint/index.js ./DESIGN.md` 실행 권장. CI 도 동일.
 
 ## Style family
 
@@ -15,5 +15,5 @@
 
 ## 외부 참조
 
-- 스펙: `~/projects/design-manual/docs/spec.md`
-- 메타-레포: `~/projects/design-manual/`
+- 스펙: `~/.claude/skills/harness-bootstrap/design-pack/docs/spec.md`
+- 디자인 팩(구 design-manual 툴링): `~/.claude/skills/harness-bootstrap/design-pack/`
