@@ -6,7 +6,25 @@
 ## 대회 제약 (하드 요건)
 - **Upstage 제품(Document AI, Solar 등) 최소 1종 사용은 실격 요건**이다. 스택 결정이 이걸 깨면 안 된다.
 - 데모데이 **2026-07-25(토)**. 빌드업 마감 7/24. 남은 일정은 `ROADMAP.md`.
-- 루브릭 100점 중 **데이터 파이프라인 설계 20 + 처리 깊이 15 = 35점**이 데이터 처리에 걸려 있다. UI 완성도에는 직접 배점이 없다 — 구현 우선순위를 여기에 맞춘다.
+
+### 심사 루브릭 (총 100점 — 모든 구현 우선순위의 기준)
+
+| 심사항목 | 심사기준 | 배점 |
+|---|---|---|
+| Service Differentiation | 범용 LLM 대비 서비스 차별성 | 5 |
+| | 문제 정의의 구체성 및 타깃 명확성 | 5 |
+| **Data Architecture & Process** | **정보 처리 파이프라인 설계 및 관리** | **20** |
+| **Solution Depth** | **정보 처리의 깊이 및 정교성** | **15** |
+| Service Impact | 실용성 및 활용 가능성 | 10 |
+| | 서비스 논리의 타당성 | 5 |
+| | 서비스 임팩트 및 확장성 | 5 |
+| Effective Use of Upstage | 목적에 적합한 제품 적용 | 10 |
+| | 기술 적용 결과의 기여도 | 10 |
+| Presentation & Documentation | 발표 전달력 및 태도 | 5 |
+| | 발표 자료의 논리 및 완성도 | 10 |
+
+- 해석: **파이프라인 20 + 깊이 15 = 35점**이 데이터 처리, Upstage 활용 20점이 그다음. **UI 완성도는 직접 배점 0** — Service Impact·발표로만 간접 반영. 구현 우선순위를 여기에 맞춘다.
+- 승부처: "그냥 ChatGPT에 물어보면 되지 않나?"에 답할 수 있는가 (원문·멘토링 규칙: `docs/CHALLENGE.md`).
 
 ## 기술 스택
 - 팀원 데모 **한입지도**(github.com/ljb0138/hanipmap) 기반: 바닐라 JS + Naver Maps + Supabase + Vercel serverless functions — 2026-07-15 확정 (Next.js 전환 안 함, ADR-0001·ARCHITECTURE.md)
