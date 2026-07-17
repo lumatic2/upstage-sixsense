@@ -32,10 +32,10 @@
 
 - Completed at: 2026-07-17
 - Summary: 정확도 76.4% (70~90 밴드) — 프리필+사용자수정 전제로 M3 진행
-<!-- harness:milestone id="M3" status="completed" priority="P0" evidence="docs/research/2026-07-17-m3-e2e.md" -->
+<!-- harness:milestone id="M3" status="completed" priority="P0" evidence="research/2026-07-17-m3-e2e.md" -->
 ### M3 — 파이프라인 3종 통합 (루브릭 35점 구간)
 - DoD: ① 사진 제보→파싱→검수→DB ② 학식 크롤러→DB ③ Solar 질의 구조화, 배포 URL에서 E2E 동작
-- Evidence: docs/research/2026-07-17-m3-e2e.md
+- Evidence: research/2026-07-17-m3-e2e.md
 - Gap: "어떤 정보를 어디서 왜 가져와 어떻게 가공하는가" 스토리의 실체
 - Status: [x]
 
