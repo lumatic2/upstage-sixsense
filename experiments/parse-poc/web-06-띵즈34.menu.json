@@ -1,35 +1,27 @@
 [
   {
-    "name": "에스프레소 Espresso (HOT)",
+    "name": "에스프레소",
     "price": 2500
   },
   {
-    "name": "플레인 Plain / 초코 Chocolate (",
-    "price": 500
-  },
-  {
-    "name": "아메리카노 Americano (HOT / ICE)",
+    "name": "아메리카노",
     "price": 4000
   },
   {
-    "name": "카페라떼 Caffe Latte (HOT / ICE)",
+    "name": "카페라떼",
     "price": 4500
   },
   {
-    "name": "바닐라라떼 Vanilla Latte (HOT / ICE)",
+    "name": "바닐라라떼",
     "price": 5000
   },
   {
-    "name": "카페 모카 Caffe Mocha (HOT/COLD)",
+    "name": "카페 모카",
     "price": 5000
   },
   {
-    "name": "버터떡 Chewy butter cookie",
+    "name": "버터떡",
     "price": 2000
-  },
-  {
-    "name": "/",
-    "price": 2500
   },
   {
     "name": "하트 오리지널 (3pc)",
@@ -40,47 +32,47 @@
     "price": 2000
   },
   {
-    "name": "두바이 휘낭시에 Dubai Financier",
+    "name": "두바이 휘낭시에",
     "price": 5500
   },
   {
-    "name": "아인슈페너 Einspanner (ICE)",
+    "name": "아인슈페너",
     "price": 5000
   },
   {
-    "name": "크림라떼 Cream Latte (ICE)",
+    "name": "크림라떼",
     "price": 5000
   },
   {
-    "name": "민트크림라떼 Latte e Menta (ICE)",
+    "name": "민트크림라떼",
     "price": 4000
   },
   {
-    "name": "카모마일레몬티 (ICE) Camomile Lemon Tea",
+    "name": "카모마일레몬티",
     "price": 5000
   },
   {
-    "name": "얼그레이 패션프룻 (ICE) Earl Grey Passion Fruit",
+    "name": "얼그레이 패션프룻",
     "price": 5000
   },
   {
-    "name": "오미자 에이드 (ICE) Omija Ade",
+    "name": "오미자 에이드",
     "price": 5000
   },
   {
-    "name": "다크초코&크림 (HOT / ICE) Dark Chocolate & Cream",
+    "name": "다크초코&크림",
     "price": 5000
   },
   {
-    "name": "언더커버 라떼 Undercover Latte (ICE)",
+    "name": "언더커버 라떼",
     "price": 6000
   },
   {
-    "name": "오!미자 Oh! Mija (ICE)",
+    "name": "오!미자",
     "price": 6000
   },
   {
-    "name": "스파크띵 Spark Thing (ICE)",
+    "name": "스파크띵",
     "price": 6000
   }
 ]

@@ -1,5 +1,5 @@
 {
-  "comment": "웹수집 사진 manifest — 출처는 sourcePost. 시트 적재는 사용자 승인 후.",
+  "comment": "웹수집 사진 manifest — 출처는 sourcePost. 시트 적재는 사용자 승인 후. 파스타마켓은 태블릿 화면 오독(1,500원)으로 제외 — 2026-07-20 사용자 보고 반영.",
   "collector": "전유성(웹수집)",
   "photos": [
     {
@@ -121,30 +121,6 @@
       "sourcePost": "https://blog.naver.com/mangzzang369/224301681849",
       "accessDate": "2026-07-20",
       "driveLink": "https://drive.google.com/file/d/194J86HtCIZ0oup636blnjXjE-fXo5LZx/view"
-    },
-    {
-      "file": "experiments/parse-poc/photos/web/web-10-파스타마켓혜화본점.jpg",
-      "name": "파스타마켓 (혜화본점)",
-      "category": "양식(파스타/피자)",
-      "address": "서울특별시 종로구 대학로11길 9-5 1층",
-      "tags": "",
-      "shotDate": "2026-02-24",
-      "collector": "전유성(웹수집)",
-      "sourcePost": "https://blog.naver.com/jjinss77/224194533231",
-      "accessDate": "2026-07-20",
-      "driveLink": "https://drive.google.com/file/d/1EanvP29SidZ2PeONOqam8k8vi1979n--/view"
-    },
-    {
-      "file": "experiments/parse-poc/photos/web/web-10-파스타마켓혜화본점-2.jpg",
-      "name": "파스타마켓 (혜화본점)",
-      "category": "양식(파스타/피자)",
-      "address": "서울특별시 종로구 대학로11길 9-5 1층",
-      "tags": "",
-      "shotDate": "2026-02-24",
-      "collector": "전유성(웹수집)",
-      "sourcePost": "https://blog.naver.com/jjinss77/224194533231",
-      "accessDate": "2026-07-20",
-      "driveLink": "https://drive.google.com/file/d/1clT2bVKHWhP-oKxWO1InaOFsprNaVvZK/view"
     }
   ]
 }
