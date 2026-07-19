@@ -223,28 +223,28 @@
       "status": "active",
       "plan_path": "plans/2026-07-19-dr2-personal-service.md",
       "changeset_path": "public",
-      "next_step": "step-1",
-      "current_step": "step-1",
+      "next_step": "step-5",
+      "current_step": "step-5",
       "steps": [
         {
           "id": "step-1",
           "label": "step-1 UI 스캐폴딩·핵심 화면 (askewly design system)",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-2",
           "label": "step-2 추천 루프 완결 (예산→구조화→통합 필터→추천+이유)",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-3",
           "label": "step-3 Upstage 심화 적용 (Groundedness Check + Parse 파라미터 명시화)",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-4",
           "label": "step-4 검증 가시화 + 시연 smoke",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-5",
@@ -256,7 +256,7 @@
       "approval": {
         "approved_by": "user",
         "approved_at": "2026-07-19",
-        "plan_sha256": "9296f31971c3b9ab902ec73520fc545fca4d423c864e12098bc4444eadeca7ad"
+        "plan_sha256": "8256ec14af044bd58392cf911c40fd34d997213f3b3e9a240c311cd15d36006d"
       },
       "allowed_stop_reasons": [
         "completed",
@@ -267,8 +267,10 @@
         "external_authority_required",
         "user_stopped"
       ],
-      "stop_reason": null,
-      "stop_detail": {},
+      "stop_reason": "decision_required",
+      "stop_detail": {
+        "message": "개인 버전 서비스가 배포 URL에서 시연 시나리오까지 통과했습니다. 마지막 step(도그푸드)은 사용자 전결이라, 직접 써보시고 고칠 점(fix)/기각(reject)/보류(defer)를 알려주시면 반영 후 DR2를 닫습니다."
+      },
       "session_ids": [
         "codex:bc7f5533-d351-4bcd-97e0-17cdd4bbe395",
         "claude:bc7f5533-d351-4bcd-97e0-17cdd4bbe395"
