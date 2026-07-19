@@ -68,3 +68,4 @@ Status: approved
 
 ## 진행 로그 (append-only)
 - 2026-07-19 plan 작성 (승인 대기)
+- 2026-07-19 step-1·3·4 완료 (식당 4곳·메뉴 69행·학식 4행 시트 적재, /api/data 스테이징 E2E PASS). step-2 blocked: KAKAO_REST_API_KEY 미발급. Supabase env 미보유로 sync 는 BLOCKED 경로 검증만 — 서비스는 시트 fallback 으로 실데이터 동작.
