@@ -4,7 +4,7 @@
 > 근거: `research/2026-07-17-m3-e2e.md` "이식 시 남는 것" 4항목 · `docs/team/2026-07-18-decisions.md` §6
 > 작성: 2026-07-19 · demoday-run horizon 일괄 계획 3/3
 
-Status: pending-approval
+Status: approved
 - Execution mode: continuous
 - Stop only on: blocked · decision_required · risk_gate · secret_required
 - Rollback/cleanup: hanipmap 변경은 전부 PR 경유(main 보호) — 머지 전 폐기로 원복. 이 레포 원본 불변.

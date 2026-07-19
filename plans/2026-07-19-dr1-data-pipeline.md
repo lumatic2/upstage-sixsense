@@ -4,7 +4,7 @@
 > 근거: `research/2026-07-19-demoday-run-data-pipeline.md` · `research/2026-07-17-m3-e2e.md` · `docs/team/2026-07-18-decisions.md` §6
 > 작성: 2026-07-19 · demoday-run horizon 일괄 계획 1/3
 
-Status: pending-approval
+Status: approved
 - Execution mode: continuous
 - Stop only on: blocked · decision_required · risk_gate · secret_required
 - Rollback/cleanup: 시트 적재는 pending 행 추가 방식 — 오염 시 해당 행 삭제로 원복. 스크립트는 커밋 revert. 시크릿은 env 만(커밋·로그 노출 금지).

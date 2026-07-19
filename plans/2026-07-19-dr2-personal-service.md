@@ -5,7 +5,7 @@
 > 플레이북 정합: 개인 슬롯 Phase 4(이 plan = 킥오프 계약)→Phase 5(구현·검증 루프)→Phase 6(dogfood) (`docs/playbook/AI_공모전_플레이북.md`)
 > 작성: 2026-07-19 · demoday-run horizon 일괄 계획 2/3
 
-Status: pending-approval
+Status: approved
 - Execution mode: continuous
 - Stop only on: blocked · decision_required · risk_gate · secret_required
 - Rollback/cleanup: 커밋 단위 revert. 기존 `public/test.html` 검증 페이지는 유지(승격 실패 시 원복 경로). 시크릿 env 만.
