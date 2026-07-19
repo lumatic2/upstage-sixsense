@@ -28,8 +28,14 @@
 </section>
 
 <section id="s3">
-  <h2>③ 오늘의 학식 (크롤러 산출 fixture)</h2>
+  <h2>③ 학식 (시트 실데이터 — fixture fallback)</h2>
   <ul id="cafeteria"></ul>
+</section>
+
+<section id="s4">
+  <h2>④ 실데이터 검색 (시트 [식당]·[메뉴] → /api/data)</h2>
+  <p>②의 구조화 결과(예산)를 실데이터에 적용한 결과: <span id="dataSource"></span></p>
+  <ul id="realResults"></ul>
 </section>
 
 <script>
@@ -72,7 +78,7 @@ $("submitBtn").onclick = (e) => {
   $("pendingOut").textContent = "INSERT restaurants_menu (status=pending) payload:\n" + JSON.stringify(items, null, 2);
 };
 
-// ② 자연어 → parse-query
+// ② 자연어 → parse-query (+ ④ 실데이터 필터 적용)
 $("queryBtn").onclick = async () => {
   $("queryOut").textContent = "…";
   const res = await fetch("/api/parse-query", {
@@ -80,18 +86,46 @@ $("queryBtn").onclick = async () => {
     headers: { "content-type": "application/json" },
     body: JSON.stringify({ query: $("query").value }),
   });
-  $("queryOut").textContent = JSON.stringify(await res.json(), null, 2);
+  const q = await res.json();
+  $("queryOut").textContent = JSON.stringify(q, null, 2);
+  renderRealResults(q);
 };
 
-// ③ 학식 fixture → 추천 풀 노출
-fetch("/cafeteria-sample.json")
+// ③④ 실데이터 로드 (/api/data — Supabase 우선, 시트 fallback)
+let DATA = { restaurants: [], menus: [], cafeteria: [], source: "none" };
+const dataReady = fetch("/api/data")
   .then((r) => r.json())
   .then((d) => {
-    $("cafeteria").innerHTML = d.records
-      .map((r) => `<li><b>${r.cafeteria}</b>${r.corner ? " · " + r.corner : ""} (${r.menu_date} ${({B:"조식",L:"중식",D:"석식"})[r.meal]}) — ${r.items.slice(0, 4).join(", ")}${r.items.length > 4 ? " 외" : ""} · <b>${r.price ?? "?"}원</b></li>`)
-      .join("") || "<li>fixture 없음</li>";
+    DATA = d;
+    $("dataSource").textContent = `source=${d.source} · 식당 ${d.restaurants.length} · 메뉴 ${d.menus.length} · 학식 ${d.cafeteria.length}`;
+    $("cafeteria").innerHTML = d.cafeteria
+      .map((r) => `<li><b>${r.cafeteria}</b>${r.corner ? " · " + r.corner : ""} (${r.menu_date}) — ${r.items.slice(0, 4).join(", ")}${r.items.length > 4 ? " 외" : ""} · <b>${r.price ?? "?"}원</b></li>`)
+      .join("") || "<li>실데이터 없음</li>";
+    renderRealResults(null);
   })
   .catch((e) => ($("cafeteria").innerHTML = `<li>로드 실패: ${e}</li>`));
+
+function renderRealResults(q) {
+  const budget = q?.budget ?? null;
+  const byRest = new Map();
+  for (const m of DATA.menus) {
+    if (budget && m.price > budget) continue;
+    if (!byRest.has(m.restaurant_id)) byRest.set(m.restaurant_id, []);
+    byRest.get(m.restaurant_id).push(m);
+  }
+  const items = [];
+  for (const r of DATA.restaurants) {
+    const ms = byRest.get(r.id) ?? [];
+    if (budget && !ms.length) continue;
+    const cheap = ms.slice().sort((a, b) => a.price - b.price).slice(0, 3);
+    items.push(`<li><b>${r.name}</b> (${r.category}) — ${budget ? `예산 내 메뉴 ${ms.length}개: ` : ""}${cheap.map((m) => `${m.name} ${m.price.toLocaleString()}원`).join(", ")}</li>`);
+  }
+  for (const c of DATA.cafeteria) {
+    if (budget && c.price && c.price > budget) continue;
+    items.push(`<li><b>학식·${c.cafeteria}</b> (${c.menu_date}) — ${c.items[0] ?? ""} 외 · ${c.price?.toLocaleString() ?? "?"}원</li>`);
+  }
+  $("realResults").innerHTML = items.join("") || "<li>조건에 맞는 실데이터 없음</li>";
+}
 </script>
 </body>
 </html>

@@ -57,7 +57,9 @@ const FILES = [
   "vercel.json",
   "api/parse-menu.js",
   "api/parse-query.js",
+  "api/data.js",
   "api/_lib/extract-menu.js",
+  "api/_lib/sheet-data.js",
   "public/test.html",
 ];
 const files = FILES.map((f) => ({ file: f, data: fs.readFileSync(f, "base64"), encoding: "base64" }));
