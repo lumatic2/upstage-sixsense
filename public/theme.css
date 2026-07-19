@@ -15,6 +15,12 @@
   --font-body:'Noto Sans KR',system-ui,sans-serif;
   --sm:14px; --base:16px; --lg:20px; --xl:30px; --2xl:46px;
 
+  /* 섹션 밴드 — 스크롤하며 지면이 바뀌는 구분감 (액센트 계열 저채도 파생) */
+  --band-warm:#F4EBE5;
+  --band-ink:#171C22;
+  --band-ink-fg:rgba(247,249,252,.95);
+  --band-ink-muted:rgba(247,249,252,.66);
+
   --r:4px;
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s6:24px; --s8:32px; --s12:48px; --s16:64px; --s24:96px;
   --container:1040px;
@@ -25,6 +31,7 @@
     --fg:rgba(247,249,252,.95); --muted:rgba(247,249,252,.66);
     --border:rgba(247,249,252,.14);
     --accent:#D4794F; --accent-fg:#14181D; --accent-soft:rgba(212,121,79,.14);
+    --band-warm:#221B17; --band-ink:#0E1216;
   }
 }
 
@@ -49,8 +56,12 @@ img{max-width:100%}
   position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);
   backdrop-filter:blur(8px);border-bottom:1px solid var(--border);
 }
-/* 3분할: 로고 좌 · 네비 중앙 · 로그인+CTA 우 (레퍼런스 notion-product/ANALYSIS.md §1) */
-.site-head .inner{display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:var(--s6);height:64px}
+/* 3분할: 로고 화면 좌측 끝 · 네비 중앙 · 로그인+CTA 우측 끝 (레퍼런스 notion-product/ANALYSIS.md §1)
+   헤더만 container 폭을 벗어나 화면 양끝을 쓴다. */
+.site-head .inner{
+  display:grid;grid-template-columns:1fr auto 1fr;align-items:center;gap:var(--s6);height:64px;
+  max-width:none;padding:0 var(--s6);
+}
 .brand{font-family:var(--font-head);font-size:var(--lg);letter-spacing:-.02em;text-decoration:none}
 .site-head .nav-main{display:flex;gap:var(--s6);align-items:center;justify-content:center}
 .site-head .nav-side{display:flex;gap:var(--s3);align-items:center;justify-self:end}
@@ -106,14 +117,27 @@ dialog.sheet .btn{margin-top:var(--s6)}
 section{padding:var(--s16) 0}
 .eyebrow{font-size:var(--sm);color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:var(--s3)}
 .lead{font-size:var(--lg);color:var(--muted);margin-top:var(--s4);max-width:56ch}
+/* 섹션 밴드 */
+.band-warm{background:var(--band-warm)}
+.band-ink{background:var(--band-ink);color:var(--band-ink-fg)}
+.band-ink .muted,.band-ink .lead{color:var(--band-ink-muted)}
+.band-ink .card{background:rgba(247,249,252,.06)}
+.band-ink .eyebrow{color:#E08A5F}
 /* 중앙 정렬 섹션 (레퍼런스 히어로·3카드) */
 .centered{text-align:center}
 .centered .lead{margin-left:auto;margin-right:auto}
-/* 헤딩 안 단어 강조 알약 */
+/* 헤딩 안 단어 강조 알약 — 누르면 금액이 바뀐다(데모 시나리오와 연동).
+   라이브러리 없이 순수 CSS/JS: 후보 조사 결과 Odometer(아카이브)·GSAP(과중) 모두 부적합. */
 .pill{
-  display:inline-block;padding:0 .28em;border-radius:999px;
+  display:inline-block;padding:0 .28em;border-radius:999px;border:0;
   background:var(--accent-soft);color:var(--accent);
+  font:inherit;line-height:inherit;cursor:pointer;
+  transition:transform 150ms ease-out,background 150ms ease-out;
+  transform-origin:center;
 }
+button.pill:hover{background:color-mix(in srgb,var(--accent-soft) 60%,var(--accent) 16%)}
+button.pill:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+button.pill.flip{transform:rotateX(90deg)}
 
 /* ── footer ── */
 .site-foot{border-top:1px solid var(--border);padding:var(--s8) 0;color:var(--muted);font-size:var(--sm)}
