@@ -587,12 +587,18 @@ function startDemo(data) {
   async function loop(t) {
     while (t === token && !paused) {
       const sc = SCENARIOS[idx];
-      // 금액 교체 — 페이드 (문구 폭은 .amt 고정폭이라 흔들리지 않음)
+      // 금액 교체 — 타이핑 디코드 (사용자 선택 2026-07-20). 폭은 .amt 고정폭이라 흔들리지 않음
       if (amtEl.textContent !== sc.pill) {
-        amtEl.classList.add("swap");
-        if (!(await sleep(reduced ? 0 : 200, t))) return;
-        amtEl.textContent = sc.pill;
-        amtEl.classList.remove("swap");
+        const caret = document.createElement("span");
+        caret.className = "caret";
+        amtEl.textContent = "";
+        amtEl.appendChild(caret);
+        for (const ch of sc.pill) {
+          if (!(await sleep(reduced ? 0 : 110, t))) return;
+          caret.before(document.createTextNode(ch));
+        }
+        if (!(await sleep(reduced ? 0 : 260, t))) return;
+        caret.remove();
       }
       chat.innerHTML = "";
       nodes.forEach((n) => { n.dot.className = "dot"; n.label.className = "mlabel"; n.label.textContent = n.p.name; });
