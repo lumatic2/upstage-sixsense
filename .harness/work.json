@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "active_work_id": "dr1-data-pipeline",
+  "active_work_id": "dr2-personal-service",
   "works": {
     "m2-parse-poc": {
       "work_id": "m2-parse-poc",
@@ -215,6 +215,67 @@
       "updated_at": "2026-07-19",
       "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation.",
       "completion_summary": "실데이터 파이프라인이 가동됐습니다 — 실사진 5개 식당의 메뉴 76개와 학식 식단이 팀 시트에 쌓이고 좌표까지 자동으로 채워져, 배포된 검증 페이지 검색에서 실데이터가 나옵니다."
+    },
+    "dr2-personal-service": {
+      "work_id": "dr2-personal-service",
+      "horizon_id": "demoday-run",
+      "milestone_id": "DR2",
+      "status": "active",
+      "plan_path": "plans/2026-07-19-dr2-personal-service.md",
+      "changeset_path": "public",
+      "next_step": "step-1",
+      "current_step": "step-1",
+      "steps": [
+        {
+          "id": "step-1",
+          "label": "step-1 UI 스캐폴딩·핵심 화면 (askewly design system)",
+          "status": "pending"
+        },
+        {
+          "id": "step-2",
+          "label": "step-2 추천 루프 완결 (예산→구조화→통합 필터→추천+이유)",
+          "status": "pending"
+        },
+        {
+          "id": "step-3",
+          "label": "step-3 Upstage 심화 적용 (Groundedness Check + Parse 파라미터 명시화)",
+          "status": "pending"
+        },
+        {
+          "id": "step-4",
+          "label": "step-4 검증 가시화 + 시연 smoke",
+          "status": "pending"
+        },
+        {
+          "id": "step-5",
+          "label": "step-5 dogfood·polish (사용자 전결)",
+          "status": "pending"
+        }
+      ],
+      "execution_mode": "continuous",
+      "approval": {
+        "approved_by": "user",
+        "approved_at": "2026-07-19",
+        "plan_sha256": "9296f31971c3b9ab902ec73520fc545fca4d423c864e12098bc4444eadeca7ad"
+      },
+      "allowed_stop_reasons": [
+        "completed",
+        "blocked",
+        "decision_required",
+        "risk_gate",
+        "secret_required",
+        "external_authority_required",
+        "user_stopped"
+      ],
+      "stop_reason": null,
+      "stop_detail": {},
+      "session_ids": [
+        "codex:bc7f5533-d351-4bcd-97e0-17cdd4bbe395",
+        "claude:bc7f5533-d351-4bcd-97e0-17cdd4bbe395"
+      ],
+      "owner_session_uuid": "claude:bc7f5533-d351-4bcd-97e0-17cdd4bbe395",
+      "updated_at": "2026-07-19",
+      "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation."
     }
   }
 }

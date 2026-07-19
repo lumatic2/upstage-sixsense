@@ -24,7 +24,7 @@
 
 - Completed at: 2026-07-19
 - Summary: 실데이터 파이프라인 가동 — 식당5·메뉴76·학식4·좌표5/5, 스테이징 E2E 실측
-<!-- harness:milestone id="DR2" status="pending" priority="P0" evidence="plans/2026-07-19-dr2-personal-service.md" -->
+<!-- harness:milestone id="DR2" status="active" priority="P0" evidence="plans/2026-07-19-dr2-personal-service.md" -->
 ### DR2 — 개인 버전 웹서비스 빌드 (Upstage 심화 + 인터랙티브 데모)
 - DoD: 배포 URL 심사 시연 시나리오(예산→실데이터 추천+이유+Groundedness 배지) Playwright smoke PASS + `verification/matrix.md` 가시화
 - Evidence: `plans/2026-07-19-dr2-personal-service.md` + smoke 결과·스크린샷
