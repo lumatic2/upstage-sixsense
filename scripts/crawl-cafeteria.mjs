@@ -6,11 +6,14 @@
  *  학식에 Document Parse 를 쓰지 않는 이유: 이미 구조화된 HTML (ADR-0001 — 억지 적용 금지).
  *
  *  사용법:
- *    node scripts/crawl-cafeteria.mjs [--date YYYY-MM-DD] [--out db/fixtures/cafeteria-sample.json]
+ *    node scripts/crawl-cafeteria.mjs [--date YYYY-MM-DD] [--out db/fixtures/cafeteria-sample.json] [--to-sheet]
  *  출력: { status: "ok"|"empty", crawledAt, records: [{campus, cafeteria, corner, date, meal, items, price}] }
  *  빈 식단(방학·주말)은 에러가 아니라 status:"empty" — 호출측이 구분한다.
+ *  --to-sheet: 구글 시트 [학식]탭에 append (DR1 step-3). 기존 행(날짜|식당|코너|메뉴 키)과
+ *  중복되는 레코드는 스킵(멱등), 0건이어도 크래시 없이 정상 종료.
  */
 import fs from "node:fs";
+import { gwsSheets, SPREADSHEET_ID } from "./_lib/gws.mjs";
 
 const BASE = "https://www.skku.edu/skku/campus/support/welfare_11.do";
 // welfare_11.do 목록 페이지의 a.cafeteriaBtn data-* 를 그대로 옮김 (식당명은 응답 h6 에서 파싱)
@@ -101,4 +104,21 @@ if (isMain) {
   const json = JSON.stringify(out, null, 2);
   if (outArg) fs.writeFileSync(outArg, json);
   console.log(outArg ? `saved ${records.length} records -> ${outArg}` : json);
+
+  if (args.includes("--to-sheet")) {
+    // [학식] 헤더: 날짜 | 식당 | 코너 | 메뉴 | 가격(원)
+    const existing = gwsSheets({ spreadsheetId: SPREADSHEET_ID, range: "학식!A2:E1000" }, null, "spreadsheets values get");
+    const seenKeys = new Set((existing.values ?? []).map((r) => `${r[0]}|${r[1]}|${r[2] ?? ""}|${r[3] ?? ""}`));
+    const rows = records
+      .map((r) => [r.menu_date, r.cafeteria, r.corner ?? "", r.items.join(", "), r.price ?? ""])
+      .filter((row) => !seenKeys.has(`${row[0]}|${row[1]}|${row[2]}|${row[3]}`));
+    if (rows.length) {
+      gwsSheets(
+        { spreadsheetId: SPREADSHEET_ID, range: "학식!A:E", valueInputOption: "USER_ENTERED" },
+        { values: rows },
+        "spreadsheets values append"
+      );
+    }
+    console.log(`[학식]탭 적재: 신규 ${rows.length}행 (중복 스킵 ${records.length - rows.length})`);
+  }
 }
