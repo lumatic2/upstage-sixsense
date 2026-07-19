@@ -2,5 +2,10 @@
   "name": "upstage-sixsense",
   "private": true,
   "type": "module",
-  "engines": { "node": ">=18" }
+  "engines": {
+    "node": ">=18"
+  },
+  "devDependencies": {
+    "playwright": "^1.61.1"
+  }
 }
