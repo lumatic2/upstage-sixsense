@@ -101,6 +101,59 @@
 /* 마무리 CTA — 레퍼런스 §6 */
 .closing .card{text-align:center}
 .closing .card .btn{margin-top:var(--s6)}
+
+/* ── 공통: 칩 줄 ── */
+.chiprow{display:flex;flex-wrap:wrap;gap:var(--s2);justify-content:center;margin-top:var(--s6)}
+.chip{
+  height:36px;padding:0 14px;border-radius:var(--r);border:1px solid var(--border);
+  background:transparent;color:var(--fg);font:inherit;font-size:var(--sm);cursor:pointer;
+  transition:background 180ms ease-out,border-color 180ms ease-out;
+}
+.chip:hover{border-color:var(--fg)}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.band-ink .chip{border-color:rgba(247,249,252,.24);color:var(--band-ink-fg)}
+
+/* ── §왜 필요한가: 같은 질문, 두 개의 답 ── */
+.ask-panels{display:grid;gap:var(--s6);grid-template-columns:repeat(auto-fit,minmax(280px,1fr));margin-top:var(--s8);text-align:left}
+.ask-panels .card{min-height:168px}
+.ask-panels .who{font-size:var(--sm);color:var(--muted);margin-bottom:var(--s3)}
+.ask-answer{font-size:var(--lg);line-height:1.6}
+.ask-answer .p{color:var(--accent)}
+.ask-meta{margin-top:var(--s4);font-size:var(--sm);color:var(--muted)}
+.ask-panels .card.mark{outline:2px solid var(--accent)}
+.footnote{margin-top:var(--s6);font-size:var(--sm);color:var(--muted)}
+
+/* ── §어떻게 동작하나: 스테퍼 ── */
+.stepper{margin-top:var(--s12);text-align:left}
+.step-tabs{display:grid;gap:var(--s3);grid-template-columns:repeat(auto-fit,minmax(220px,1fr));list-style:none;margin:0;padding:0}
+.step-tab{
+  width:100%;text-align:left;background:transparent;border:1px solid rgba(247,249,252,.18);
+  border-radius:var(--r);color:inherit;font:inherit;padding:var(--s4);cursor:pointer;
+  transition:border-color 180ms ease-out,background 180ms ease-out;
+}
+.step-tab:hover{border-color:rgba(247,249,252,.4)}
+.step-tab[aria-selected="true"]{border-color:var(--accent);background:rgba(224,138,95,.12)}
+.step-tab .n{font-family:var(--font-head);color:#E08A5F;margin-right:var(--s2)}
+.step-tab .t{font-family:var(--font-head)}
+.step-tab .d{display:block;font-size:var(--sm);color:var(--band-ink-muted);margin-top:var(--s2)}
+.step-panel{margin-top:var(--s6);min-height:230px}
+.rowlist{width:100%;border-collapse:collapse;font-size:var(--sm)}
+.rowlist th{text-align:left;font-weight:500;color:var(--band-ink-muted);padding:6px 8px;border-bottom:1px solid rgba(247,249,252,.14)}
+.rowlist td{padding:6px 8px;border-bottom:1px solid rgba(247,249,252,.08)}
+.rowlist td.p{color:#E08A5F;text-align:right;white-space:nowrap}
+.rowlist tr{opacity:0;animation:rowin 320ms ease-out forwards}
+@keyframes rowin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+.taglist{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s4)}
+.taglist span{border:1px solid rgba(247,249,252,.2);border-radius:999px;padding:2px 10px;font-size:var(--sm)}
+
+/* ── §지금 예산 넣어보세요: 실제로 도는 미니 검색 ── */
+.mini-results{margin-top:var(--s8);display:grid;gap:var(--s4);grid-template-columns:repeat(auto-fit,minmax(240px,1fr));text-align:left}
+.mini-results .card{padding:var(--s6)}
+.mini-results h3{font-size:var(--base);font-family:var(--font-body);font-weight:500}
+.mini-results ul{list-style:none;margin:var(--s3) 0 0;padding:0;font-size:var(--sm)}
+.mini-results li{display:flex;justify-content:space-between;gap:var(--s3);padding:3px 0;color:var(--muted)}
+.mini-results li .p{color:var(--accent)}
+.mini-empty{grid-column:1/-1;color:var(--muted)}
 </style>
 </head>
 <body>
@@ -170,7 +223,23 @@
       <p class="eyebrow">왜 필요한가</p>
       <h2>가격은 메뉴판 사진 속에만 있습니다</h2>
       <p class="lead">지도 앱에는 식당은 있어도 가격이 없고, 학식은 매일 바뀝니다. 그래서 "만원으로 뭘 먹지"에 답하는 서비스가 없었습니다.</p>
-      <div class="compare" style="margin-top:var(--s8)">
+      <p class="footnote" style="margin-top:var(--s8)">아래 메뉴를 눌러보세요 — 같은 질문에 두 답이 어떻게 갈리는지 보입니다.</p>
+      <div class="chiprow" id="askChips"></div>
+      <div class="ask-panels">
+        <div class="card">
+          <p class="who">범용 챗봇에게 물으면</p>
+          <p class="ask-answer" id="askBot">메뉴를 고르면 답이 나타납니다.</p>
+          <p class="ask-meta" id="askBotMeta"></p>
+        </div>
+        <div class="card mark">
+          <p class="who">한입지도에게 물으면</p>
+          <p class="ask-answer" id="askUs">메뉴를 고르면 답이 나타납니다.</p>
+          <p class="ask-meta" id="askUsMeta"></p>
+        </div>
+      </div>
+      <p class="footnote">※ 왼쪽은 특정 챗봇의 실제 응답을 인용한 것이 아니라, 그 가격이 웹 어디에도 공개된 적이 없어 답할 수 없다는 구조적 한계를 나타낸 것입니다.</p>
+
+      <div class="compare" style="margin-top:var(--s16)">
         <div class="card">
           <h3>범용 챗봇에게 물으면</h3>
           <ul class="muted">
@@ -195,19 +264,19 @@
     <div class="container centered">
       <p class="eyebrow">어떻게 동작하나</p>
       <h2>사진 한 장이 가격 데이터가 되기까지</h2>
-      <div class="grid steps" style="margin-top:var(--s12)">
-        <div class="card">
-          <h3>메뉴판을 모읍니다</h3>
-          <p class="muted">명륜동·혜화 식당의 메뉴판 사진을 모아 한 곳에 쌓습니다.</p>
-        </div>
-        <div class="card">
-          <h3>가격을 꺼냅니다</h3>
-          <p class="muted">Upstage Document Parse로 메뉴명과 가격을 읽고, 사람이 검수해 확정합니다.</p>
-        </div>
-        <div class="card">
-          <h3>예산으로 고릅니다</h3>
-          <p class="muted">학식과 식당을 같은 판에 올리고, 추천 이유까지 데이터로 검증해 보여줍니다.</p>
-        </div>
+      <div class="stepper">
+        <ol class="step-tabs" id="stepTabs" role="tablist">
+          <li><button class="step-tab" role="tab" data-step="0" aria-selected="true">
+            <span class="n">1</span><span class="t">메뉴판을 모읍니다</span>
+            <span class="d">명륜동·혜화를 직접 돌며 메뉴판을 찍어 한 곳에 쌓습니다.</span></button></li>
+          <li><button class="step-tab" role="tab" data-step="1" aria-selected="false">
+            <span class="n">2</span><span class="t">가격을 꺼냅니다</span>
+            <span class="d">Upstage Document Parse가 읽고, 사람이 검수해 확정합니다.</span></button></li>
+          <li><button class="step-tab" role="tab" data-step="2" aria-selected="false">
+            <span class="n">3</span><span class="t">고르고, 검증합니다</span>
+            <span class="d">예산에 맞춰 고른 뒤 추천 이유가 데이터에 근거했는지 판정합니다.</span></button></li>
+        </ol>
+        <div class="card step-panel" id="stepPanel" role="tabpanel" aria-live="polite"></div>
       </div>
     </div>
   </section>
@@ -215,19 +284,17 @@
   <section class="closing">
     <div class="container centered">
       <h2>지금 예산을 넣어보세요</h2>
-      <div class="grid" style="margin-top:var(--s12)">
-        <div class="card">
-          <svg class="icon" style="width:28px;height:28px" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-          <h3 style="margin-top:var(--s4)">서비스 열기</h3>
-          <p class="muted">예산·조건을 넣으면 학식과 식당을 한 판에 올려 3곳을 골라줍니다.</p>
-          <a class="btn" href="/app.html">예산 넣고 바로 보기</a>
-        </div>
-        <div class="card">
-          <svg class="icon" style="width:28px;height:28px" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M4 9h16M9 9v10"/></svg>
-          <h3 style="margin-top:var(--s4)">파이프라인 보기</h3>
-          <p class="muted">사진에서 가격을 꺼내 검수하고 검증까지 붙인 과정을 그대로 공개합니다.</p>
-          <a class="btn tint" href="/about.html">어떻게 만들었나</a>
-        </div>
+      <p class="lead">여기서 바로 걸러집니다. 아래 결과는 지금 데이터베이스에 있는 진짜 메뉴입니다.</p>
+      <div class="chiprow" id="miniChips">
+        <button class="chip" type="button" data-budget="5000" aria-pressed="false">5천원 이하</button>
+        <button class="chip" type="button" data-budget="8000" aria-pressed="true">8천원 이하</button>
+        <button class="chip" type="button" data-budget="10000" aria-pressed="false">1만원 이하</button>
+        <button class="chip" type="button" data-budget="20000" aria-pressed="false">2만원 이하</button>
+      </div>
+      <div class="mini-results" id="miniResults"></div>
+      <div class="cta-row">
+        <a class="btn" id="miniGo" href="/app.html?budget=8000">이 조건 그대로 서비스에서 열기</a>
+        <a class="btn tint" href="/about.html">어떻게 만들었나</a>
       </div>
     </div>
   </section>
@@ -247,12 +314,28 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
 
 const won = (n) => n.toLocaleString("ko-KR") + "원";
 
+/* 파싱 노이즈 거르기 — 시트 검수 전이라 광고 문구·옵션 행이 섞여 있다.
+   랜딩에서 앞세우는 문구는 사람이 읽어도 메뉴로 보이는 행만 쓴다. */
+const isCleanMenu = (m) =>
+  m.price >= 1000 && m.price <= 50000 && m.price % 100 === 0 &&
+  m.name && m.name.length <= 12 &&
+  !/[!?]|추가|Since|Set\s*[A-Z]|세트\s*[A-Z]/i.test(m.name);
+
+/* OCR 이 한 글자씩 띄워 읽은 이름 복원 ("쫄 면" → "쫄면"). 모든 토큰이 1글자일 때만 — 표시용 정규화이고 원본 시트는 건드리지 않는다. */
+const menuLabel = (name) => {
+  const t = String(name).trim().split(/\s+/);
+  return t.length > 1 && t.every((x) => [...x].length === 1) ? t.join("") : name;
+};
+
 fetch("/api/data").then((r) => r.json()).then((d) => {
   document.getElementById("nRest").textContent = d.restaurants.length;
   document.getElementById("nMenu").textContent = d.menus.length;
   document.getElementById("nCaf").textContent = d.cafeteria.length;
   buildMarquee(d.menus);
   startDemo(d);
+  startAsk(d);
+  startStepper(d);
+  startMini(d);
 }).catch(() => {
   document.getElementById("proof").innerHTML = '<span class="muted small">데이터를 불러오지 못했습니다 — 서비스 페이지에서 다시 시도해 주세요.</span>';
   document.getElementById("demoResult").textContent = "데모 데이터를 불러오지 못했습니다.";
@@ -260,11 +343,137 @@ fetch("/api/data").then((r) => r.json()).then((d) => {
 
 /* ── 메뉴·가격 마퀴 (실제 파싱 결과) ── */
 function buildMarquee(menus) {
-  const items = menus.filter((m) => m.price > 0).slice(0, 40);
+  const items = menus.filter(isCleanMenu).slice(0, 40);
   if (!items.length) return;
   const html = items.map((m) =>
-    `<span class="item"><span>${m.name}</span><span class="p">${won(m.price)}</span></span>`).join("");
+    `<span class="item"><span>${menuLabel(m.name)}</span><span class="p">${won(m.price)}</span></span>`).join("");
   document.getElementById("marquee").innerHTML = html + html; // 절반 지점에서 이어붙어 무한 루프
+}
+
+/* ── §왜 필요한가: 같은 질문, 두 개의 답 ── */
+function startAsk(data) {
+  const chips = document.getElementById("askChips");
+  const bot = document.getElementById("askBot"), botMeta = document.getElementById("askBotMeta");
+  const us = document.getElementById("askUs"), usMeta = document.getElementById("askUsMeta");
+  // 식당마다 하나씩, 가격이 확정된 메뉴만
+  const seen = new Set();
+  const picks = data.menus.filter((m) => {
+    if (!isCleanMenu(m) || seen.has(m.restaurant_id)) return false;
+    seen.add(m.restaurant_id); return true;
+  }).slice(0, 6);
+  if (!picks.length) return;
+
+  chips.innerHTML = picks.map((m, i) =>
+    `<button class="chip" type="button" data-i="${i}" aria-pressed="${i === 0}">${menuLabel(m.name)}</button>`).join("");
+
+  let timer = null;
+  const show = (i) => {
+    const m = picks[i];
+    chips.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", String(Number(c.dataset.i) === i)));
+    bot.textContent = `"${menuLabel(m.name)}" 가격은 알 수 없습니다.`;
+    botMeta.textContent = "이 가격은 웹에 공개된 적이 없습니다 — 메뉴판 사진 속에만 있습니다.";
+    us.innerHTML = `${m.restaurant_name} · <span class="p">${won(m.price)}</span>`;
+    usMeta.textContent = `출처: ${m.source || "사진파싱"} · 검수 ${m.review || "대기"}`;
+  };
+  chips.addEventListener("click", (e) => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    clearInterval(timer); timer = null;
+    show(Number(b.dataset.i));
+  });
+  show(0);
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    let i = 0;
+    timer = setInterval(() => { i = (i + 1) % picks.length; show(i); }, 3400);
+  }
+}
+
+/* ── §어떻게 동작하나: 3단계 스테퍼 ── */
+function startStepper(data) {
+  const tabs = document.getElementById("stepTabs");
+  const panel = document.getElementById("stepPanel");
+  const shots = new Set(data.restaurants.map((r) => r.shot_date).filter(Boolean));
+  const rows = data.menus.filter(isCleanMenu).slice(0, 6);
+
+  const views = [
+    () => `<p class="muted">수집 현황</p>
+      <div class="taglist">
+        <span>식당 ${data.restaurants.length}곳</span>
+        <span>수집일 ${[...shots].sort().join(" · ") || "—"}</span>
+        <span>수집자 ${[...new Set(data.restaurants.map((r) => r.collector).filter(Boolean))].join(", ") || "팀"}</span>
+      </div>
+      <p style="margin-top:var(--s6)">${data.restaurants.map((r) => r.name).join(" · ")}</p>
+      <p class="ask-meta">메뉴판 원본 사진은 팀 결정에 따라 공개하지 않습니다 — 여기 보이는 것은 사진에서 뽑아낸 데이터입니다.</p>`,
+    () => `<p class="muted">Upstage Document Parse 결과 (실제 적재된 행)</p>
+      <table class="rowlist"><thead><tr><th>식당</th><th>메뉴</th><th>출처</th><th style="text-align:right">가격</th></tr></thead>
+      <tbody>${rows.map((m, i) =>
+        `<tr style="animation-delay:${i * 80}ms"><td>${m.restaurant_name}</td><td>${menuLabel(m.name)}</td><td>${m.source || "사진파싱"}</td><td class="p">${won(m.price)}</td></tr>`).join("")}
+      </tbody></table>
+      <p class="ask-meta">가격이 0원이거나 10만원을 넘으면 자동으로 "가격확인필요"로 표시하고 사람이 확인합니다.</p>`,
+    () => `<p class="muted">추천 이유는 생성한 모델이 스스로 채점하지 않습니다</p>
+      <div class="taglist">
+        <span>① solar-pro2 — 전달한 데이터만으로 이유를 씁니다</span>
+        <span>② solar-mini — 그 이유가 데이터에 근거했는지 독립 판정</span>
+        <span>③ 근거 미달이면 데이터 팩트 문장으로 교체</span>
+      </div>
+      <p style="margin-top:var(--s6)">그래서 서비스 화면의 배지는 <strong>"Solar 생성 · 근거 검증됨"</strong> 또는 <strong>"근거 미달 판정 → 데이터 팩트로 교체"</strong> 둘 중 하나로 정직하게 표시됩니다.</p>
+      <p class="ask-meta">생성과 검증에 다른 모델을 쓰는 이유: 같은 모델이 자기 답을 채점하면 통과율이 올라가도 그게 근거가 되지는 않습니다.</p>`,
+  ];
+
+  let timer = null, cur = -1;
+  const show = (i) => {
+    if (i === cur) return;
+    cur = i;
+    tabs.querySelectorAll(".step-tab").forEach((t) => t.setAttribute("aria-selected", String(Number(t.dataset.step) === i)));
+    panel.innerHTML = views[i]();
+  };
+  tabs.addEventListener("click", (e) => {
+    const b = e.target.closest(".step-tab"); if (!b) return;
+    clearInterval(timer); timer = null;
+    show(Number(b.dataset.step));
+  });
+  show(0);
+  if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    timer = setInterval(() => show((cur + 1) % views.length), 5200);
+  }
+}
+
+/* ── §지금 예산 넣어보세요: 실제로 거르는 미니 검색 ── */
+function startMini(data) {
+  const chips = document.getElementById("miniChips");
+  const out = document.getElementById("miniResults");
+  const go = document.getElementById("miniGo");
+
+  const render = (budget) => {
+    const hits = data.restaurants.map((r) => {
+      const ms = data.menus
+        .filter((m) => m.restaurant_id === r.id && isCleanMenu(m) && m.price <= budget)
+        .sort((a, b) => a.price - b.price);
+      return ms.length ? { r, ms } : null;
+    }).filter(Boolean).slice(0, 3);
+
+    const caf = data.cafeteria.filter((c) => !c.price || c.price <= budget)[0];
+    const cards = hits.map(({ r, ms }) => `
+      <div class="card">
+        <h3>${r.name}</h3>
+        <p class="small muted">${r.category || ""}</p>
+        <ul>${ms.slice(0, 3).map((m) => `<li><span>${menuLabel(m.name)}</span><span class="p">${won(m.price)}</span></li>`).join("")}</ul>
+      </div>`);
+    if (caf) cards.push(`
+      <div class="card">
+        <h3>학식 · ${caf.cafeteria}</h3>
+        <p class="small muted">${caf.menu_date}</p>
+        <ul><li><span>${caf.items.slice(0, 3).join(", ")}${caf.items.length > 3 ? " 외" : ""}</span><span class="p">${caf.price ? won(caf.price) : ""}</span></li></ul>
+      </div>`);
+    out.innerHTML = cards.join("") || `<p class="mini-empty">${won(budget)} 이하로 담기는 메뉴가 아직 없습니다 — 예산을 올려보세요.</p>`;
+    go.href = `/app.html?budget=${budget}`;
+  };
+
+  chips.addEventListener("click", (e) => {
+    const b = e.target.closest(".chip"); if (!b) return;
+    chips.querySelectorAll(".chip").forEach((c) => c.setAttribute("aria-pressed", String(c === b)));
+    render(Number(b.dataset.budget));
+  });
+  render(8000);
 }
 
 /* ── 인터랙티브 데모 ── */
@@ -351,7 +560,7 @@ function startDemo(data) {
       // 2) 후보 탐색 — 예산 안에 드는 메뉴가 있는 식당만
       const cands = nodes
         .map((n) => {
-          const ms = data.menus.filter((m) => m.restaurant_id === n.p.id && m.price > 0 && m.price <= sc.budget);
+          const ms = data.menus.filter((m) => m.restaurant_id === n.p.id && isCleanMenu(m) && m.price <= sc.budget);
           if (!ms.length) return null;
           const best = ms.reduce((a, b) => (b.price > a.price ? b : a)); // 예산을 가장 잘 쓰는 메뉴
           return { ...n, menu: best, count: ms.length };
@@ -367,7 +576,7 @@ function startDemo(data) {
         agent.style.left = c.c.x + "%"; agent.style.top = c.c.y + "%";
         if (!(await sleep(reduced ? 0 : 760, t))) return;
         c.dot.className = "dot on";
-        c.pop.innerHTML = `<b>${c.p.name}</b><span>${c.menu.name} </span><span class="p">${won(c.menu.price)}</span>`;
+        c.pop.innerHTML = `<b>${c.p.name}</b><span>${menuLabel(c.menu.name)} </span><span class="p">${won(c.menu.price)}</span>`;
         c.pop.className = "pop show";
         if (!(await sleep(reduced ? 0 : 420, t))) return;
       }
@@ -376,7 +585,7 @@ function startDemo(data) {
       const best = cands.reduce((a, b) => (b.menu.price > a.menu.price ? b : a));
       agent.style.left = best.c.x + "%"; agent.style.top = best.c.y + "%";
       best.pop.className = "pop show best";
-      resEl.innerHTML = `<span class="badge">선택</span> <strong>${best.p.name}</strong> · ${best.menu.name} ${won(best.menu.price)} — ${won(sc.budget)} 예산을 가장 잘 쓰는 조합`;
+      resEl.innerHTML = `<span class="badge">선택</span> <strong>${best.p.name}</strong> · ${menuLabel(best.menu.name)} ${won(best.menu.price)} — ${won(sc.budget)} 예산을 가장 잘 쓰는 조합`;
       if (!(await sleep(reduced ? 4000 : 2800, t))) return;
       idx = (idx + 1) % SCENARIOS.length;
     }

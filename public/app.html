@@ -135,6 +135,21 @@ async function loadData() {
   catch { DATA = { restaurants: [], menus: [], cafeteria: [], source: "none" }; }
   $("#dataNote").textContent = `식당 ${DATA.restaurants.length} · 메뉴 ${DATA.menus.length} · 학식 ${DATA.cafeteria.length}`;
   render(); renderMarkers();
+  applyUrlQuery();
+}
+
+/* 랜딩에서 넘어온 조건 이어받기 — /app.html?q=...&budget=8000 */
+function applyUrlQuery() {
+  const u = new URLSearchParams(location.search);
+  const q = u.get("q"), b = Number(u.get("budget"));
+  if (q) $("#q").value = q;
+  if (b > 0) {
+    state = { budget: b, walkMax: null, tags: [] };
+    $("#parsed").textContent = `조건: 예산 ${b.toLocaleString()}원 이하`;
+    syncChips(); render(); renderMarkers(); loadPicks();
+  } else if (q) {
+    $("#searchForm").requestSubmit();
+  }
 }
 
 async function loadMap() {

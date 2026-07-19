@@ -120,7 +120,7 @@ section{padding:var(--s16) 0}
 /* 섹션 밴드 */
 .band-warm{background:var(--band-warm)}
 .band-ink{background:var(--band-ink);color:var(--band-ink-fg)}
-.band-ink .muted,.band-ink .lead{color:var(--band-ink-muted)}
+.band-ink .muted,.band-ink .lead,.band-ink .ask-meta,.band-ink .footnote,.band-ink .small{color:var(--band-ink-muted)}
 .band-ink .card{background:rgba(247,249,252,.06)}
 .band-ink .eyebrow{color:#E08A5F}
 /* 중앙 정렬 섹션 (레퍼런스 히어로·3카드) */
