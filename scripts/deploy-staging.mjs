@@ -72,6 +72,7 @@ const FILES = [
   "public/img/upstage-symbol.svg",
   "public/img/upstage-logo.png",
   "public/img/og.png",
+  "public/favicon.ico",
   "public/img/about-1.jpg",
   "public/img/about-2.jpg",
 ];

@@ -11,7 +11,8 @@
 <meta property="og:url" content="https://sixsense.askewly.com/">
 <meta property="og:type" content="website">
 <meta name="twitter:card" content="summary_large_image">
-<link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
+<link rel="icon" type="image/svg+xml" href="/img/favicon.svg?v=2">
+<link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="48x48">
 <link rel="stylesheet" href="/theme.css">
 <style>
 /* 히어로 — 레퍼런스(notion-product) 구조 차용: 완전 중앙 정렬 · 초대형 헤딩 + 알약 강조
@@ -31,14 +32,17 @@
 .hero h1{font-size:clamp(38px,8vw,88px);line-height:1.12;max-width:13ch;margin:0 auto}
 .hero .lead{margin:var(--s6) auto 0;max-width:44ch}
 .cta-row{display:flex;gap:var(--s3);justify-content:center;margin-top:var(--s8);flex-wrap:wrap}
-/* 금액 자리 — 폭을 미리 확보해 문구가 흔들리지 않게 (알약 제거) */
-.amt{display:inline-block;width:3.3em;text-align:center;color:var(--accent)}
+/* 금액 자리 — 폭을 미리 확보해 문구가 흔들리지 않게 (알약 제거). "1만원"(숫자+한글 2자) 기준 타이트하게 */
+.amt{display:inline-block;width:2.6em;margin:0 .08em;text-align:center;color:var(--accent)}
 /* 캐럿이 라인박스를 키우지 않게 — 캡하이트보다 낮게, 베이스라인 정렬 (흔들림 방지) */
 .amt .caret{width:.06em;height:.74em;vertical-align:0;background:var(--accent)}
+/* 물음표 — "먹지"와 살짝 띄우고, 상시 가벼운 플로팅 + 타이핑 직후 위글 */
+.qm-float{display:inline-block;margin-left:.09em;animation:qfloat 3.2s ease-in-out infinite}
+@keyframes qfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-.06em)}}
 .qm{display:inline-block;transform-origin:60% 80%}
 .qm.wiggle{animation:wig 520ms ease-in-out}
 @keyframes wig{25%{transform:rotate(-10deg)}70%{transform:rotate(9deg)}100%{transform:none}}
-@media (prefers-reduced-motion: reduce){.qm.wiggle{animation:none}}
+@media (prefers-reduced-motion: reduce){.qm.wiggle{animation:none}.qm-float{animation:none}}
 .lead-brand{display:flex;align-items:center;justify-content:center;gap:.4em;flex-wrap:wrap}
 .uplogo{height:1.5em;display:block;transform:translateY(1px)}
 
@@ -168,6 +172,11 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 .bubble.muted-a{color:var(--muted)}
 .bubble.answer-a b{color:var(--accent);font-weight:500}
 .bubble .src{display:block;font-size:12px;color:var(--muted);margin-top:4px}
+/* 질문이 먼저 뜨고 답이 따라 뜨는 순차 등장 — 순환 시 JS 가 애니메이션을 리셋해 재생 */
+.duo-visual .bubble{animation:bubin 420ms ease-out both}
+.duo-visual .bubble.a{animation-delay:480ms}
+@keyframes bubin{from{opacity:0;transform:translateY(10px) scale(.97)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.duo-visual .bubble{animation:none}}
 .footnote{margin-top:var(--s6);font-size:var(--sm);color:var(--muted)}
 
 /* ── §어떻게 동작하나: 스테퍼 ── */
@@ -230,7 +239,7 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 <main>
   <section class="hero">
     <div class="container inner">
-      <h1>오늘 <span class="nowrap"><span class="amt"><span id="budgetText">만원</span><span class="caret" aria-hidden="true"></span></span>으로</span> 뭐 먹지<span class="qm" id="qMark">?</span></h1>
+      <h1>오늘<span class="nowrap"><span class="amt"><span id="budgetText">1만원</span><span class="caret" aria-hidden="true"></span></span>으로</span> 뭐 먹지<span class="qm-float"><span class="qm" id="qMark">?</span></span></h1>
       <p class="lead lead-brand"><img class="uplogo" src="/img/upstage-logo.png" alt="Upstage"> <span>AI와 함께 최적의 한 끼를 선택해보세요.</span></p>
       <div class="cta-row">
         <a class="btn" href="/app.html">
@@ -273,25 +282,25 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 
   <section class="band-warm">
     <div class="container centered">
-      <h2 class="big">가격은 있어도,<br>계산할 데이터가 없습니다</h2>
-      <p class="lead">가격은 블로그 후기 산문 속에 흩어져 있고, 학식은 매일 바뀝니다. 흩어진 문장으로는 "만원으로 뭘 먹지"를 계산할 수 없습니다.</p>
+      <h2 class="big">같은 질문,<br>대답은 다릅니다</h2>
+      <p class="lead">범용 챗봇은 인터넷 후기를 요약해 줍니다. 한입지도는 직접 모은 메뉴판에서 꺼낸 가격으로 바로 답합니다.</p>
 
       <!-- 레퍼런스(노션 기능 카드): 흰 상단(라벨+굵은 한 줄) + 아래 비주얼 밴드. 질문은 실데이터에서 자동 순환 -->
       <div class="duo">
         <div class="duo-card">
           <div class="duo-head">
             <p class="who">범용 챗봇</p>
-            <p class="duo-line">후기를 요약할 뿐,<br>계산하지 못합니다.</p>
+            <p class="duo-line">검색해 보고,<br>확인은 나에게 미룹니다.</p>
           </div>
           <div class="duo-visual is-gray">
             <div class="bubble q" id="duoQ1">쫄면 얼마예요?</div>
-            <div class="bubble a muted-a">블로그에 4,000원이라는 후기가 있지만, 지금도 그 가격인지는 확인이 어렵습니다.</div>
+            <div class="bubble a muted-a" id="duoA1">후기마다 가격이 달라서요, 정확한 가격은 매장에 문의해 보세요.</div>
           </div>
         </div>
         <div class="duo-card">
           <div class="duo-head">
             <p class="who">한입지도</p>
-            <p class="duo-line">이번 주 메뉴판 사진에서<br>꺼낸 가격으로 답합니다.</p>
+            <p class="duo-line">이번 주 메뉴판에서<br>꺼낸 가격으로 답합니다.</p>
           </div>
           <div class="duo-visual is-warm">
             <div class="bubble q" id="duoQ2">쫄면 얼마예요?</div>
@@ -391,21 +400,24 @@ function buildMarquee(menus) {
   document.getElementById("wave1").innerHTML = rowHtml(items.slice(0, half));
   const w2 = document.getElementById("wave2");
   w2.innerHTML = rowHtml(items.slice(half));
-  w2.style.transform = "translateX(72px)";        // 반 칸 밀어 세로 교차
-  // 위상 = 실제 가로 픽셀 위치 — 두 줄이 같은 파도를 같은 방향으로 탄다
+  w2.style.transform = "translateX(72px)";  // 반 칸 밀어 세로 교차
+  // 위상 = 화면상 실제 x(getBoundingClientRect — transform 포함) — 같은 x면 윗줄·아랫줄이
+  // 같은 높이로 같이 오르내린다. offsetLeft 는 폰트 로드 전 값·transform 미포함으로 줄 간 위상이 어긋났었다.
   const phase = () => {
     const els = [...document.querySelectorAll(".waverow .wave-item")];
-    const min = Math.min(...els.map((e) => e.offsetLeft)); // 중앙 정렬로 음수가 될 수 있어 정규화
-    els.forEach((el) => { el.style.animationDelay = (-((el.offsetLeft - min) / 320)).toFixed(2) + "s"; });
+    const xs = els.map((el) => el.getBoundingClientRect().left);
+    const min = Math.min(...xs); // 중앙 정렬로 음수가 될 수 있어 정규화
+    els.forEach((el, i) => { el.style.animationDelay = (-((xs[i] - min) / 320)).toFixed(2) + "s"; });
   };
   phase();
+  document.fonts?.ready?.then(phase); // 웹폰트 적용 후 폭이 변하므로 재계산
   addEventListener("resize", phase);
 }
 
 /* ── §왜 필요한가: 듀오 카드 — 같은 질문이 두 카드에서 동시에 갈린다 (실데이터 자동 순환) ── */
 function startAsk(data) {
   const q1 = document.getElementById("duoQ1"), q2 = document.getElementById("duoQ2");
-  const a2 = document.getElementById("duoA2");
+  const a1 = document.getElementById("duoA1"), a2 = document.getElementById("duoA2");
   const seen = new Set();
   const picks = data.menus.filter((m) => {
     if (!isCleanMenu(m) || seen.has(m.restaurant_id)) return false;
@@ -416,7 +428,9 @@ function startAsk(data) {
     const m = picks[i];
     const q = `${menuLabel(m.name)} 얼마예요?`;
     q1.textContent = q; q2.textContent = q;
-    a2.innerHTML = `${m.restaurant_name} · <b>${won(m.price)}</b><span class="src">출처: ${m.source || "사진파싱"}</span>`;
+    a2.innerHTML = `${m.restaurant_name} · <b>${won(m.price)}</b>`;
+    // 등장 애니메이션 리셋 — 질문 먼저, 답이 한 박자 뒤에 (CSS bubin + delay)
+    [q1, a1, q2, a2].forEach((el) => { el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; });
   };
   show(0);
   if (!matchMedia("(prefers-reduced-motion: reduce)").matches) {
@@ -517,7 +531,7 @@ function startMini(data) {
 /* ── 인터랙티브 데모 ── */
 const SCENARIOS = [
   { q: "8천원 이하 혼밥", budget: 8000, pill: "8천원" },
-  { q: "만원으로 든든하게", budget: 10000, pill: "만원" },
+  { q: "만원으로 든든하게", budget: 10000, pill: "1만원" },
   { q: "5천원 이하 가볍게", budget: 5000, pill: "5천원" },
 ];
 
@@ -554,11 +568,18 @@ function startDemo(data) {
   };
   nodes.forEach((n, i) => { const c = pct(n.p); n.px = c.x * 8; n.py = c.y * 3; place(n, c.x + "%", c.y + "%"); });
 
-  // 라벨 겹침 해소: 위/아래 교차 배치 후에도 겹치면 숨김 (dot 는 유지, 스캔·선택 시 강제 표시)
+  // 주요 식당 5곳만 이름 카드 상시 표시 — 나머지는 포인터(dot)만 (사용자 지시 2026-07-20).
+  // "주요" = 깨끗한 메뉴 행이 많은 순 (데이터가 풍부한 곳이 데모에서 보여줄 게 많다)
+  const menuCount = (id) => data.menus.filter((m) => m.restaurant_id === id && isCleanMenu(m)).length;
+  [...nodes].sort((a, b) => menuCount(b.p.id) - menuCount(a.p.id))
+    .forEach((n, rank) => { n.major = rank < 5; });
+
+  // 라벨 겹침 해소: 주요 5곳만 위/아래 교차 배치, 그래도 겹치면 숨김 (비주요는 항상 숨김)
   function declutter() {
     const est = (n) => n.label.textContent.length * 11 + 20; // 근사 폭
     const placed = [];
     nodes.forEach((n, i) => {
+      if (!n.major) { n.label.classList.add("hid"); return; }
       n.label.classList.remove("below", "hid");
       if (i % 2 === 1) n.label.classList.add("below");
       const band = n.label.classList.contains("below") ? 1 : 0;
@@ -589,12 +610,15 @@ function startDemo(data) {
         center: new kakao.maps.LatLng((LA.min + LA.max) / 2, (LN.min + LN.max) / 2),
         level: 4, draggable: true, scrollwheel: true,
       });
-      // 좌하단 축척(250m) 표기 숨김 — 클래스가 없어 텍스트로 찾는다 (kakao 로고는 저작권 표기라 유지)
+      // 좌하단 축척(250m)·kakao 로고 숨김 (사용자 지시 2026-07-20)
       setTimeout(() => {
         document.querySelectorAll("#demoMap div").forEach((d) => {
           if (d.children.length === 0 && /^\d+\s?k?m$/.test((d.textContent || "").trim())) {
             (d.parentElement ?? d).style.display = "none";
           }
+        });
+        document.querySelectorAll("#demoMap a").forEach((a) => {
+          if (/kakao\.com/.test(a.href)) a.style.display = "none";
         });
       }, 800);
       const bounds = new kakao.maps.LatLngBounds();
@@ -651,7 +675,7 @@ function startDemo(data) {
     if ((m = q.match(/(\d+(?:\.\d+)?)\s*만/))) budget = Math.round(Number(m[1]) * 10000);
     else if ((m = q.match(/(\d+)\s*천/))) budget = Number(m[1]) * 1000;
     else if ((m = q.match(/(\d{4,6})/))) budget = Number(m[1]);
-    const pill = budget % 10000 === 0 ? `${budget / 10000}만원`.replace("1만원", "만원")
+    const pill = budget % 10000 === 0 ? `${budget / 10000}만원`
       : budget % 1000 === 0 ? `${Math.floor(budget / 1000)}천원` : `${budget.toLocaleString()}원`;
     custom = { q, budget, pill, typed: true };
     loop(++token);
@@ -674,6 +698,7 @@ function startDemo(data) {
       }
       chat.innerHTML = "";
       nodes.forEach((n) => { n.dot.className = "dot"; n.label.className = "mlabel"; n.label.textContent = n.p.name; });
+      declutter();
 
       // 1) 사용자 질문 타이핑
       const u = bubble("user", '<span class="utext"></span><span class="caret"></span>');
@@ -710,7 +735,7 @@ function startDemo(data) {
         const ok = inBudget.length > 0;
         const shown = results.length < 4;
         n.dot.className = "dot scan";
-        n.label.classList.remove("hid"); n.label.className = "mlabel scan " + (n.label.classList.contains("below") ? "below" : "");
+        if (n.major) n.label.className = "mlabel scan " + (n.label.classList.contains("below") ? "below" : "");
         if (shown) {
           const row = document.createElement("div");
           row.className = "cbrow" + (ok ? "" : " off");
@@ -724,7 +749,7 @@ function startDemo(data) {
         chat.scrollTop = chat.scrollHeight;
         if (!(await sleep(reduced ? 0 : shown ? 430 : 150, t))) return;
         n.dot.className = ok ? "dot" : "dot out";
-        n.label.className = "mlabel " + (ok ? "" : "out ") + (n.label.classList.contains("below") ? "below" : "");
+        n.label.className = "mlabel " + (n.major ? "" : "hid ") + (ok ? "" : "out ") + (n.label.classList.contains("below") ? "below" : "");
         declutter(); // 복원 직후 겹침 재평가 (hid 재적용)
         results.push({ n, menu, ok });
       }
