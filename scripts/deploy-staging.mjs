@@ -35,20 +35,18 @@ if (proj.status >= 400) {
   process.exit(1);
 }
 
-// 2) env 등록 (--set-env)
+// 2) env 등록 (--set-env) — .env 의 등록 대상 키를 전부 upsert (값 비출력)
 if (process.argv.includes("--set-env")) {
-  const env = fs.readFileSync(".env", "utf8").match(/^UPSTAGE_API_KEY=(.+)$/m)?.[1]?.trim();
-  if (!env) {
-    console.error(".env 에 UPSTAGE_API_KEY 가 없습니다");
-    process.exit(1);
+  const dotenv = fs.readFileSync(".env", "utf8");
+  const KEYS = ["UPSTAGE_API_KEY", "KAKAO_JS_KEY"];
+  for (const key of KEYS) {
+    const val = dotenv.match(new RegExp(`^${key}=(.+)$`, "m"))?.[1]?.trim();
+    if (!val) { console.log(`env 스킵: ${key} (.env 에 없음)`); continue; }
+    const r = await api("POST", `/v10/projects/${PROJECT}/env?upsert=true`, {
+      key, value: val, type: "encrypted", target: ["production", "preview"],
+    });
+    console.log(`env 등록 ${key}:`, r.status, r.body?.error?.code ?? "ok");
   }
-  const r = await api("POST", `/v10/projects/${PROJECT}/env?upsert=true`, {
-    key: "UPSTAGE_API_KEY",
-    value: env,
-    type: "encrypted",
-    target: ["production", "preview"],
-  });
-  console.log("env 등록:", r.status, r.body?.error?.code ?? "ok");
 }
 
 // 3) 파일 인라인 배포
