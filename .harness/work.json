@@ -269,7 +269,7 @@
       ],
       "stop_reason": "decision_required",
       "stop_detail": {
-        "message": "개인 버전 서비스가 배포 URL에서 시연 시나리오까지 통과했습니다. 마지막 step(도그푸드)은 사용자 전결이라, 직접 써보시고 고칠 점(fix)/기각(reject)/보류(defer)를 알려주시면 반영 후 DR2를 닫습니다."
+        "message": "개인 버전이 새 디자인(캠퍼스 팝) 3페이지로 sixsense.askewly.com 에 올라갔습니다. 눈으로 보시고 고칠 점을 알려주시면 반영 후 DR2를 닫습니다."
       },
       "session_ids": [
         "codex:bc7f5533-d351-4bcd-97e0-17cdd4bbe395",
