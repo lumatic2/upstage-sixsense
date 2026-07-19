@@ -81,6 +81,7 @@ header .sub{color:var(--text-muted);font-size:var(--text-sm);margin-top:var(--sp
   height:380px;display:flex;align-items:center;justify-content:center;
   color:var(--text-muted);background:var(--surface-muted);text-align:center;padding:var(--space-4);
 }
+.map-empty[hidden]{display:none}  /* hidden 속성이 display:flex 에 밀리지 않도록 */
 /* ── results ── */
 .results{padding:var(--space-8) 0 var(--space-16)}
 .card{
@@ -204,13 +205,18 @@ async function loadMap() {
 function renderMarkers() {
   if (!MAP || !window.kakao) return;
   MARKERS.forEach((m) => m.setMap(null)); MARKERS = [];
+  const bounds = new kakao.maps.LatLngBounds();
+  let any = false;
   for (const r of visibleRestaurants()) {
     if (!r.lat || !r.lng) continue;
-    const marker = new kakao.maps.Marker({ map: MAP, position: new kakao.maps.LatLng(r.lat, r.lng), title: r.name });
+    const pos = new kakao.maps.LatLng(r.lat, r.lng);
+    const marker = new kakao.maps.Marker({ map: MAP, position: pos, title: r.name });
     const iw = new kakao.maps.InfoWindow({ content: `<div style="padding:4px 8px;font-size:13px">${r.name}</div>` });
     kakao.maps.event.addListener(marker, "click", () => iw.open(MAP, marker));
     MARKERS.push(marker);
+    bounds.extend(pos); any = true;
   }
+  if (any) MAP.setBounds(bounds); // 결과가 전부 보이도록 — 필터 바뀔 때마다 재조정
 }
 
 /* ── 검색 ── */

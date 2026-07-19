@@ -81,3 +81,4 @@ Status: approved
 - 지도 제공자: 카카오맵 JS 확정 (2026-07-19 사용자 — ADR-0002. Naver ID 미발급 실측, 지오코딩과 공급자 일관. 키는 KAKAO_JS_KEY env→/api/config 런타임 주입, 도메인 등록은 사용자)
 - 2026-07-19 step-3: 전용 groundedness-check 모델 제공 종료 실측(/v1/models) → solar-mini 독립 판정자로 같은 계약 구현(사용자 추인 대기 — 억지 적용 아님·정직 서사는 presentation 메모). 실관측: 3/3 grounded, notGrounded 시 템플릿 교체 경로.
 - 2026-07-19 step-5 dogfood finding(사용자): UI 다듬기 필요·페이지 분리(랜딩/설명/서비스 3페이지)·컬러/디자인 방향·실사 이미지 활용 결정 필요 → 디자인 브리프 절차로 승격. 전략층 확정: 톤=힙·에너지·대학가 / 구조=랜딩+설명+서비스 3페이지 / 이미지=실사 적극(히어로·카드). 시각층은 Brief Studio(localhost:8791)로 사용자 선택 대기.
+- 2026-07-19 도메인: sixsense.askewly.com — Vercel 등록 + Cloudflare CNAME(cname.vercel-dns.com, proxied=false) 생성. DNS 전파 대기.
