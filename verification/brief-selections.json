@@ -1,0 +1,33 @@
+{
+  "version": 2,
+  "tile": "campus-pop",
+  "selections": {
+    "base": "cool-gray",
+    "accent": "terracotta",
+    "typo": "blackhan-head",
+    "imagery": "photo-2",
+    "composition": "hero-cards-info",
+    "headline": "hl-budget",
+    "subcopy": "sc-6",
+    "cta": "two-split",
+    "header": "logo-links-cta",
+    "footer": "one-line",
+    "card": "flat-tonal",
+    "density": "airy",
+    "radius": "subtle",
+    "motion": "standard",
+    "pointer": "none",
+    "icon": "outline",
+    "dark": "both-auto",
+    "a11y": "aa"
+  },
+  "implementation": {
+    "composition": "hero-cards-info",
+    "recipes": {
+      "hero": "landing-hero",
+      "cards": "responsive-content-grid",
+      "info": "article-documentation-layout"
+    }
+  },
+  "submittedAt": "2026-07-19T10:26:15.806Z"
+}
