@@ -31,3 +31,6 @@
 
 ## smoke 기록 (append-only)
 - 2026-07-19 1차: SMOKE PASS (9/9) — 배포 URL, 콘솔 red 0. F1 결함 주입(필터 역전): 해당 항목 실제 FAIL(초과 20건) 확인 → 원복 후 재실행 PASS (9/9). 허수 아님 검증.
+
+## smoke 기록 (추가)
+- 2026-07-19 도메인: sixsense.askewly.com Vercel 등록·verified. KAKAO_JS_KEY env 등록 완료 — 카카오 콘솔 Web 플랫폼 도메인 등록(sixsense.askewly.com) 후 지도 활성 예정(현재 ERR_BLOCKED_BY_ORB, graceful 폴백 동작).
