@@ -26,13 +26,11 @@
 .hero .lead{margin:var(--s6) auto 0;max-width:44ch}
 .cta-row{display:flex;gap:var(--s3);justify-content:center;margin-top:var(--s8);flex-wrap:wrap}
 /* 금액 자리 — 폭을 미리 확보해 문구가 흔들리지 않게 (알약 제거) */
-.amt{
-  display:inline-block;min-width:3.4ch;text-align:center;color:var(--accent);
-  transition:opacity 200ms ease-out;
-}
-.amt.swap{opacity:0}
-.lead-brand{display:flex;align-items:center;justify-content:center;gap:.45em;flex-wrap:wrap}
-.uplogo{height:1.05em;vertical-align:-.12em}
+.amt{display:inline-block;min-width:3.4ch;text-align:center;color:var(--accent)}
+/* 캐럿이 라인박스를 키우지 않게 — 캡하이트보다 낮게, 베이스라인 정렬 (흔들림 방지) */
+.amt .caret{width:.06em;height:.74em;vertical-align:0;background:var(--accent)}
+.lead-brand{display:flex;align-items:center;justify-content:center;gap:.4em;flex-wrap:wrap}
+.uplogo{height:1.5em;display:block;transform:translateY(1px)}
 
 /* 인터랙티브 데모 — 좌: 실지도 연출 / 우: 에이전트 사이드바 대화 */
 .demo{margin:var(--s16) auto 0;max-width:1000px;background:var(--surface);border-radius:8px;overflow:hidden;text-align:left}
@@ -74,20 +72,14 @@
   border-bottom:1px solid var(--border);font-size:var(--sm);color:var(--muted);
 }
 .demo-side-head img{flex:none}
-.demo-side-head .demo-toggle{margin-left:auto}
-.demo-toggle{
-  background:none;border:1px solid var(--border);border-radius:var(--r);
-  color:var(--muted);font:inherit;font-size:12px;height:28px;padding:0 10px;cursor:pointer;
-}
-.demo-toggle:hover{color:var(--fg)}
 .demo-chat{
   flex:1;overflow-y:auto;padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3);
   height:clamp(292px,calc(40vw - 48px),392px);font-size:var(--sm);
 }
-.cb{border-radius:10px;padding:8px 12px;max-width:92%;line-height:1.5}
-.cb.user{align-self:flex-end;background:var(--accent);color:var(--accent-fg);border-bottom-right-radius:3px}
-.cb.ai{align-self:flex-start;background:var(--bg);border-bottom-left-radius:3px}
-.cb.ai.final{border:1px solid var(--accent)}
+.cb{line-height:1.55}
+.cb.user{align-self:flex-end;background:var(--accent);color:var(--accent-fg);border-radius:10px;border-bottom-right-radius:3px;padding:8px 12px;max-width:92%}
+.cb.ai{align-self:stretch;color:var(--fg)}
+.cb.ai.final{font-weight:500;margin-top:var(--s2)}
 .cb .cbrow{display:flex;justify-content:space-between;gap:var(--s3);padding:2px 0}
 .cb .cbrow.off{color:var(--muted);text-decoration:line-through;text-decoration-color:rgba(0,0,0,.3)}
 .cb .p{color:var(--accent);white-space:nowrap}
@@ -99,8 +91,8 @@
 .caret{display:inline-block;width:2px;height:1.1em;background:currentColor;vertical-align:-.15em;animation:blink 1s steps(1) infinite}
 @keyframes blink{50%{opacity:0}}
 /* 메뉴·가격 웨이브 — 풀블리드 2줄, 같은 방향 파도, 텍스트만(알약 제거), 줄 간 교차 배치 */
-.wavewrap{width:100vw;margin:var(--s12) calc(50% - 50vw) 0;overflow:hidden}
-.waverow{display:flex;gap:var(--s10,40px);justify-content:center;white-space:nowrap;padding:8px 0}
+.wavewrap{width:100vw;margin:var(--s12) calc(50% - 50vw) 0;overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 6%,#000 94%,transparent)}
+.waverow{display:flex;gap:28px;justify-content:center;white-space:nowrap;padding:8px 0}
 .wave-item{
   display:inline-flex;gap:8px;align-items:baseline;flex:none;
   font-size:var(--sm);color:var(--muted);
@@ -218,7 +210,7 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 <main>
   <section class="hero">
     <div class="container inner">
-      <h1>오늘 <span class="nowrap"><span class="amt" id="budgetText">만원</span>으로</span> 뭐 먹지?</h1>
+      <h1>오늘 <span class="nowrap"><span class="amt"><span id="budgetText">만원</span><span class="caret" aria-hidden="true"></span></span>으로</span> 뭐 먹지?</h1>
       <p class="lead lead-brand"><img class="uplogo" src="/img/upstage-logo.png" alt="Upstage"> <span>AI와 함께 최적의 한 끼를 선택해보세요.</span></p>
       <div class="cta-row">
         <a class="btn" href="/app.html">
@@ -237,7 +229,6 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
             <div class="demo-side-head">
               <img src="/img/upstage-symbol.svg" alt="" width="18" height="18">
               <span>Upstage AI 에이전트</span>
-              <button class="demo-toggle" id="demoToggle" aria-pressed="false">일시정지</button>
             </div>
             <div class="demo-chat" id="demoChat" aria-live="polite"></div>
           </aside>
@@ -253,35 +244,34 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
         <div><span class="n" id="nMenu">–</span><span class="k">파싱한 메뉴·가격</span></div>
         <div><span class="n" id="nCaf">–</span><span class="k">오늘의 학식</span></div>
       </div>
-      <p class="proof-note">숫자는 지금 이 순간의 실제 데이터베이스에서 읽어옵니다.</p>
     </div>
   </section>
 
   <section class="band-warm">
     <div class="container centered">
-      <h2 class="big">가격은 메뉴판<br>사진 속에만 있습니다</h2>
-      <p class="lead">지도 앱에는 식당은 있어도 가격이 없고, 학식은 매일 바뀝니다. 그래서 "만원으로 뭘 먹지"에 답하는 서비스가 없었습니다.</p>
+      <h2 class="big">가격은 있어도,<br>계산할 데이터가 없습니다</h2>
+      <p class="lead">가격은 블로그 후기 산문 속에 흩어져 있고, 학식은 매일 바뀝니다. 흩어진 문장으로는 "만원으로 뭘 먹지"를 계산할 수 없습니다.</p>
 
       <!-- 레퍼런스(노션 기능 카드): 흰 상단(라벨+굵은 한 줄) + 아래 비주얼 밴드. 질문은 실데이터에서 자동 순환 -->
       <div class="duo">
         <div class="duo-card">
           <div class="duo-head">
             <p class="who">범용 챗봇</p>
-            <p class="duo-line">웹에 없는 가격은<br>답하지 못합니다.</p>
+            <p class="duo-line">후기를 요약할 뿐,<br>계산하지 못합니다.</p>
           </div>
           <div class="duo-visual is-gray">
             <div class="bubble q" id="duoQ1">쫄면 얼마예요?</div>
-            <div class="bubble a muted-a">죄송하지만 그 가게의 정확한 가격 정보는 알 수 없습니다.</div>
+            <div class="bubble a muted-a">블로그에 4,000원이라는 후기가 있지만, 지금도 그 가격인지는 확인이 어렵습니다.</div>
           </div>
         </div>
         <div class="duo-card">
           <div class="duo-head">
             <p class="who">한입지도</p>
-            <p class="duo-line">사진에서 꺼낸 가격으로<br>바로 답합니다.</p>
+            <p class="duo-line">이번 주 메뉴판 사진에서<br>꺼낸 가격으로 답합니다.</p>
           </div>
           <div class="duo-visual is-warm">
             <div class="bubble q" id="duoQ2">쫄면 얼마예요?</div>
-            <div class="bubble a answer-a" id="duoA2">둘리분식 · <b>4,000원</b><span class="src" id="duoSrc">출처: 사진파싱</span></div>
+            <div class="bubble a answer-a" id="duoA2">둘리분식 · <b>4,000원</b></div>
           </div>
         </div>
       </div>
@@ -369,7 +359,7 @@ fetch("/api/data").then((r) => r.json()).then((d) => {
 
 /* ── 메뉴·가격 웨이브 (실제 파싱 결과) — 두 줄 같은 방향, 세로 위치만 교차 ── */
 function buildMarquee(menus) {
-  const items = menus.filter(isCleanMenu).slice(0, 36);
+  const items = menus.filter(isCleanMenu);
   if (!items.length) return;
   const half = Math.ceil(items.length / 2);
   const rowHtml = (arr) => arr.map((m, i) =>
@@ -503,7 +493,6 @@ function startDemo(data) {
   const stage = document.getElementById("demoStage");
   const chat = document.getElementById("demoChat");
   const amtEl = document.getElementById("budgetText");
-  const toggle = document.getElementById("demoToggle");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
   const pts = data.restaurants.filter((r) => r.lat && r.lng);
@@ -572,33 +561,29 @@ function startDemo(data) {
     chat.scrollTop = chat.scrollHeight;
     return el;
   };
-  let token = 0, paused = false;
+  let token = 0;
   const sleep = (ms, t) => new Promise((ok) => setTimeout(() => ok(t === token), ms));
-
-  toggle.addEventListener("click", () => {
-    paused = !paused;
-    toggle.textContent = paused ? "재생" : "일시정지";
-    toggle.setAttribute("aria-pressed", String(paused));
-    if (!paused) loop(++token);
-  });
+  const typeText = async (el, text, t, speed = 26) => {
+    for (const ch of text) {
+      if (!(await sleep(reduced ? 0 : speed, t))) return false;
+      el.textContent += ch;
+      chat.scrollTop = chat.scrollHeight;
+    }
+    return true;
+  };
 
   let idx = 0;
 
   async function loop(t) {
-    while (t === token && !paused) {
+    while (t === token) {
       const sc = SCENARIOS[idx];
       // 금액 교체 — 타이핑 디코드 (사용자 선택 2026-07-20). 폭은 .amt 고정폭이라 흔들리지 않음
       if (amtEl.textContent !== sc.pill) {
-        const caret = document.createElement("span");
-        caret.className = "caret";
         amtEl.textContent = "";
-        amtEl.appendChild(caret);
         for (const ch of sc.pill) {
           if (!(await sleep(reduced ? 0 : 110, t))) return;
-          caret.before(document.createTextNode(ch));
+          amtEl.textContent += ch;
         }
-        if (!(await sleep(reduced ? 0 : 260, t))) return;
-        caret.remove();
       }
       chat.innerHTML = "";
       nodes.forEach((n) => { n.dot.className = "dot"; n.label.className = "mlabel"; n.label.textContent = n.p.name; });
@@ -615,7 +600,8 @@ function startDemo(data) {
       // 2) 에이전트 생각 중
       const think = bubble("ai", '<span class="typing"><i></i><i></i><i></i></span>');
       if (!(await sleep(reduced ? 200 : 900, t))) return;
-      think.textContent = `${won(sc.budget)} 이하 조건으로 ${nodes.length}곳의 메뉴판을 살펴볼게요.`;
+      think.textContent = "";
+      if (!(await typeText(think, `${won(sc.budget)} 이하 조건으로 ${nodes.length}곳의 메뉴판을 살펴볼게요.`, t))) return;
 
       // 3) 식당별 확인 — 지도 하이라이트와 사이드바 목록이 동시에 진행
       const list = bubble("ai", "");
@@ -657,7 +643,8 @@ function startDemo(data) {
       best.n.dot.className = "dot best";
       best.n.label.className = "mlabel best";
       best.n.label.innerHTML = `${best.n.p.name}<span class="sub">${menuLabel(best.menu.name)} ${won(best.menu.price)}</span>`;
-      bubble("ai final", `<strong>${best.n.p.name}</strong>의 ${menuLabel(best.menu.name)} <span class="p">${won(best.menu.price)}</span>을 추천해요. ${won(sc.budget)} 예산을 가장 알차게 쓰는 조합이에요.`);
+      const fin = bubble("ai final", "");
+      if (!(await typeText(fin, `${best.n.p.name}의 ${menuLabel(best.menu.name)} ${won(best.menu.price)}을 추천해요. ${won(sc.budget)} 예산을 가장 알차게 쓰는 조합이에요.`, t))) return;
       if (!(await sleep(reduced ? 4200 : 3600, t))) return;
       idx = (idx + 1) % SCENARIOS.length;
     }
