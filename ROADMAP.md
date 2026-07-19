@@ -1,18 +1,44 @@
 # ROADMAP
 
-> 마지막 업데이트: 2026-07-15
-> 상태: product horizon
+> 마지막 업데이트: 2026-07-19
+> 상태: demoday-run horizon
 > 북극성: 정해진 예산 안에서 오늘 뭘 먹을지 — 학식과 주변 식당을 한 판에 놓고 정해주는 서비스
 > line budget: <=150
 
 ## Current Horizon
 
-<!-- harness:goal id="product-horizon" -->
-목표: 2026-07-25 데모데이에 루브릭 100점 기준으로 심사 가능한 출품작을 낸다 — 배점이 몰린 데이터 파이프라인(20)·처리 깊이(15)·Upstage 활용(20)을 실물로 증명한다.
+<!-- harness:goal id="demoday-run" -->
+목표: 7/18 "각자 서비스" 전환 이후 남은 전부를 데모데이(7/25)까지 닫는다 — 실데이터 파이프라인 가동, 개인 버전 웹서비스 완성, 본선 조립본 보장. (상세 plan → `plans/horizons/demoday-run.md`)
 
-일정 제약 (`docs/CHALLENGE.md`): 멘토링 사전자료 **7/15 23:59** · 멘토링 7/16~17 · 빌드업 마감 7/24 · 데모데이 7/25.
+일정 제약 (`docs/CHALLENGE.md`): 빌드업 마감 7/24 · 데모데이 7/25.
 
 ## Active Milestones
+
+<!-- harness:milestone id="DR1" status="active" priority="P0" evidence="plans/2026-07-19-dr1-data-pipeline.md" -->
+### DR1 — 실데이터 파이프라인 가동 (사진→파싱→시트, 지오코딩, 학식→시트→DB)
+- DoD: 실사진 유래 식당 ≥5곳 + 좌표 + 학식 실식단이 시트·Supabase 에 있고, 스테이징 검색 E2E 에서 실데이터 관측
+- Evidence: `plans/2026-07-19-dr1-data-pipeline.md` 진행 로그 + 실행 로그·시트 행 실측
+- Gap: 파이프라인 35점 구간이 아직 fixture — 실데이터가 흘러야 실점수
+- Scale: changesets>=3; surfaces: 스크립트 실행 로그·시트·스테이징 URL; capability: 실데이터가 수집→구조화→서비스까지 흐른다
+- Status: [ ]
+
+<!-- harness:milestone id="DR2" status="pending" priority="P0" evidence="plans/2026-07-19-dr2-personal-service.md" -->
+### DR2 — 개인 버전 웹서비스 빌드 (Upstage 심화 + 인터랙티브 데모)
+- DoD: 배포 URL 심사 시연 시나리오(예산→실데이터 추천+이유+Groundedness 배지) Playwright smoke PASS + `verification/matrix.md` 가시화
+- Evidence: `plans/2026-07-19-dr2-personal-service.md` + smoke 결과·스크린샷
+- Gap: "각자 서비스" 전환 후 개인 버전 미착수 — 루브릭 20점(Upstage)·차별화 축 실현체
+- Scale: changesets>=4; surfaces: 배포 URL·Playwright·verification/; capability: 심사 가능한 완결 데모 서비스
+- Status: [ ]
+
+<!-- harness:milestone id="DR3" status="pending" priority="P1" evidence="plans/2026-07-19-dr3-assembly.md" -->
+### DR3 — 본선 조립 (hanipmap 이식·API 계약·온보딩)
+- DoD: hanipmap 배포 URL 파싱·검색 E2E PASS + api-contract 실 URL 계약 + 발표 자료 실물 정합
+- Evidence: `plans/2026-07-19-dr3-assembly.md` + hanipmap PR·E2E 관측
+- Gap: 대표 조립본 보장 책임(7/18 §6) — 이식 4항목 미실행
+- Scale: changesets>=2; surfaces: hanipmap 배포 URL·docs; capability: 팀이 그 위에서 작업 가능한 대표 버전
+- Status: [ ]
+
+## Completed (product-horizon)
 
 <!-- harness:milestone id="M1" status="completed" priority="P0" evidence="docs/mentoring/2026-07-15-presubmit.md" -->
 ### M1 — 멘토링 사전자료 제출 (마감 2026-07-15 23:59, 팀 직접 작성)
