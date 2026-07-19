@@ -606,9 +606,15 @@ function startDemo(data) {
       // 3) 식당별 확인 — 지도 하이라이트와 사이드바 목록이 동시에 진행
       const list = bubble("ai", "");
       const results = [];
+      const DRINK = /소주|맥주|맥수|생맥|병맥|하이볼|막걸리|참이슬|처음처럼|청하|사이다|콜라|음료|주스/;
       for (const n of nodes) {
-        const ms = data.menus.filter((m) => m.restaurant_id === n.p.id && isCleanMenu(m));
+        let ms = data.menus.filter((m) => m.restaurant_id === n.p.id && isCleanMenu(m));
         if (!ms.length) continue;
+        // 카페가 아니면 술·음료는 대표 메뉴에서 제외 (식사가 하나도 없을 때만 폴백)
+        if (!/카페/.test(n.p.category ?? "")) {
+          const meals = ms.filter((m) => !DRINK.test(m.name));
+          if (meals.length) ms = meals;
+        }
         const inBudget = ms.filter((m) => m.price <= sc.budget);
         const menu = inBudget.length
           ? inBudget.reduce((a, b) => (b.price > a.price ? b : a))
