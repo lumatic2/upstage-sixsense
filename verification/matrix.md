@@ -35,3 +35,4 @@
 ## smoke 기록 (추가)
 - 2026-07-19 도메인: sixsense.askewly.com Vercel 등록·verified. KAKAO_JS_KEY env 등록 완료 — 카카오 콘솔 Web 플랫폼 도메인 등록(sixsense.askewly.com) 후 지도 활성 예정(현재 ERR_BLOCKED_BY_ORB, graceful 폴백 동작).
 - 2026-07-19 지도 활성: 카카오 콘솔 JS SDK 도메인 등록(sixsense.askewly.com·staging.vercel.app) — 브라우저 실측 kakao.maps 로드·타일 26·마커 렌더. 발견 결함: .map-empty[hidden] 이 display:flex 에 밀려 로딩 문구 잔존 → CSS 수정 + setBounds 로 결과 전체 뷰. 재배포 후 SMOKE 9/9 PASS.
+- 2026-07-19 3페이지 전환: 랜딩(/) · 설명(/about.html) · 서비스(/app.html), theme.css 토큰 SSOT. sixsense.askewly.com 라이브. 실측: 랜딩 카운터(5·76·4) 실데이터, 서비스 지도 마커 5·추천 3·근거 배지 3/3, about 라이트·다크 성립. SMOKE 9/9 PASS.

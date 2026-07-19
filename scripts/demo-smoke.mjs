@@ -2,7 +2,7 @@
 /**
  * 심사 시연 시나리오 smoke (DR2 step-4) — 리허설 스크립트 겸용 (플레이북 Phase 5-5)
  *
- * 사용법: node scripts/demo-smoke.mjs [--url https://upstage-sixsense-staging.vercel.app]
+ * 사용법: node scripts/demo-smoke.mjs [--url https://sixsense.askewly.com]
  * 시나리오 = 심사 시연 그대로:
  *   1. 앱 로드 → 헤더·검색 렌더, 콘솔 red error 0
  *   2. 실데이터 로드 → 식당 ≥5, 학식 ≥1
@@ -30,7 +30,7 @@ const consoleErrors = [];
 page.on("console", (m) => { if (m.type() === "error") consoleErrors.push(m.text()); });
 
 // 1. 로드
-await page.goto(URL_, { waitUntil: "networkidle" });
+await page.goto(URL_ + "/app.html", { waitUntil: "networkidle" });
 check("앱 로드: 제목", (await page.title()).includes("한입지도"));
 check("헤더·검색 렌더", await page.locator("#searchForm").isVisible());
 

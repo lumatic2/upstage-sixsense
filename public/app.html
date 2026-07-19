@@ -1,0 +1,253 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>예산으로 찾기 — 한입지도</title>
+<meta name="description" content="예산을 말하면 학식과 명륜동·혜화 식당을 한 판에 놓고 골라드립니다">
+<link rel="stylesheet" href="/theme.css">
+<style>
+.search-sec{padding:var(--s12) 0 var(--s8)}
+.search-sec form{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap}
+.search-sec input[type=text]{
+  flex:1;min-width:260px;height:52px;padding:0 var(--s4);
+  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  color:inherit;font:inherit;font-size:var(--lg);outline:none;transition:border-color 180ms ease-out;
+}
+.search-sec input[type=text]:focus{border-color:var(--accent)}
+.chips{display:flex;gap:var(--s2);margin-top:var(--s4);flex-wrap:wrap}
+.chip{
+  height:36px;padding:0 var(--s4);border:1px solid var(--border);border-radius:var(--r);
+  background:transparent;color:var(--muted);font:inherit;font-size:var(--sm);cursor:pointer;
+  transition:all 180ms ease-out;
+}
+.chip:hover{border-color:var(--fg);color:var(--fg)}
+.chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
+.parsed{color:var(--muted);font-size:var(--sm);margin-top:var(--s3);min-height:1.5em}
+
+#map{height:360px;width:100%;border-radius:var(--r)}
+.map-empty{
+  height:360px;display:grid;place-items:center;background:var(--surface);
+  border-radius:var(--r);color:var(--muted);text-align:center;padding:var(--s4);
+}
+.map-empty[hidden]{display:none}
+
+.results{padding:var(--s8) 0 var(--s16)}
+.rowhead{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s4);margin-bottom:var(--s4)}
+.pick{outline:2px solid var(--accent)}
+.menus{margin:var(--s4) 0 0;padding:0;list-style:none}
+.menus li{display:flex;justify-content:space-between;gap:var(--s4);padding:var(--s1) 0}
+.menus .price{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
+.reason{margin-top:var(--s4);padding-top:var(--s4);border-top:1px solid var(--border)}
+.badge{
+  display:inline-flex;align-items:center;gap:6px;margin-top:var(--s2);
+  font-size:var(--sm);color:var(--accent);background:var(--accent-soft);
+  padding:2px 10px;border-radius:var(--r);
+}
+.empty{background:var(--surface);border-radius:var(--r);padding:var(--s12) var(--s6);text-align:center;color:var(--muted)}
+.skeleton{opacity:.6}
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="container inner">
+    <a class="brand" href="/">한입지도</a>
+    <nav>
+      <a href="/about.html">어떻게 만들었나</a>
+      <a href="/app.html" aria-current="page">서비스</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section class="search-sec">
+  <div class="container">
+    <h1>오늘 예산은 얼마인가요</h1>
+    <form id="searchForm" role="search" aria-label="예산·조건 검색" style="margin-top:var(--s6)">
+      <input type="text" id="q" placeholder="예: 8천원 이하 도보 5분 혼밥" autocomplete="off" aria-label="자연어로 조건 입력">
+      <button class="btn" type="submit" id="goBtn">
+        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+        찾기
+      </button>
+    </form>
+    <div class="chips" role="group" aria-label="예산 바로 선택">
+      <button class="chip" type="button" data-budget="6000" aria-pressed="false">6천원 이하</button>
+      <button class="chip" type="button" data-budget="8000" aria-pressed="false">8천원 이하</button>
+      <button class="chip" type="button" data-budget="10000" aria-pressed="false">1만원 이하</button>
+      <button class="chip" type="button" data-budget="" aria-pressed="false">전체</button>
+    </div>
+    <p class="parsed" id="parsed" aria-live="polite"></p>
+  </div>
+</section>
+
+<section style="padding:0">
+  <div class="container">
+    <div class="map-empty" id="mapEmpty">지도를 불러오는 중입니다.</div>
+    <div id="map" hidden></div>
+  </div>
+</section>
+
+<section class="results">
+  <div class="container">
+    <div id="picksWrap" hidden style="margin-bottom:var(--s12)">
+      <div class="rowhead"><h2>오늘의 추천</h2><span class="small muted" id="picksNote"></span></div>
+      <div class="grid" id="picksBlock" aria-live="polite"></div>
+    </div>
+
+    <div class="rowhead"><h2>오늘의 선택지</h2><span class="small muted" id="dataNote"></span></div>
+    <div id="cafeteriaBlock" style="margin-bottom:var(--s6)"></div>
+    <div class="grid" id="restaurantBlock"></div>
+  </div>
+</section>
+</main>
+
+<footer class="site-foot">
+  <div class="container inner">
+    <span>메뉴판 사진에서 꺼낸 가격 데이터로 움직입니다 · <a href="/about.html">어떻게 만들었나</a></span>
+    <span><a href="/test.html">파이프라인 검증</a></span>
+  </div>
+</footer>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let DATA = { restaurants: [], menus: [], cafeteria: [] };
+let MAP = null, MARKERS = [];
+let state = { budget: null, walkMax: null, tags: [] };
+
+async function loadData() {
+  try { DATA = await (await fetch("/api/data")).json(); }
+  catch { DATA = { restaurants: [], menus: [], cafeteria: [], source: "none" }; }
+  $("#dataNote").textContent = `식당 ${DATA.restaurants.length} · 메뉴 ${DATA.menus.length} · 학식 ${DATA.cafeteria.length}`;
+  render(); renderMarkers();
+}
+
+async function loadMap() {
+  let key = null;
+  try { key = (await (await fetch("/api/config")).json()).kakaoJsKey; } catch {}
+  if (!key) { $("#mapEmpty").textContent = "지도 없이도 아래 목록으로 고를 수 있습니다."; return; }
+  const s = document.createElement("script");
+  s.src = `https://dapi.kakao.com/v2/maps/sdk.js?appkey=${key}&autoload=false`;
+  s.onerror = () => { $("#mapEmpty").textContent = "지도를 불러오지 못했습니다 — 아래 목록으로 골라보세요."; };
+  s.onload = () => kakao.maps.load(() => {
+    $("#mapEmpty").hidden = true; $("#map").hidden = false;
+    MAP = new kakao.maps.Map($("#map"), { center: new kakao.maps.LatLng(37.5877, 126.9938), level: 4 });
+    renderMarkers();
+  });
+  document.head.appendChild(s);
+}
+function renderMarkers() {
+  if (!MAP || !window.kakao) return;
+  MARKERS.forEach((m) => m.setMap(null)); MARKERS = [];
+  const bounds = new kakao.maps.LatLngBounds();
+  let any = false;
+  for (const r of visibleRestaurants()) {
+    if (!r.lat || !r.lng) continue;
+    const pos = new kakao.maps.LatLng(r.lat, r.lng);
+    const marker = new kakao.maps.Marker({ map: MAP, position: pos, title: r.name });
+    const iw = new kakao.maps.InfoWindow({ content: `<div style="padding:6px 10px;font-size:13px">${r.name}</div>` });
+    kakao.maps.event.addListener(marker, "click", () => iw.open(MAP, marker));
+    MARKERS.push(marker); bounds.extend(pos); any = true;
+  }
+  if (any) MAP.setBounds(bounds);
+}
+
+$("#searchForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
+  const q = $("#q").value.trim();
+  if (!q) { render(); return; }
+  $("#goBtn").disabled = true;
+  $("#parsed").textContent = "조건을 읽는 중입니다…";
+  try {
+    const p = await (await fetch("/api/parse-query", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: q }),
+    })).json();
+    state.budget = p.budget ?? null; state.tags = p.tags ?? []; state.walkMax = p.walkMax ?? null;
+    const bits = [];
+    if (state.budget) bits.push(`예산 ${state.budget.toLocaleString()}원 이하`);
+    if (state.walkMax) bits.push(`도보 ${state.walkMax}분`);
+    if (state.tags.length) bits.push(state.tags.join("·"));
+    $("#parsed").textContent = bits.length ? `조건: ${bits.join(" / ")}` : "조건을 읽지 못했습니다 — 전체를 보여드립니다.";
+    syncChips();
+  } catch {
+    $("#parsed").textContent = "조건 해석에 실패했습니다 — 전체를 보여드립니다.";
+    state = { budget: null, walkMax: null, tags: [] };
+  }
+  $("#goBtn").disabled = false;
+  render(); renderMarkers(); loadPicks();
+});
+document.querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => {
+  state = { budget: c.dataset.budget ? Number(c.dataset.budget) : null, walkMax: null, tags: [] };
+  $("#parsed").textContent = state.budget ? `조건: 예산 ${state.budget.toLocaleString()}원 이하` : "";
+  syncChips(); render(); renderMarkers(); loadPicks();
+}));
+function syncChips() {
+  document.querySelectorAll(".chip").forEach((c) => {
+    const b = c.dataset.budget ? Number(c.dataset.budget) : null;
+    c.setAttribute("aria-pressed", String(b === state.budget));
+  });
+}
+
+async function loadPicks() {
+  const wrap = $("#picksWrap"), block = $("#picksBlock");
+  if (!state.budget && !state.tags.length) { wrap.hidden = true; return; }
+  wrap.hidden = false;
+  block.innerHTML = `<div class="card skeleton">추천을 고르는 중입니다…</div>`;
+  $("#picksNote").textContent = "";
+  try {
+    const d = await (await fetch("/api/recommend", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ budget: state.budget, walkMax: state.walkMax, tags: state.tags }),
+    })).json();
+    const cards = [];
+    if (d.cafeteria) {
+      cards.push(`<div class="card pick"><div class="rowhead"><h3>학식 · ${d.cafeteria.cafeteria}</h3><span class="small muted">${d.cafeteria.menu_date}</span></div>
+        <ul class="menus"><li><span>${d.cafeteria.items.slice(0,5).join(", ")}${d.cafeteria.items.length>5?" 외":""}</span><span class="price">${d.cafeteria.price ? d.cafeteria.price.toLocaleString()+"원" : ""}</span></li></ul>
+        <p class="reason muted">캠퍼스 안에서 해결하는 가장 확실한 선택.</p></div>`);
+    }
+    for (const p of d.picks ?? []) {
+      const badge = p.grounded === "grounded" ? "Solar 생성 · 근거 검증됨"
+        : p.grounded === "replaced" ? "근거 미달 판정 → 데이터 팩트로 교체"
+        : p.reasonSource === "solar" ? "Solar 생성" : "데이터 기반";
+      cards.push(`<div class="card pick"><div class="rowhead"><h3>${p.name}</h3><span class="small muted">${p.category}${p.walkMin?` · 도보 ${p.walkMin}분`:""}</span></div>
+        <ul class="menus">${p.menus.map((m)=>`<li><span>${m.name}</span><span class="price">${m.price.toLocaleString()}원</span></li>`).join("")}</ul>
+        <div class="reason"><p>${p.reason}</p><span class="badge">
+          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>${badge}</span></div></div>`);
+    }
+    $("#picksNote").textContent = d.walkRelaxed ? "도보 조건에 맞는 곳이 없어 가까운 순으로 보여드립니다" : "";
+    block.innerHTML = cards.join("") || `<div class="empty">조건에 맞는 추천이 없습니다 — 예산을 조금 올려보세요.</div>`;
+  } catch {
+    block.innerHTML = `<div class="empty">추천을 불러오지 못했습니다 — 아래 목록으로 골라보세요.</div>`;
+  }
+}
+
+function menusFor(rid) {
+  return DATA.menus.filter((m) => m.restaurant_id === rid && (!state.budget || m.price <= state.budget));
+}
+function visibleRestaurants() {
+  return DATA.restaurants.filter((r) => !state.budget || menusFor(r.id).length > 0);
+}
+function render() {
+  const today = DATA.cafeteria.filter((c) => !state.budget || !c.price || c.price <= state.budget);
+  $("#cafeteriaBlock").innerHTML = today.length
+    ? `<div class="card"><div class="rowhead"><h3>학식</h3><span class="small muted">성균관대 인사캠</span></div>
+       <ul class="menus">${today.slice(-3).map((c)=>`<li><span>${c.cafeteria}${c.corner?" · "+c.corner:""} <span class="muted small">(${c.menu_date})</span><br><span class="muted small">${c.items.slice(0,5).join(", ")}${c.items.length>5?" 외":""}</span></span><span class="price">${c.price?c.price.toLocaleString()+"원":""}</span></li>`).join("")}</ul></div>`
+    : "";
+  const rs = visibleRestaurants();
+  $("#restaurantBlock").innerHTML = rs.length
+    ? rs.map((r) => {
+        const ms = menusFor(r.id).sort((a,b)=>a.price-b.price);
+        return `<div class="card"><div class="rowhead"><h3>${r.name}</h3><span class="small muted">${r.category}</span></div>
+          <ul class="menus">${ms.slice(0,5).map((m)=>`<li><span>${m.name}</span><span class="price">${m.price.toLocaleString()}원</span></li>`).join("")}
+          ${ms.length>5?`<li><span class="muted small">외 ${ms.length-5}개</span><span></span></li>`:""}</ul>
+          ${r.address?`<p class="muted small" style="margin-top:var(--s4)">${r.address}</p>`:""}</div>`;
+      }).join("")
+    : `<div class="empty">조건에 맞는 곳이 아직 없습니다. 예산을 올리거나 메뉴판 사진을 <a href="/test.html">제보</a>해 주세요.</div>`;
+}
+
+loadData();
+loadMap();
+</script>
+</body>
+</html>

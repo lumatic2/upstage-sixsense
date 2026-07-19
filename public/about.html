@@ -1,0 +1,105 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>어떻게 만들었나 — 한입지도</title>
+<meta name="description" content="메뉴판 사진 → Document Parse → 검수 → 추천, 그리고 추천 이유를 데이터로 검증하는 파이프라인">
+<link rel="stylesheet" href="/theme.css">
+<style>
+/* 정보 페이지 — article-documentation-layout recipe(문서 재구현): 좌 본문 + 우 목차 */
+.doc{display:grid;gap:var(--s12);grid-template-columns:minmax(0,1fr) 200px;align-items:start}
+@media (max-width:840px){ .doc{grid-template-columns:1fr} .toc{display:none} }
+.toc{position:sticky;top:80px;font-size:var(--sm)}
+.toc a{display:block;color:var(--muted);text-decoration:none;padding:var(--s1) 0;transition:color 180ms ease-out}
+.toc a:hover{color:var(--fg)}
+.doc h2{margin-top:var(--s12)}
+.doc h2:first-child{margin-top:0}
+.doc p{margin-top:var(--s4);color:var(--muted);max-width:68ch}
+.doc .card{margin-top:var(--s6)}
+.stage{display:flex;gap:var(--s4);align-items:flex-start;margin-top:var(--s6)}
+.stage .dot{
+  width:28px;height:28px;border-radius:50%;background:var(--accent-soft);color:var(--accent);
+  font-family:var(--font-head);display:grid;place-items:center;flex:none;font-size:var(--sm);
+}
+.stage b{display:block}
+.figure{margin-top:var(--s8);border-radius:var(--r);overflow:hidden}
+.figure img{display:block;width:100%;height:260px;object-fit:cover}
+.figure figcaption{font-size:var(--sm);color:var(--muted);padding-top:var(--s2)}
+table{width:100%;border-collapse:collapse;margin-top:var(--s6);font-size:var(--sm)}
+th,td{text-align:left;padding:var(--s3) var(--s2);border-bottom:1px solid var(--border);vertical-align:top}
+th{color:var(--muted);font-weight:500}
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="container inner">
+    <a class="brand" href="/">한입지도</a>
+    <nav>
+      <a href="/about.html" aria-current="page">어떻게 만들었나</a>
+      <a href="/app.html">서비스</a>
+      <a class="btn sm" href="/app.html">지금 골라보기</a>
+    </nav>
+  </div>
+</header>
+
+<main>
+<section>
+  <div class="container doc">
+    <article>
+      <p class="eyebrow">데이터 파이프라인</p>
+      <h2 id="s1">사진 속 가격을 데이터로</h2>
+      <p>식당 가격은 웹에 구조화된 형태로 존재하지 않습니다. 메뉴판 사진 안에만 있습니다. 그래서 이 서비스의 출발점은 검색이 아니라 <b>사진 수집</b>입니다.</p>
+      <div class="stage"><span class="dot">1</span><span><b>수집</b><span class="muted">명륜동·혜화 식당의 메뉴판 사진을 모아 한 저장소에 쌓습니다. 출처와 촬영일을 함께 기록합니다.</span></span></div>
+      <div class="stage"><span class="dot">2</span><span><b>파싱</b><span class="muted">Upstage Document Parse에 <code>ocr=force</code>·<code>coordinates=true</code>로 요청해, 사진 속 레이아웃을 유지한 채 메뉴명과 가격을 뽑습니다.</span></span></div>
+      <div class="stage"><span class="dot">3</span><span><b>검수</b><span class="muted">파싱 결과는 바로 쓰지 않습니다. 사람이 고치도록 프리필로 띄우고, 0원·10만원 초과 같은 이상치는 표시해 둡니다.</span></span></div>
+      <div class="stage"><span class="dot">4</span><span><b>보강</b><span class="muted">주소는 지오코딩으로 좌표를 자동으로 채우고, 학식은 매일 크롤링해 당일 식단을 넣습니다.</span></span></div>
+
+      <figure class="figure">
+        <img src="/img/about-1.jpg" alt="한국 길거리 음식 노점의 밥상">
+        <figcaption>학식은 이미 구조화된 HTML이라 크롤링하고, 메뉴판은 비구조 사진이라 파싱합니다 — 같은 도구를 억지로 쓰지 않습니다.</figcaption>
+      </figure>
+
+      <h2 id="s2">왜 학식은 파싱하지 않나</h2>
+      <p>도구는 문제에 맞춰 고릅니다. 학교 식단 페이지는 이미 표로 정리된 HTML이라, 사진 파싱을 적용하면 비용만 늘고 정확도는 떨어집니다. 비구조 입력(메뉴판 사진)에만 Document Parse를 씁니다.</p>
+      <table>
+        <tr><th>입력</th><th>형태</th><th>처리</th></tr>
+        <tr><td>메뉴판</td><td>사진(비구조)</td><td>Document Parse → 검수</td></tr>
+        <tr><td>학식</td><td>HTML(구조화)</td><td>크롤러 → 정규화</td></tr>
+        <tr><td>위치</td><td>주소 텍스트</td><td>지오코딩 → 좌표</td></tr>
+      </table>
+
+      <h2 id="s3">추천 이유를 검증합니다</h2>
+      <p>추천 이유는 Solar가 씁니다. 다만 생성만 하고 끝내지 않습니다. <b>생성과 검증을 다른 모델이 나눠 맡습니다</b> — 판정자가 이유 문장을 실제 데이터(메뉴·가격·도보 시간)와 대조해, 근거가 없으면 그 문장을 버리고 데이터 사실로 교체합니다.</p>
+      <div class="card">
+        <b>화면에서 보이는 것</b>
+        <p class="small">추천 카드 아래 "Solar 생성 · 근거 검증됨" 또는 "근거 미달 판정으로 데이터 팩트로 교체됨" 배지가 그 결과입니다. 환각을 막았다는 주장이 아니라, 막는 동작을 그대로 보여주는 방식입니다.</p>
+      </div>
+
+      <h2 id="s4">데이터가 틀리면</h2>
+      <p>파싱은 완벽하지 않습니다. 그래서 모든 메뉴 행에는 출처(사진 파싱/수기)와 검수 상태가 붙어 있고, 잘못된 값은 사람이 고치면 다음 조회부터 반영됩니다. 틀릴 수 있다는 사실을 숨기지 않는 것이 이 파이프라인의 설계입니다.</p>
+      <div class="cta-row" style="display:flex;gap:var(--s3);margin-top:var(--s8);flex-wrap:wrap">
+        <a class="btn" href="/app.html">서비스 써보기</a>
+        <a class="btn ghost" href="/test.html">파이프라인 검증 페이지</a>
+      </div>
+    </article>
+
+    <nav class="toc" aria-label="목차">
+      <p class="small muted" style="margin-bottom:var(--s2)">목차</p>
+      <a href="#s1">사진 속 가격을 데이터로</a>
+      <a href="#s2">왜 학식은 파싱하지 않나</a>
+      <a href="#s3">추천 이유를 검증합니다</a>
+      <a href="#s4">데이터가 틀리면</a>
+    </nav>
+  </div>
+</section>
+</main>
+
+<footer class="site-foot">
+  <div class="container inner">
+    <span>한입지도 · 성균관대 명륜캠 주변 · AI Document Builders Challenge 출품작</span>
+    <span>사진 <a href="https://www.pexels.com/ko-kr/photo/2866306/">Pexels</a></span>
+  </div>
+</footer>
+</body>
+</html>

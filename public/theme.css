@@ -1,0 +1,95 @@
+/* 한입지도 — 캠퍼스 팝 토큰 (DESIGN.md SSOT 파생, 발명 리터럴 금지) */
+@import url("https://fonts.googleapis.com/css2?family=Black+Han+Sans&family=Noto+Sans+KR:wght@400;500;700&display=swap");
+
+:root{
+  --bg:#F7F9FC;
+  --surface:#FFFFFF;
+  --fg:rgba(12,20,32,.95);
+  --muted:rgba(12,20,32,.62);
+  --border:rgba(12,20,32,.10);
+  --accent:#B4552D;
+  --accent-fg:#FFFFFF;
+  --accent-soft:rgba(180,85,45,.10);
+
+  --font-head:'Black Han Sans',sans-serif;
+  --font-body:'Noto Sans KR',system-ui,sans-serif;
+  --sm:14px; --base:16px; --lg:20px; --xl:30px; --2xl:46px;
+
+  --r:4px;
+  --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s6:24px; --s8:32px; --s12:48px; --s16:64px; --s24:96px;
+  --container:1040px;
+}
+@media (prefers-color-scheme: dark){
+  :root{
+    --bg:#14181D; --surface:#1C222A;
+    --fg:rgba(247,249,252,.95); --muted:rgba(247,249,252,.66);
+    --border:rgba(247,249,252,.14);
+    --accent:#D4794F; --accent-fg:#14181D; --accent-soft:rgba(212,121,79,.14);
+  }
+}
+
+*{box-sizing:border-box}
+html{scroll-behavior:smooth}
+body{
+  margin:0;background:var(--bg);color:var(--fg);
+  font-family:var(--font-body);font-size:var(--base);line-height:1.75;
+  word-break:keep-all;-webkit-font-smoothing:antialiased;
+}
+.container{max-width:var(--container);margin:0 auto;padding:0 var(--s4)}
+h1,h2,h3{font-family:var(--font-head);font-weight:400;letter-spacing:-.02em;line-height:1.25;text-wrap:balance;margin:0}
+h1{font-size:clamp(30px,6vw,var(--2xl))}
+h2{font-size:clamp(24px,4vw,var(--xl))}
+h3{font-size:var(--lg)}
+p{margin:0}
+a{color:inherit}
+img{max-width:100%}
+
+/* ── header ── */
+.site-head{
+  position:sticky;top:0;z-index:20;background:color-mix(in srgb,var(--bg) 88%,transparent);
+  backdrop-filter:blur(8px);border-bottom:1px solid var(--border);
+}
+.site-head .inner{display:flex;align-items:center;gap:var(--s6);height:60px}
+.brand{font-family:var(--font-head);font-size:var(--lg);letter-spacing:-.02em;text-decoration:none}
+.site-head nav{display:flex;gap:var(--s4);margin-left:auto;align-items:center}
+.site-head nav a{color:var(--muted);text-decoration:none;font-size:var(--sm);transition:color 180ms ease-out}
+.site-head nav a:hover,.site-head nav a[aria-current="page"]{color:var(--fg)}
+
+/* ── buttons ── */
+.btn{
+  display:inline-flex;align-items:center;justify-content:center;gap:var(--s2);
+  height:44px;padding:0 22px;border-radius:var(--r);border:1px solid transparent;
+  background:var(--accent);color:var(--accent-fg);font:inherit;font-weight:500;
+  text-decoration:none;cursor:pointer;transition:transform 180ms ease-out,opacity 180ms ease-out;
+}
+.btn:hover{transform:translateY(-2px);opacity:.92}
+.btn:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
+.btn:disabled{opacity:.45;cursor:not-allowed;transform:none}
+.btn.ghost{background:transparent;color:var(--fg);border-color:var(--border)}
+.btn.ghost:hover{border-color:var(--fg)}
+.btn.sm{height:36px;padding:0 14px;font-size:var(--sm)}
+
+/* ── cards ── */
+.card{background:var(--surface);border-radius:var(--r);padding:var(--s8)}
+.card.photo{padding:0;overflow:hidden}
+.card.photo img{display:block;width:100%;height:180px;object-fit:cover}
+.card.photo .body{padding:var(--s6)}
+.grid{display:grid;gap:var(--s6);grid-template-columns:repeat(auto-fit,minmax(260px,1fr))}
+.muted{color:var(--muted)}
+.small{font-size:var(--sm)}
+.icon{width:18px;height:18px;stroke:currentColor;fill:none;stroke-width:1.8;stroke-linecap:round;stroke-linejoin:round;flex:none}
+
+/* ── sections ── */
+section{padding:var(--s16) 0}
+.eyebrow{font-size:var(--sm);color:var(--accent);letter-spacing:.08em;text-transform:uppercase;margin-bottom:var(--s3)}
+.lead{font-size:var(--lg);color:var(--muted);margin-top:var(--s4);max-width:56ch}
+
+/* ── footer ── */
+.site-foot{border-top:1px solid var(--border);padding:var(--s8) 0;color:var(--muted);font-size:var(--sm)}
+.site-foot .inner{display:flex;flex-wrap:wrap;gap:var(--s4);align-items:center;justify-content:space-between}
+.site-foot a{text-decoration:underline;text-underline-offset:3px}
+
+@media (prefers-reduced-motion: reduce){
+  *{transition:none!important;animation:none!important}
+  html{scroll-behavior:auto}
+}
