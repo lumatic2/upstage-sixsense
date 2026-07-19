@@ -1,0 +1,11 @@
+{
+  "comment": "사진→식당 매핑 (DR1 step-1). 같은 식당의 사진 여러 장은 같은 name 으로 — 메뉴가 병합된다. 주소는 비워두면 step-2 지오코딩이 키워드 검색으로 채운다.",
+  "collector": "전유성",
+  "photos": [
+    { "file": "experiments/parse-poc/photos/mujesushi.jpg", "name": "무제스시", "category": "일식/스시", "address": "", "tags": "혼밥,초밥", "shotDate": "2026-07-17" },
+    { "file": "experiments/parse-poc/photos/dooli-bunsik.jpg", "name": "둘리분식", "category": "분식", "address": "", "tags": "혼밥,가성비", "shotDate": "2026-07-17" },
+    { "file": "experiments/parse-poc/photos/sungdaehan-gimbap.jpg", "name": "성대한김밥", "category": "분식/김밥", "address": "", "tags": "혼밥,가성비,김밥", "shotDate": "2026-07-17" },
+    { "file": "experiments/parse-poc/photos/baekban-whiteboard.jpg", "name": "성대한김밥", "category": "분식/김밥", "address": "", "tags": "혼밥,가성비,김밥", "shotDate": "2026-07-17" },
+    { "file": "experiments/parse-poc/photos/asian-table.jpg", "name": "아시안테이블", "category": "아시안", "address": "", "tags": "데이트,쌀국수", "shotDate": "2026-07-17" }
+  ]
+}
