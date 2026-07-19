@@ -66,6 +66,7 @@ const FILES = [
   "public/about.html",
   "public/theme.css",
   "public/img/hero.jpg",
+  "public/img/app-shot.png",
   "public/img/about-1.jpg",
   "public/img/about-2.jpg",
 ];

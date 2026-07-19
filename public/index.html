@@ -7,74 +7,97 @@
 <meta name="description" content="명륜동·혜화 메뉴판 사진에서 꺼낸 진짜 가격으로, 예산 안에서 학식과 식당을 한 판에 놓고 정해주는 서비스">
 <link rel="stylesheet" href="/theme.css">
 <style>
-/* 히어로 — landing-hero recipe(문서 재구현): 중앙 정렬 promise + 서브카피 + CTA 2 + 증거 표면 1 */
-.hero{position:relative;overflow:hidden;padding:var(--s24) 0 var(--s16);text-align:center}
+/* 히어로 — 레퍼런스(notion-product) 구조 차용: 완전 중앙 정렬 · 초대형 헤딩 + 알약 강조
+   · CTA 2(솔리드+틴트) · 바로 아래 실제 서비스 화면 프레임. 룩은 캠퍼스 팝 유지. */
+.hero{position:relative;overflow:hidden;padding:var(--s24) 0 var(--s12);text-align:center}
 .hero::before{
-  content:"";position:absolute;inset:0;
+  content:"";position:absolute;inset:0 0 55% 0;
   background:url("/img/hero.jpg") center/cover;
-  opacity:.22;
+  opacity:.09;
 }
 .hero::after{
   content:"";position:absolute;inset:0;
-  background:linear-gradient(180deg,transparent 30%,var(--bg) 100%);
+  background:linear-gradient(180deg,color-mix(in srgb,var(--bg) 55%,transparent) 0%,var(--bg) 46%);
 }
+.nowrap{white-space:nowrap}
 .hero .inner{position:relative;z-index:1}
-.hero h1{max-width:16ch;margin:0 auto}
-.hero .lead{margin:var(--s6) auto 0;max-width:46ch}
+.hero h1{font-size:clamp(38px,8vw,88px);line-height:1.12;max-width:13ch;margin:0 auto}
+.hero .lead{margin:var(--s6) auto 0;max-width:44ch}
 .cta-row{display:flex;gap:var(--s3);justify-content:center;margin-top:var(--s8);flex-wrap:wrap}
-/* 증거 표면 하나 — 실데이터 카운터 (장식 대시보드 금지) */
+/* 서비스 화면 프레임 — 지어낸 대시보드가 아니라 실제 배포 화면 캡처 */
+.shot{margin:var(--s16) auto 0;max-width:1000px;border-radius:8px;overflow:hidden;background:var(--surface)}
+.shot img{display:block;width:100%;height:clamp(240px,42vw,520px);object-fit:cover;object-position:top center}
+/* 증거 띠 — 실데이터 카운터 (장식 대시보드 금지) */
 .proof{
-  margin:var(--s12) auto 0;max-width:560px;background:var(--surface);border-radius:var(--r);
-  padding:var(--s6);display:flex;justify-content:space-around;gap:var(--s4);text-align:center;
+  margin:var(--s12) auto 0;max-width:640px;
+  display:flex;justify-content:space-around;gap:var(--s4);text-align:center;
 }
 .proof .n{font-family:var(--font-head);font-size:var(--xl);display:block;line-height:1.1}
 .proof .k{font-size:var(--sm);color:var(--muted)}
+.proof-note{margin-top:var(--s4);font-size:var(--sm);color:var(--muted);text-align:center}
 .steps{counter-reset:s}
-.steps .card{position:relative}
+.steps .card{position:relative;text-align:center}
 .steps .card h3::before{
   counter-increment:s;content:counter(s);
   font-family:var(--font-head);color:var(--accent);margin-right:var(--s2);
 }
-.compare{display:grid;gap:var(--s6);grid-template-columns:repeat(auto-fit,minmax(280px,1fr))}
+.compare{display:grid;gap:var(--s6);grid-template-columns:repeat(auto-fit,minmax(280px,1fr));text-align:left}
 .compare .card.mark{outline:2px solid var(--accent)}
 .compare ul{margin:var(--s4) 0 0;padding-left:1.1em}
 .compare li{margin:var(--s2) 0}
+/* 마무리 CTA — 레퍼런스 §6 */
+.closing .card{text-align:center}
+.closing .card .btn{margin-top:var(--s6)}
 </style>
 </head>
 <body>
 <header class="site-head">
   <div class="container inner">
     <a class="brand" href="/">한입지도</a>
-    <nav>
-      <a href="/about.html">어떻게 만들었나</a>
-      <a href="/app.html">서비스</a>
-      <a class="btn sm" href="/app.html">지금 골라보기</a>
+    <nav class="nav-main">
+      <a class="navlink" href="/" aria-current="page">홈</a>
+      <a class="navlink" href="/about.html">어떻게 만들었나</a>
+      <a class="navlink" href="/app.html">서비스</a>
     </nav>
+    <div class="nav-side">
+      <button class="linklike" id="loginBtn">로그인</button>
+      <a class="btn sm" href="/app.html">지금 골라보기</a>
+    </div>
   </div>
 </header>
+
+<dialog class="sheet" id="loginDlg">
+  <h3>로그인은 아직 없습니다</h3>
+  <p>한입지도는 로그인 없이 전부 쓸 수 있습니다. 계정은 "내가 저장한 식당" 기능을 붙일 때 함께 엽니다.</p>
+  <button class="btn" id="loginClose" autofocus>알겠습니다</button>
+</dialog>
 
 <main>
   <section class="hero">
     <div class="container inner">
-      <h1>오늘 만원으로 뭐 먹지</h1>
-      <p class="lead">처음이라도 괜찮아요. 예산만 말하면 학식과 명륜동·혜화 식당을 한 판에 놓고 골라드립니다.</p>
+      <h1>오늘 <span class="nowrap"><span class="pill">만원</span>으로</span> 뭐 먹지</h1>
+      <p class="lead">예산만 말하면 학식과 명륜동·혜화 식당을 한 판에 놓고 골라드립니다.</p>
       <div class="cta-row">
         <a class="btn" href="/app.html">
           <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
           예산으로 찾기
         </a>
-        <a class="btn ghost" href="/about.html">어떻게 만들었나</a>
+        <a class="btn tint" href="/about.html">어떻게 만들었나</a>
       </div>
+      <figure class="shot">
+        <img src="/img/app-shot.png" alt="한입지도 서비스 화면 — 지도 위 식당 마커와 예산에 맞춘 오늘의 추천 3건">
+      </figure>
       <div class="proof" id="proof" aria-live="polite">
         <div><span class="n" id="nRest">–</span><span class="k">수집한 식당</span></div>
         <div><span class="n" id="nMenu">–</span><span class="k">파싱한 메뉴·가격</span></div>
         <div><span class="n" id="nCaf">–</span><span class="k">오늘의 학식</span></div>
       </div>
+      <p class="proof-note">숫자는 지금 이 순간의 실제 데이터베이스에서 읽어옵니다.</p>
     </div>
   </section>
 
   <section>
-    <div class="container">
+    <div class="container centered">
       <p class="eyebrow">왜 필요한가</p>
       <h2>가격은 메뉴판 사진 속에만 있습니다</h2>
       <p class="lead">지도 앱에는 식당은 있어도 가격이 없고, 학식은 매일 바뀝니다. 그래서 "만원으로 뭘 먹지"에 답하는 서비스가 없었습니다.</p>
@@ -100,10 +123,10 @@
   </section>
 
   <section>
-    <div class="container">
+    <div class="container centered">
       <p class="eyebrow">어떻게 동작하나</p>
       <h2>사진 한 장이 가격 데이터가 되기까지</h2>
-      <div class="grid steps" style="margin-top:var(--s8)">
+      <div class="grid steps" style="margin-top:var(--s12)">
         <div class="card">
           <h3>메뉴판을 모읍니다</h3>
           <p class="muted">명륜동·혜화 식당의 메뉴판 사진을 모아 한 곳에 쌓습니다.</p>
@@ -117,9 +140,25 @@
           <p class="muted">학식과 식당을 같은 판에 올리고, 추천 이유까지 데이터로 검증해 보여줍니다.</p>
         </div>
       </div>
-      <div class="cta-row" style="justify-content:flex-start;margin-top:var(--s8)">
-        <a class="btn" href="/app.html">예산 넣고 바로 보기</a>
-        <a class="btn ghost" href="/about.html">파이프라인 자세히</a>
+    </div>
+  </section>
+
+  <section class="closing">
+    <div class="container centered">
+      <h2>지금 예산을 넣어보세요</h2>
+      <div class="grid" style="margin-top:var(--s12)">
+        <div class="card">
+          <svg class="icon" style="width:28px;height:28px" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+          <h3 style="margin-top:var(--s4)">서비스 열기</h3>
+          <p class="muted">예산·조건을 넣으면 학식과 식당을 한 판에 올려 3곳을 골라줍니다.</p>
+          <a class="btn" href="/app.html">예산 넣고 바로 보기</a>
+        </div>
+        <div class="card">
+          <svg class="icon" style="width:28px;height:28px" viewBox="0 0 24 24" aria-hidden="true"><path d="M4 5h16v14H4z"/><path d="M4 9h16M9 9v10"/></svg>
+          <h3 style="margin-top:var(--s4)">파이프라인 보기</h3>
+          <p class="muted">사진에서 가격을 꺼내 검수하고 검증까지 붙인 과정을 그대로 공개합니다.</p>
+          <a class="btn tint" href="/about.html">어떻게 만들었나</a>
+        </div>
       </div>
     </div>
   </section>
@@ -133,6 +172,10 @@
 </footer>
 
 <script>
+const dlg = document.getElementById("loginDlg");
+document.getElementById("loginBtn").addEventListener("click", () => dlg.showModal());
+document.getElementById("loginClose").addEventListener("click", () => dlg.close());
+
 fetch("/api/data").then((r) => r.json()).then((d) => {
   document.getElementById("nRest").textContent = d.restaurants.length;
   document.getElementById("nMenu").textContent = d.menus.length;

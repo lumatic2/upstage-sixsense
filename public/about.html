@@ -35,13 +35,28 @@ th{color:var(--muted);font-weight:500}
 <header class="site-head">
   <div class="container inner">
     <a class="brand" href="/">한입지도</a>
-    <nav>
-      <a href="/about.html" aria-current="page">어떻게 만들었나</a>
-      <a href="/app.html">서비스</a>
-      <a class="btn sm" href="/app.html">지금 골라보기</a>
+    <nav class="nav-main">
+      <a class="navlink" href="/">홈</a>
+      <a class="navlink" href="/about.html" aria-current="page">어떻게 만들었나</a>
+      <a class="navlink" href="/app.html">서비스</a>
     </nav>
+    <div class="nav-side">
+      <button class="linklike" id="loginBtn">로그인</button>
+      <a class="btn sm" href="/app.html">지금 골라보기</a>
+    </div>
   </div>
 </header>
+
+<dialog class="sheet" id="loginDlg">
+  <h3>로그인은 아직 없습니다</h3>
+  <p>한입지도는 로그인 없이 전부 쓸 수 있습니다. 계정은 "내가 저장한 식당" 기능을 붙일 때 함께 엽니다.</p>
+  <button class="btn" id="loginClose" autofocus>알겠습니다</button>
+</dialog>
+<script>
+const dlg = document.getElementById("loginDlg");
+document.getElementById("loginBtn").addEventListener("click", () => dlg.showModal());
+document.getElementById("loginClose").addEventListener("click", () => dlg.close());
+</script>
 
 <main>
 <section>
