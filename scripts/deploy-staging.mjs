@@ -58,9 +58,11 @@ const FILES = [
   "api/parse-menu.js",
   "api/parse-query.js",
   "api/data.js",
+  "api/config.js",
   "api/_lib/extract-menu.js",
   "api/_lib/sheet-data.js",
   "public/test.html",
+  "public/index.html",
 ];
 const files = FILES.map((f) => ({ file: f, data: fs.readFileSync(f, "base64"), encoding: "base64" }));
 // 학식 fixture 를 정적으로 동봉 (Supabase 권한 전 대체 경로 — M3 결정 로그)

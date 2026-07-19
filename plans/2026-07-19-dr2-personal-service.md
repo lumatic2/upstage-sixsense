@@ -78,3 +78,4 @@ Status: approved
 
 ## 진행 로그 (append-only)
 - 2026-07-19 plan 작성 (승인 대기)
+- 지도 제공자: 카카오맵 JS 확정 (2026-07-19 사용자 — ADR-0002. Naver ID 미발급 실측, 지오코딩과 공급자 일관. 키는 KAKAO_JS_KEY env→/api/config 런타임 주입, 도메인 등록은 사용자)
