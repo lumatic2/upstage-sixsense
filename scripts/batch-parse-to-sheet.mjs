@@ -83,7 +83,9 @@ async function parsePhoto(file) {
   if (!res.ok) throw new Error(`Document Parse HTTP ${res.status}`);
   const data = await res.json();
   const html = data?.content?.html ?? "";
-  return { items: extractMenu(html), source: "api" };
+  const items = extractMenu(html);
+  fs.writeFileSync(cache, JSON.stringify(items, null, 2)); // api 결과 캐시 — 재실행 시 재과금 방지
+  return { items, source: "api" };
 }
 
 const manifest = JSON.parse(fs.readFileSync(manifestPath, "utf8"));

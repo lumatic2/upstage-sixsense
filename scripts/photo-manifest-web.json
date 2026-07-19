@@ -1,0 +1,150 @@
+{
+  "comment": "웹수집 사진 manifest — 출처는 sourcePost. 시트 적재는 사용자 승인 후.",
+  "collector": "전유성(웹수집)",
+  "photos": [
+    {
+      "file": "experiments/parse-poc/photos/web/web-01-송현식당.jpg",
+      "name": "송현식당",
+      "category": "한식(백반)",
+      "address": "서울 종로구 성균관로 15-3 (명륜2가)",
+      "tags": "",
+      "shotDate": "2025-12-17",
+      "collector": "전유성(웹수집)",
+      "sourcePost": "https://blog.naver.com/pjj256/224108430312",
+      "accessDate": "2026-07-20",
+      "driveLink": "https://drive.google.com/file/d/1WT11T-2j8A0JSBQZltSoVC7fbtwwNbOY/view"
+    },
+    {
+      "file": "experiments/parse-poc/photos/web/web-03-해피니스대학로점.jpg",
+      "name": "해피니스 대학로점",
+      "category": "중식",
+      "address": "서울특별시 종로구 대학로11길 40 세훈빌딩 1층",
+      "tags": "",
+      "shotDate": "2025-07-24",
+      "collector": "전유성(웹수집)",
+      "sourcePost": "https://blog.naver.com/jhs040879/223945949167",
+      "accessDate": "2026-07-20",
+      "driveLink": "https://drive.google.com/file/d/1M96_ygf0ndMVZFG7jla6aDck78EPo1yk/view"
+    },
+    {
+      "file": "experiments/parse-poc/photos/web/web-04-쿄코코대학로점.jpg",
+      "name": "쿄코코 (대학로점)",
+      "category": "일식",
+      "address": "서울 종로구 대학로11길 38-23",
+      "tags": "",
+      "shotDate": "2025-07-28",
+      "collector": "전유성(웹수집)",
+      "sourcePost": "https://blog.naver.com/gkdka6887/223949794869",
+      "accessDate": "2026-07-20",
+      "driveLink": "https://drive.google.com/file/d/1YiPjPOn3pVIRpjcicau3Jex4HrqyUP8U/view"
+    },
+    {
+      "file": "experiments/parse-poc/photos/web/web-04-쿄코코대학로점-2.jpg",
+      "name": "쿄코코 (대학로점)",
+      "category": "일식",
+      "address": "서울 종로구 대학로11길 38-23",
+      "tags": "",
+      "shotDate": "2025-07-28",
+      "collector": "전유성(웹수집)",
+      "sourcePost": "https://blog.naver.com/gkdka6887/223949794869",
+      "accessDate": "2026-07-20",
+      "driveLink": "https://drive.google.com/file/d/14noLPSRbhKdVvYgFMogx-L2nzBDHJKLq/view"
+    },
+    {
+      "file": "experiments/parse-poc/photos/web/web-05-노말키친혜화.jpg",
+      "name": "노말키친 혜화",
+      "category": "양식(파스타)",
+      "address": "서울특별시 종로구 성균관로6길 26 1층",
+      "tags": "",
+      "shotDate": "2025-11-27",
+      "collector": "전유성(웹수집)",
+      "sourcePost": "https://blog.naver.com/okwewillgo/224089372673",
+      "accessDate": "2026-07-20",
+      "driveLink": "https://drive.google.com/file/d/1cUFKyU6aB8fFNAtdrIm_pApBtyajWkva/view"
+    },
+    {
+      "file": "experiments/parse-poc/photos/web/web-06-띵즈34.jpg",
+      "name": "띵즈34",
+      "category": "카페",
+      "address": "서울 종로구 성균관로5길 15 1층",
+      "tags": "",
+      "shotDate": "2026-03-24",
+      "collector": "전유성(웹수집)",
+      "sourcePost": "https://blog.naver.com/hanna3639/224227517629",
+      "accessDate": "2026-07-20",
+      "driveLink": "https://drive.google.com/file/d/1OJ-KeE9lss_b5SX7cDzkDM6K9Iuv2GVZ/view"
+    },
+    {
+      "file": "experiments/parse-poc/photos/web/web-07-유캔하이혜화역점육미안별.jpg",
+      "name": "유캔하이 혜화역점(육미안 별관)",
+      "category": "한식(고깃집)",
+      "address": "서울특별시 종로구 창경궁로 246-3 1층",
+      "tags": "",
+      "shotDate": "2024-11-24",
+      "collector": "전유성(웹수집)",
+      "sourcePost": "https://blog.naver.com/offwork_/223671539307",
+      "accessDate": "2026-07-20",
+      "driveLink": "https://drive.google.com/file/d/1Lyx_TcKEWbaPuqZJgGoTGnorM3yb1BN6/view"
+    },
+    {
+      "file": "experiments/parse-poc/photos/web/web-08-백미향마라탕명륜점.jpg",
+      "name": "백미향마라탕 명륜점",
+      "category": "중식(마라탕)",
+      "address": "서울 종로구 성균관로 73, 1층 101호 (명륜1가)",
+      "tags": "",
+      "shotDate": "2024-11-12",
+      "collector": "전유성(웹수집)",
+      "sourcePost": "https://blog.naver.com/flavor-seeker/223656902537",
+      "accessDate": "2026-07-20",
+      "driveLink": "https://drive.google.com/file/d/1cX3wHw1jEleSVT5uE8DYJW2Q8J6gTqLE/view"
+    },
+    {
+      "file": "experiments/parse-poc/photos/web/web-09-페르시안궁전.jpg",
+      "name": "페르시안궁전",
+      "category": "이국음식(중동/페르시아)",
+      "address": "서울특별시 종로구 성균관로6길 9 1층",
+      "tags": "",
+      "shotDate": "2026-05-31",
+      "collector": "전유성(웹수집)",
+      "sourcePost": "https://blog.naver.com/mangzzang369/224301681849",
+      "accessDate": "2026-07-20",
+      "driveLink": "https://drive.google.com/file/d/1lEyiKpC4MeOHEPDTPsOI9HMjdb-cKK3g/view"
+    },
+    {
+      "file": "experiments/parse-poc/photos/web/web-09-페르시안궁전-2.jpg",
+      "name": "페르시안궁전",
+      "category": "이국음식(중동/페르시아)",
+      "address": "서울특별시 종로구 성균관로6길 9 1층",
+      "tags": "",
+      "shotDate": "2026-05-31",
+      "collector": "전유성(웹수집)",
+      "sourcePost": "https://blog.naver.com/mangzzang369/224301681849",
+      "accessDate": "2026-07-20",
+      "driveLink": "https://drive.google.com/file/d/194J86HtCIZ0oup636blnjXjE-fXo5LZx/view"
+    },
+    {
+      "file": "experiments/parse-poc/photos/web/web-10-파스타마켓혜화본점.jpg",
+      "name": "파스타마켓 (혜화본점)",
+      "category": "양식(파스타/피자)",
+      "address": "서울특별시 종로구 대학로11길 9-5 1층",
+      "tags": "",
+      "shotDate": "2026-02-24",
+      "collector": "전유성(웹수집)",
+      "sourcePost": "https://blog.naver.com/jjinss77/224194533231",
+      "accessDate": "2026-07-20",
+      "driveLink": "https://drive.google.com/file/d/1EanvP29SidZ2PeONOqam8k8vi1979n--/view"
+    },
+    {
+      "file": "experiments/parse-poc/photos/web/web-10-파스타마켓혜화본점-2.jpg",
+      "name": "파스타마켓 (혜화본점)",
+      "category": "양식(파스타/피자)",
+      "address": "서울특별시 종로구 대학로11길 9-5 1층",
+      "tags": "",
+      "shotDate": "2026-02-24",
+      "collector": "전유성(웹수집)",
+      "sourcePost": "https://blog.naver.com/jjinss77/224194533231",
+      "accessDate": "2026-07-20",
+      "driveLink": "https://drive.google.com/file/d/1clT2bVKHWhP-oKxWO1InaOFsprNaVvZK/view"
+    }
+  ]
+}
