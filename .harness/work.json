@@ -166,8 +166,8 @@
       "status": "active",
       "plan_path": "plans/2026-07-19-dr1-data-pipeline.md",
       "changeset_path": "scripts",
-      "next_step": "step-2",
-      "current_step": "step-2",
+      "next_step": null,
+      "current_step": null,
       "steps": [
         {
           "id": "step-1",
@@ -177,7 +177,7 @@
         {
           "id": "step-2",
           "label": "step-2 지오코딩 자동 채움 ([식당]탭 주소→좌표, 카카오 Local)",
-          "status": "blocked"
+          "status": "completed"
         },
         {
           "id": "step-3",
@@ -205,10 +205,8 @@
         "external_authority_required",
         "user_stopped"
       ],
-      "stop_reason": "secret_required",
-      "stop_detail": {
-        "message": "DR1 실데이터 파이프라인 중 지오코딩(step-2)만 남았는데, 카카오 REST API 키가 .env 에 없어 좌표 채움을 실행할 수 없습니다. 키를 넣어주시면 바로 재개됩니다."
-      },
+      "stop_reason": null,
+      "stop_detail": {},
       "session_ids": [
         "codex:bc7f5533-d351-4bcd-97e0-17cdd4bbe395",
         "claude:bc7f5533-d351-4bcd-97e0-17cdd4bbe395"
