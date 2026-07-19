@@ -1,0 +1,6 @@
+<!-- 한입지도 로고 — 캠퍼스 팝(DESIGN.md) -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" role="img" aria-labelledby="title">
+  <title id="title">한입지도</title>
+  <rect width="32" height="32" rx="4" fill="#B4552D"/>
+  <path fill="#fff" fill-rule="evenodd" d="M16 4a9 9 0 0 0-9 9c0 7 9 14 9 14s9-7 9-14a9 9 0 0 0-9-9Zm0 4c-1.8 0-3.2 1.6-3.2 3.6 0 1.6.9 3 2.3 3.5v5.8a.9.9 0 0 0 1.8 0v-5.8c1.4-.5 2.3-1.9 2.3-3.5C19.2 9.6 17.8 8 16 8Z"/>
+</svg>
