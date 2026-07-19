@@ -11,7 +11,7 @@
  *      - 없으면 Upstage Document Parse 호출 (UPSTAGE_API_KEY 필요) 후 extractMenu
  *   2. 시트 [식당] 탭을 읽어 기존 식당이름과 대조 — 이미 있으면 스킵(멱등)
  *   3. 신규 식당은 R### ID 를 이어 붙여 [식당] 행 + [메뉴] 행들을 append
- *      - [식당] 상태 = "검수대기", [메뉴] 출처 = "사진파싱", 검수 = "대기"
+ *      - [식당] 상태 = "입력완료", [메뉴] 출처 = "사진파싱", 검수 = "대기"
  *      - 가격 하드 룰: 0원 이하 · 100,000원 초과는 비고에 "가격확인필요" 표시
  *   4. 파싱 실패 사진은 파이프를 죽이지 않고 failed 목록으로 스킵, 종료 코드 0
  *
@@ -135,7 +135,7 @@ for (const [name, group] of byName) {
   const rid = `R${String(nextId).padStart(3, "0")}`;
   const m = group.meta;
   restaurantRows.push([
-    rid, name, m.category, m.address ?? "", "", "", m.tags ?? "", "", manifest.collector, m.shotDate ?? "", "검수대기",
+    rid, name, m.category, m.address ?? "", "", "", m.tags ?? "", "", manifest.collector, m.shotDate ?? "", "입력완료",
   ]);
   const seen = new Set();
   for (const it of merged) {

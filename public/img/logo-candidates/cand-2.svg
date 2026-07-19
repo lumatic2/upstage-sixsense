@@ -1,0 +1,6 @@
+<!-- 한입지도 심볼 후보 2 -->
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+  <path fill="currentColor" d="M2 4.2 7 2v16.1l-5 2Z"/>
+  <path fill="currentColor" d="m8.5 2.1 6.5 2.1v15.9L8.5 18Z"/>
+  <path fill="currentColor" d="m16.5 4.15 1.7-.57a1.15 1.15 0 0 0 1.45 1.75 1.15 1.15 0 0 0 1 2.05 1.15 1.15 0 0 0 .15 2.25V18l-4.3 2Z"/>
+</svg>
