@@ -29,11 +29,11 @@
 }
 .nowrap{white-space:nowrap}
 .hero .inner{position:relative;z-index:1}
-.hero h1{font-size:clamp(38px,8vw,88px);line-height:1.12;max-width:13ch;margin:0 auto}
+.hero h1{font-size:clamp(38px,8vw,88px);line-height:1.12;margin:0 auto}
 .hero .lead{margin:var(--s6) auto 0;max-width:44ch}
 .cta-row{display:flex;gap:var(--s3);justify-content:center;margin-top:var(--s8);flex-wrap:wrap}
 /* 금액 자리 — 폭을 미리 확보해 문구가 흔들리지 않게 (알약 제거). "1만원"(숫자+한글 2자) 기준 타이트하게 */
-.amt{display:inline-block;width:2.6em;margin:0 .08em;text-align:center;color:var(--accent)}
+.amt{display:inline-block;width:2.6em;margin-left:.08em;text-align:center;color:var(--accent)}
 /* 캐럿이 라인박스를 키우지 않게 — 캡하이트보다 낮게, 베이스라인 정렬 (흔들림 방지) */
 .amt .caret{width:.06em;height:.74em;vertical-align:0;background:var(--accent)}
 /* 물음표 — "먹지"와 살짝 띄우고, 상시 가벼운 플로팅 + 타이핑 직후 위글 */
@@ -157,12 +157,19 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 .band-ink .chip{border-color:rgba(247,249,252,.24);color:var(--band-ink-fg)}
 
 /* ── §왜 필요한가: 노션식 기능 카드 — 흰 헤드(라벨+굵은 한 줄) + 비주얼 밴드 ── */
-.duo{display:grid;gap:var(--s6);grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:var(--s12);text-align:left}
+/* 노션 레퍼런스: 좌정렬 대형 헤딩 + 카드 상단(라벨·볼드·화살표 원형 버튼) + 대형 비주얼 */
+.feature-head{text-align:left}
+.duo{display:grid;gap:var(--s6);grid-template-columns:repeat(auto-fit,minmax(300px,1fr));margin-top:var(--s8);text-align:left}
 .duo-card{background:var(--surface);border-radius:8px;overflow:hidden;display:flex;flex-direction:column}
-.duo-head{padding:var(--s6) var(--s8)}
+.duo-head{padding:var(--s6) var(--s8);display:flex;justify-content:space-between;align-items:center;gap:var(--s4)}
+.duo-arrow{
+  flex:none;width:44px;height:44px;border-radius:999px;background:var(--fg);color:var(--surface);
+  display:grid;place-items:center;font-size:20px;text-decoration:none;transition:transform 160ms ease;
+}
+.duo-arrow:hover{transform:scale(1.08)}
 .duo-head .who{font-size:var(--sm);color:var(--muted)}
 .duo-line{font-family:var(--font-head);font-size:clamp(20px,2.4vw,26px);line-height:1.35;margin-top:var(--s2);letter-spacing:-.01em}
-.duo-visual{flex:1;min-height:230px;padding:var(--s8);display:flex;flex-direction:column;gap:var(--s4);justify-content:center}
+.duo-visual{flex:1;min-height:300px;padding:var(--s8);display:flex;flex-direction:column;gap:var(--s4);justify-content:center}
 .duo-visual.is-gray{background:color-mix(in srgb,var(--fg) 7%,var(--surface))}
 .duo-visual.is-warm{background:var(--accent-soft)}
 .bubble{border-radius:12px;padding:10px 16px;max-width:85%;font-size:var(--base);line-height:1.55}
@@ -239,7 +246,7 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 <main>
   <section class="hero">
     <div class="container inner">
-      <h1>오늘<span class="nowrap"><span class="amt"><span id="budgetText">1만원</span><span class="caret" aria-hidden="true"></span></span>으로</span> 뭐 먹지<span class="qm-float"><span class="qm" id="qMark">?</span></span></h1>
+      <h1><span class="nowrap">오늘<span class="amt"><span id="budgetText">1만원</span><span class="caret" aria-hidden="true"></span></span>으로</span><br>뭐 먹지<span class="qm-float"><span class="qm" id="qMark">?</span></span></h1>
       <p class="lead lead-brand"><img class="uplogo" src="/img/upstage-logo.png" alt="Upstage"> <span>AI와 함께 최적의 한 끼를 선택해보세요.</span></p>
       <div class="cta-row">
         <a class="btn" href="/app.html">
@@ -281,16 +288,18 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
   </section>
 
   <section class="band-warm">
-    <div class="container centered">
-      <h2 class="big">같은 질문,<br>대답은 다릅니다</h2>
-      <p class="lead">범용 챗봇은 인터넷 후기를 요약해 줍니다. 한입지도는 직접 모은 메뉴판에서 꺼낸 가격으로 바로 답합니다.</p>
+    <div class="container">
+      <h2 class="big feature-head">한입지도는 메뉴를 알아요.</h2>
 
-      <!-- 레퍼런스(노션 기능 카드): 흰 상단(라벨+굵은 한 줄) + 아래 비주얼 밴드. 질문은 실데이터에서 자동 순환 -->
+      <!-- 레퍼런스(노션 기능 카드): 좌정렬 대형 헤딩 + 카드(라벨·볼드 문구·화살표 버튼) + 대형 비주얼 -->
       <div class="duo">
         <div class="duo-card">
           <div class="duo-head">
-            <p class="who">범용 챗봇</p>
-            <p class="duo-line">검색해 보고,<br>확인은 나에게 미룹니다.</p>
+            <div>
+              <p class="who">범용 챗봇</p>
+              <p class="duo-line">검색해 보고,<br>확인은 나에게 미룹니다.</p>
+            </div>
+            <a class="duo-arrow" href="/about.html" aria-label="어떻게 만들었나 보기">→</a>
           </div>
           <div class="duo-visual is-gray">
             <div class="bubble q" id="duoQ1">쫄면 얼마예요?</div>
@@ -299,8 +308,11 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
         </div>
         <div class="duo-card">
           <div class="duo-head">
-            <p class="who">한입지도</p>
-            <p class="duo-line">이번 주 메뉴판에서<br>꺼낸 가격으로 답합니다.</p>
+            <div>
+              <p class="who">한입지도</p>
+              <p class="duo-line">이번 주 메뉴판에서<br>꺼낸 가격으로 답합니다.</p>
+            </div>
+            <a class="duo-arrow" href="/app.html" aria-label="서비스 열기">→</a>
           </div>
           <div class="duo-visual is-warm">
             <div class="bubble q" id="duoQ2">쫄면 얼마예요?</div>
@@ -574,26 +586,26 @@ function startDemo(data) {
   [...nodes].sort((a, b) => menuCount(b.p.id) - menuCount(a.p.id))
     .forEach((n, rank) => { n.major = rank < 5; });
 
-  // 라벨 겹침 해소: 주요 5곳만 위/아래 교차 배치, 그래도 겹치면 숨김 (비주요는 항상 숨김)
+  // 라벨 겹침 해소: 주요 5곳만 표시, 실제 렌더 크기(offsetWidth/Height)로 최종 사각형을 계산해
+  // 교차하면 반대 밴드(위↔아래)로 뒤집고, 그래도 교차하면 숨김. (근사 폭·세로 밴드 판정은 실폭과 어긋나 겹침 재발했었음)
   function declutter() {
-    const est = (n) => n.label.textContent.length * 11 + 20; // 근사 폭
     const placed = [];
+    const hit = (a, b) => !(a.right + 6 < b.left || b.right + 6 < a.left || a.bottom + 3 < b.top || b.bottom + 3 < a.top);
     nodes.forEach((n, i) => {
       if (!n.major) { n.label.classList.add("hid"); return; }
       n.label.classList.remove("below", "hid");
-      if (i % 2 === 1) n.label.classList.add("below");
-      const band = n.label.classList.contains("below") ? 1 : 0;
-      const w = est(n);
-      const clash = placed.some((o) => o.band === band && Math.abs(o.y - n.py) < 30 && Math.abs(o.x - n.px) < (o.w + w) / 2);
-      if (clash) {
-        const otherBand = 1 - band;
-        const clash2 = placed.some((o) => o.band === otherBand && Math.abs(o.y - n.py) < 30 && Math.abs(o.x - n.px) < (o.w + w) / 2);
-        if (clash2) { n.label.classList.add("hid"); return; }
-        n.label.classList.toggle("below");
-        placed.push({ x: n.px, y: n.py, w, band: otherBand });
-        return;
+      const w = n.label.offsetWidth, h = n.label.offsetHeight;
+      // CSS translate 와 동일한 최종 위치: 위 = (-100% - 12px), 아래 = +14px
+      const rect = (below) => below
+        ? { left: n.px - w / 2, right: n.px + w / 2, top: n.py + 14, bottom: n.py + 14 + h }
+        : { left: n.px - w / 2, right: n.px + w / 2, top: n.py - 12 - h, bottom: n.py - 12 };
+      let below = i % 2 === 1;
+      if (placed.some((o) => hit(rect(below), o))) {
+        below = !below;
+        if (placed.some((o) => hit(rect(below), o))) { n.label.classList.add("hid"); return; }
       }
-      placed.push({ x: n.px, y: n.py, w, band });
+      if (below) n.label.classList.add("below");
+      placed.push(rect(below));
     });
   }
   declutter();
