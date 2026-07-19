@@ -14,14 +14,16 @@
 
 ## Active Milestones
 
-<!-- harness:milestone id="DR1" status="active" priority="P0" evidence="plans/2026-07-19-dr1-data-pipeline.md" -->
+<!-- harness:milestone id="DR1" status="completed" priority="P0" evidence="plans/2026-07-19-dr1-data-pipeline.md" -->
 ### DR1 — 실데이터 파이프라인 가동 (사진→파싱→시트, 지오코딩, 학식→시트→DB)
 - DoD: 실사진 유래 식당 ≥5곳 + 좌표 + 학식 실식단이 시트·Supabase 에 있고, 스테이징 검색 E2E 에서 실데이터 관측
-- Evidence: `plans/2026-07-19-dr1-data-pipeline.md` 진행 로그 + 실행 로그·시트 행 실측
+- Evidence: plans/2026-07-19-dr1-data-pipeline.md
 - Gap: 파이프라인 35점 구간이 아직 fixture — 실데이터가 흘러야 실점수
 - Scale: changesets>=3; surfaces: 스크립트 실행 로그·시트·스테이징 URL; capability: 실데이터가 수집→구조화→서비스까지 흐른다
-- Status: [ ]
+- Status: [x]
 
+- Completed at: 2026-07-19
+- Summary: 실데이터 파이프라인 가동 — 식당5·메뉴76·학식4·좌표5/5, 스테이징 E2E 실측
 <!-- harness:milestone id="DR2" status="pending" priority="P0" evidence="plans/2026-07-19-dr2-personal-service.md" -->
 ### DR2 — 개인 버전 웹서비스 빌드 (Upstage 심화 + 인터랙티브 데모)
 - DoD: 배포 URL 심사 시연 시나리오(예산→실데이터 추천+이유+Groundedness 배지) Playwright smoke PASS + `verification/matrix.md` 가시화

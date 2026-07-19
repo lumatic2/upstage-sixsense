@@ -27,6 +27,17 @@ const SPREADSHEET_ID = "1r_G6Z6FhlCQ_svQifrvQAWjlCyicOeB6UB4PPbboGTQ";
 const API_URL = "https://api.upstage.ai/v1/document-digitization";
 const ROOT = path.join(import.meta.dirname, "..");
 
+// .env 로드 (UPSTAGE_API_KEY — 캐시 없는 신규 사진 파싱용)
+{
+  const envPath = path.join(ROOT, ".env");
+  if (fs.existsSync(envPath)) {
+    for (const line of fs.readFileSync(envPath, "utf8").split(/\r?\n/)) {
+      const m = /^([A-Z0-9_]+)=(.*)$/.exec(line.trim());
+      if (m && !process.env[m[1]]) process.env[m[1]] = m[2].replace(/^"|"$/g, "");
+    }
+  }
+}
+
 const args = process.argv.slice(2);
 const DRY = args.includes("--dry-run");
 const NO_CACHE = args.includes("--no-cache");

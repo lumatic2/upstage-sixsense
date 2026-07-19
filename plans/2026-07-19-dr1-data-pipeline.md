@@ -70,3 +70,4 @@ Status: approved
 - 2026-07-19 plan 작성 (승인 대기)
 - 2026-07-19 step-1·3·4 완료 (식당 4곳·메뉴 69행·학식 4행 시트 적재, /api/data 스테이징 E2E PASS). step-2 blocked: KAKAO_REST_API_KEY 미발급. Supabase env 미보유로 sync 는 BLOCKED 경로 검증만 — 서비스는 시트 fallback 으로 실데이터 동작.
 - 2026-07-19 step-2 완료: 카카오 키 도착 → 3/4곳 좌표·주소 자동 채움. R003 성대한김밥은 카카오 미등록 — 주소 수기 입력 대기(finding). DR1 DoD 잔여: 식당 5곳째 사진 + Supabase env(또는 DoD 조정).
+- 2026-07-19 (추가) 5곳째 웹 수집(계략가, 출처 기록) + R003 주소 확보(원출처 포스트) → 5/5 좌표 완료. Supabase 결정: 사용자 무료 쿼터 소진 — 팀원 Supabase 또는 Firebase 전환을 후속으로 하고 데모 경로는 시트 read 확정(2026-07-19 사용자). DR1 DoD 충족: 스테이징 실측 식당5·메뉴76·학식4·좌표5/5.
