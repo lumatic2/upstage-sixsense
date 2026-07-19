@@ -126,18 +126,7 @@ section{padding:var(--s16) 0}
 /* 중앙 정렬 섹션 (레퍼런스 히어로·3카드) */
 .centered{text-align:center}
 .centered .lead{margin-left:auto;margin-right:auto}
-/* 헤딩 안 단어 강조 알약 — 누르면 금액이 바뀐다(데모 시나리오와 연동).
-   라이브러리 없이 순수 CSS/JS: 후보 조사 결과 Odometer(아카이브)·GSAP(과중) 모두 부적합. */
-.pill{
-  display:inline-block;padding:0 .28em;border-radius:999px;border:0;
-  background:var(--accent-soft);color:var(--accent);
-  font:inherit;line-height:inherit;cursor:pointer;
-  transition:transform 150ms ease-out,background 150ms ease-out;
-  transform-origin:center;
-}
-button.pill:hover{background:color-mix(in srgb,var(--accent-soft) 60%,var(--accent) 16%)}
-button.pill:focus-visible{outline:2px solid var(--accent);outline-offset:3px}
-button.pill.flip{transform:rotateX(90deg)}
+/* (구 .pill 알약 강조는 2026-07-20 사용자 결정으로 제거 — 금액 강조는 index .amt) */
 
 /* ── footer ── */
 .site-foot{border-top:1px solid var(--border);padding:var(--s8) 0;color:var(--muted);font-size:var(--sm)}

@@ -59,7 +59,7 @@ export async function loadSheetData() {
     restaurant_id: r[0].trim(), restaurant_name: (r[1] ?? "").trim(), name: (r[2] ?? "").trim(),
     price: r[3] ? Number(String(r[3]).replace(/[^\d]/g, "")) : null,
     source: (r[4] ?? "").trim(), review: (r[5] ?? "").trim(), note: (r[6] ?? "").trim(),
-  })).filter((m) => m.name && m.price && m.review !== "제외"); // 검수 "제외" = 간판 문구·옵션 등 비메뉴 행
+  })).filter((m) => m.name && m.price); // 노이즈 행은 시트에서 삭제됨(2026-07-20 정리) — 검수 값은 대기/확인 뿐
   const cafeteria = caf.slice(1).filter((r) => (r[0] ?? "").match(/^\d{4}-\d{2}-\d{2}/)).map((r) => ({
     menu_date: r[0].trim(), cafeteria: (r[1] ?? "").trim(), corner: (r[2] ?? "").trim() || null,
     items: (r[3] ?? "").split(",").map((s) => s.trim()).filter(Boolean),
