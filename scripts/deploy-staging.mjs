@@ -59,6 +59,7 @@ const FILES = [
   "api/parse-query.js",
   "api/data.js",
   "api/config.js",
+  "api/recommend.js",
   "api/_lib/extract-menu.js",
   "api/_lib/sheet-data.js",
   "public/test.html",
