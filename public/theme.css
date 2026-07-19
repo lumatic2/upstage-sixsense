@@ -129,9 +129,16 @@ section{padding:var(--s16) 0}
 /* (구 .pill 알약 강조는 2026-07-20 사용자 결정으로 제거 — 금액 강조는 index .amt) */
 
 /* ── footer ── */
-.site-foot{border-top:1px solid var(--border);padding:var(--s8) 0;color:var(--muted);font-size:var(--sm)}
-.site-foot .inner{display:flex;flex-wrap:wrap;gap:var(--s4);align-items:center;justify-content:space-between}
-.site-foot a{text-decoration:underline;text-underline-offset:3px}
+/* 푸터 — 사이트맵형: 브랜드(아이콘+한 줄) + 링크 칼럼 */
+.site-foot{border-top:1px solid var(--border);padding:var(--s12) 0;color:var(--muted);font-size:var(--sm)}
+.foot-grid{display:grid;gap:var(--s8);grid-template-columns:2fr 1fr 1fr}
+@media (max-width:640px){.foot-grid{grid-template-columns:1fr}}
+.foot-brand .brand{display:inline-flex;align-items:center;gap:8px;color:var(--fg);font-family:var(--font-head);font-size:var(--base);text-decoration:none}
+.foot-brand p{margin:var(--s3) 0 0;line-height:1.6}
+.foot-col{display:flex;flex-direction:column;gap:var(--s2)}
+.foot-col .k{color:var(--fg);font-weight:500;margin:0 0 var(--s1)}
+.site-foot a{color:var(--muted);text-decoration:none}
+.site-foot a:hover{color:var(--fg)}
 
 @media (prefers-reduced-motion: reduce){
   *{transition:none!important;animation:none!important}

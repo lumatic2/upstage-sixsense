@@ -199,8 +199,8 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 .step-tab .n{font-family:var(--font-head);color:#E08A5F;margin-right:var(--s2)}
 .step-tab .t{font-family:var(--font-head)}
 .step-tab .d{display:block;font-size:var(--sm);color:var(--band-ink-muted);margin-top:var(--s2)}
-/* 높이 고정 — 패널 내용이 바뀌어도 섹션이 흔들리지 않게 */
-.step-panel{margin-top:var(--s6);height:300px;overflow-y:auto}
+/* 최장 콘텐츠(2단계 표)에 맞춘 min-height — 스크롤·잘림 없이 섹션 높이 안정 */
+.step-panel{margin-top:var(--s6);min-height:400px}
 .rowlist{width:100%;border-collapse:collapse;font-size:var(--sm)}
 .rowlist th{text-align:left;font-weight:500;color:var(--band-ink-muted);padding:6px 8px;border-bottom:1px solid rgba(247,249,252,.14)}
 .rowlist td{padding:6px 8px;border-bottom:1px solid rgba(247,249,252,.08)}
@@ -299,7 +299,6 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
               <p class="who">범용 챗봇</p>
               <p class="duo-line">검색해 보고,<br>확인은 나에게 미룹니다.</p>
             </div>
-            <a class="duo-arrow" href="/about.html" aria-label="어떻게 만들었나 보기">→</a>
           </div>
           <div class="duo-visual is-gray">
             <div class="bubble q" id="duoQ1">쫄면 얼마예요?</div>
@@ -324,8 +323,8 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
   </section>
 
   <section class="band-ink">
-    <div class="container centered">
-      <h2 class="big">사진 한 장이<br>가격 데이터가 되기까지</h2>
+    <div class="container">
+      <h2 class="big feature-head">사진 한 장이<br>가격 데이터가 되기까지.</h2>
       <div class="stepper">
         <ol class="step-tabs" id="stepTabs" role="tablist">
           <li><button class="step-tab" role="tab" data-step="0" aria-selected="true">
@@ -362,9 +361,22 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 </main>
 
 <footer class="site-foot">
-  <div class="container inner">
-    <span>한입지도 · 성균관대 명륜캠 주변 · AI Document Builders Challenge 출품작</span>
-    <span>사진 <a href="https://www.pexels.com/ko-kr/photo/8956778/">Pexels</a></span>
+  <div class="container foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="/" aria-label="한입지도 홈"><svg viewBox="0 0 24 24" style="width:22px;height:22px;color:var(--accent);flex:none"><path fill="currentColor" fill-rule="evenodd" d="M12 1.25C6.75 1.25 3 5.1 3 9.9c0 5.8 6.1 10.35 8.4 12.45.34.31.86.31 1.2 0C14.9 20.25 21 15.7 21 9.9c0-4.8-3.75-8.65-9-8.65Zm0 2.75c-1.25 0-2.2 1.3-2.2 3.25 0 1.85.65 2.85 1.5 3.25v7.05c0 .45.3.8.7.8s.7-.35.7-.8V10.5c.85-.4 1.5-1.4 1.5-3.25C14.2 5.3 13.25 4 12 4Z"/></svg><span>한입지도</span></a>
+      <p>예산으로 고르는 캠퍼스 맛집 지도.<br>AI Document Builders Challenge 출품작.</p>
+    </div>
+    <nav class="foot-col" aria-label="서비스">
+      <p class="k">서비스</p>
+      <a href="/">홈</a>
+      <a href="/app.html">메뉴 찾기</a>
+    </nav>
+    <nav class="foot-col" aria-label="이야기">
+      <p class="k">이야기</p>
+      <a href="/about.html">데이터 파이프라인</a>
+      <a href="/about.html#upstage">Upstage AI</a>
+      <a href="/test.html">파이프라인 검증</a>
+    </nav>
   </div>
 </footer>
 
@@ -664,7 +676,7 @@ function startDemo(data) {
   };
   let token = 0;
   const sleep = (ms, t) => new Promise((ok) => setTimeout(() => ok(t === token), ms));
-  const typeText = async (el, text, t, speed = 26) => {
+  const typeText = async (el, text, t, speed = 20) => {
     for (const ch of text) {
       if (!(await sleep(reduced ? 0 : speed, t))) return false;
       el.textContent += ch;
@@ -717,14 +729,14 @@ function startDemo(data) {
       const ut = u.querySelector(".utext");
       if (sc.typed) ut.textContent = sc.q; // 사용자가 직접 입력한 질문은 그대로
       else for (const ch of sc.q) {
-        if (!(await sleep(reduced ? 0 : 40, t))) return;
+        if (!(await sleep(reduced ? 0 : 32, t))) return;
         ut.textContent += ch;
       }
       u.querySelector(".caret").remove();
 
       // 2) 에이전트 생각 중
       const think = bubble("ai", '<span class="typing"><i></i><i></i><i></i></span>');
-      if (!(await sleep(reduced ? 200 : 550, t))) return;
+      if (!(await sleep(reduced ? 200 : 380, t))) return;
       think.textContent = "";
       if (!(await typeText(think, `${won(sc.budget)} 이하 조건으로 ${nodes.length}곳의 메뉴판을 살펴볼게요.`, t))) return;
 
@@ -759,7 +771,7 @@ function startDemo(data) {
           more.innerHTML = `<span>… 외 ${results.length - 3}곳도 확인 중</span>`;
         }
         chat.scrollTop = chat.scrollHeight;
-        if (!(await sleep(reduced ? 0 : shown ? 430 : 150, t))) return;
+        if (!(await sleep(reduced ? 0 : shown ? 300 : 90, t))) return;
         n.dot.className = ok ? "dot" : "dot out";
         n.label.className = "mlabel " + (n.major ? "" : "hid ") + (ok ? "" : "out ") + (n.label.classList.contains("below") ? "below" : "");
         declutter(); // 복원 직후 겹침 재평가 (hid 재적용)
@@ -769,12 +781,12 @@ function startDemo(data) {
       const cands = results.filter((r) => r.ok);
       if (!cands.length) {
         bubble("ai", `${won(sc.budget)} 이하로 담기는 메뉴가 아직 없어요. 예산을 조금 올려볼까요?`);
-        if (!(await sleep(2400, t))) return;
+        if (!(await sleep(1600, t))) return;
         idx = (idx + 1) % SCENARIOS.length; continue;
       }
 
       // 4) 선택 — 예산을 가장 잘 쓰는 조합
-      if (!(await sleep(reduced ? 200 : 500, t))) return;
+      if (!(await sleep(reduced ? 200 : 350, t))) return;
       const best = cands.reduce((a, b) => (b.menu.price > a.menu.price ? b : a));
       results.forEach((r) => {
         if (r === best) return;
@@ -786,7 +798,7 @@ function startDemo(data) {
       best.n.label.innerHTML = `${best.n.p.name}<span class="sub">${menuLabel(best.menu.name)} ${won(best.menu.price)}</span>`;
       const fin = bubble("ai final", "");
       if (!(await typeText(fin, `${best.n.p.name}의 ${menuLabel(best.menu.name)} ${won(best.menu.price)}을 추천해요. ${won(sc.budget)} 예산을 가장 알차게 쓰는 조합이에요.`, t))) return;
-      if (!(await sleep(reduced ? 3600 : 2800, t))) return;
+      if (!(await sleep(reduced ? 3000 : 1800, t))) return;
       idx = (idx + 1) % SCENARIOS.length;
     }
   }
