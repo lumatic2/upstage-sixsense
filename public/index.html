@@ -265,7 +265,11 @@ async function loadPicks() {
     for (const p of d.picks ?? []) {
       cards.push(`<div class="card pick"><div class="head"><span class="name">${p.name}</span><span class="cat">${p.category}${p.walkMin ? ` · 도보 ${p.walkMin}분` : ""}</span></div>
         <ul class="menus">${p.menus.map((m) => `<li><span>${m.name}</span><span class="price">${m.price.toLocaleString()}원</span></li>`).join("")}</ul>
-        <p class="reason">${p.reason} <span class="src" data-grounded-slot="${p.name}">${p.reasonSource === "solar" ? "— Solar 생성" : ""}</span></p></div>`);
+        <p class="reason">${p.reason} <span class="src">${
+          p.grounded === "grounded" ? "— Solar 생성 · 근거 검증됨" :
+          p.grounded === "replaced" ? "— 근거 미달 판정으로 데이터 팩트로 교체됨" :
+          p.reasonSource === "solar" ? "— Solar 생성" : ""
+        }</span></p></div>`);
     }
     const note = d.walkRelaxed ? `<p class="parsed">도보 조건에 맞는 곳이 없어 가까운 순으로 보여드립니다.</p>` : "";
     block.innerHTML = note + (cards.join("") || `<div class="empty">조건에 맞는 추천이 없습니다 — 예산을 조금 올려보세요.</div>`);

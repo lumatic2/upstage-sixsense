@@ -60,7 +60,8 @@ export default async function handler(req, res) {
 
   const form = new FormData();
   form.append("model", "document-parse");
-  form.append("ocr", "force");
+  form.append("ocr", "force");            // 사진 원본 — OCR 강제 (스캔 아님)
+  form.append("coordinates", "true");     // 요소 좌표 보존 — 메뉴명·가격 짝짓기 검증 근거
   form.append("output_formats", '["html"]');
   form.append("document", new Blob([buf]), body.filename || "menu.jpg");
 

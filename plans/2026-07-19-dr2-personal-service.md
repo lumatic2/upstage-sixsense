@@ -79,3 +79,4 @@ Status: approved
 ## 진행 로그 (append-only)
 - 2026-07-19 plan 작성 (승인 대기)
 - 지도 제공자: 카카오맵 JS 확정 (2026-07-19 사용자 — ADR-0002. Naver ID 미발급 실측, 지오코딩과 공급자 일관. 키는 KAKAO_JS_KEY env→/api/config 런타임 주입, 도메인 등록은 사용자)
+- 2026-07-19 step-3: 전용 groundedness-check 모델 제공 종료 실측(/v1/models) → solar-mini 독립 판정자로 같은 계약 구현(사용자 추인 대기 — 억지 적용 아님·정직 서사는 presentation 메모). 실관측: 3/3 grounded, notGrounded 시 템플릿 교체 경로.

@@ -109,5 +109,45 @@ export default async function handler(req, res) {
     p.menus = p.menus.slice(0, 5);
     delete p.tags;
   }
+
+  // 근거 검증 게이트 (step-3): 생성(solar-pro2)과 분리된 판정자(solar-mini)가
+  // 추천 이유가 실데이터(context)에만 근거하는지 판정 — notGrounded 면 데이터 템플릿으로 교체해
+  // "환각을 구조적으로 차단"을 제품 동작으로 증명한다.
+  // ※ 전용 Groundedness Check 모델은 2026-07 현재 이 계정 모델 목록에 없음(retired) —
+  //   같은 계약(context-answer 판정)을 solar-mini 독립 판정자로 구현 (생성·검증 모델 분리).
+  // 검증 장애는 추천 루프에 영향 없음 (grounded=null, 배지만 생략).
+  if (key) {
+    await Promise.all(picks.filter((p) => p.reasonSource === "solar").map(async (p) => {
+      try {
+        const ctx = JSON.stringify({ 식당: p.name, 분류: p.category, 도보분: p.walkMin, 메뉴: p.menus.map((m) => `${m.name} ${m.price}원`), 조건: conditions });
+        const r = await fetch(CHAT_URL, {
+          method: "POST",
+          headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
+          signal: AbortSignal.timeout(2000),
+          body: JSON.stringify({
+            model: "solar-mini",
+            messages: [
+              { role: "system", content: "판정자. answer 문장이 context 데이터에 있는 사실(메뉴명·가격·도보 분·분류)만 담으면 grounded, 데이터에 없는 사실(맛·평판·분위기·없는 메뉴·틀린 가격)을 담으면 notGrounded, 판단 불가면 notSure. JSON 만." },
+              { role: "user", content: JSON.stringify({ context: ctx, answer: p.reason }) },
+            ],
+            response_format: {
+              type: "json_schema",
+              json_schema: { name: "verdict", strict: true, schema: { type: "object", properties: { verdict: { type: "string", enum: ["grounded", "notGrounded", "notSure"] } }, required: ["verdict"] } },
+            },
+          }),
+        });
+        if (!r.ok) throw new Error(`grounded-judge HTTP ${r.status}`);
+        const verdict = JSON.parse((await r.json()).choices?.[0]?.message?.content ?? "{}").verdict ?? null;
+        if (verdict === "notGrounded") {
+          p.reason = templateReason(p, budget);
+          p.reasonSource = "template";
+          p.grounded = "replaced"; // 환각 판정 → 데이터 팩트로 교체됨
+        } else {
+          p.grounded = verdict; // "grounded" | "notSure"
+        }
+      } catch { p.grounded = null; }
+    }));
+  }
+
   res.status(200).json({ picks, cafeteria: caf, conditions, walkRelaxed });
 }
