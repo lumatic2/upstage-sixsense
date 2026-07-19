@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1">
-<title>한입지도 — 오늘 만원으로 뭐 먹지</title>
+<title>한입지도</title>
 <meta name="description" content="명륜동·혜화 메뉴판 사진에서 꺼낸 진짜 가격으로, 예산 안에서 학식과 식당을 한 판에 놓고 정해주는 서비스">
 <link rel="icon" type="image/svg+xml" href="/img/favicon.svg">
 <link rel="stylesheet" href="/theme.css">
@@ -62,7 +62,7 @@
   padding:3px 8px;font-size:12px;line-height:1.35;white-space:nowrap;color:var(--fg);
   transition:all 240ms ease-out;
 }
-.mlabel.out{opacity:.3}
+.mlabel.out{opacity:0;pointer-events:none}
 .mlabel.hid{opacity:0;pointer-events:none}
 .mlabel.below{translate:-50% 14px}
 .mlabel.scan{border-color:var(--accent);color:var(--accent)}
@@ -246,7 +246,7 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
             </div>
             <div class="demo-chat" id="demoChat" aria-live="polite"></div>
             <form class="demo-ask" id="demoAsk">
-              <input type="text" id="demoAskInput" placeholder="직접 물어보기 — 예: 7천원 이하" aria-label="예산 조건 직접 입력" autocomplete="off">
+              <input type="text" id="demoAskInput" placeholder="직접 물어보기" aria-label="예산 조건 직접 입력" autocomplete="off">
               <button class="btn sm" type="submit">보내기</button>
             </form>
           </aside>
@@ -380,12 +380,20 @@ function buildMarquee(menus) {
   const items = menus.filter(isCleanMenu);
   if (!items.length) return;
   const half = Math.ceil(items.length / 2);
-  const rowHtml = (arr) => arr.map((m, i) =>
-    `<span class="wave-item" style="animation-delay:${(-(i * 0.45)).toFixed(2)}s"><span>${menuLabel(m.name)}</span><span class="p">${won(m.price)}</span></span>`).join("");
+  const rowHtml = (arr) => arr.map((m) =>
+    `<span class="wave-item"><span>${menuLabel(m.name)}</span><span class="p">${won(m.price)}</span></span>`).join("");
   document.getElementById("wave1").innerHTML = rowHtml(items.slice(0, half));
   const w2 = document.getElementById("wave2");
-  w2.innerHTML = rowHtml(items.slice(half));      // 딜레이 수열 동일 → 같은 방향 파도
+  w2.innerHTML = rowHtml(items.slice(half));
   w2.style.transform = "translateX(72px)";        // 반 칸 밀어 세로 교차
+  // 위상 = 실제 가로 픽셀 위치 — 두 줄이 같은 파도를 같은 방향으로 탄다
+  const phase = () => {
+    const els = [...document.querySelectorAll(".waverow .wave-item")];
+    const min = Math.min(...els.map((e) => e.offsetLeft)); // 중앙 정렬로 음수가 될 수 있어 정규화
+    els.forEach((el) => { el.style.animationDelay = (-((el.offsetLeft - min) / 320)).toFixed(2) + "s"; });
+  };
+  phase();
+  addEventListener("resize", phase);
 }
 
 /* ── §왜 필요한가: 듀오 카드 — 같은 질문이 두 카드에서 동시에 갈린다 (실데이터 자동 순환) ── */
@@ -573,9 +581,16 @@ function startDemo(data) {
     sc.onload = () => kakao.maps.load(() => {
       const map = new kakao.maps.Map(document.getElementById("demoMap"), {
         center: new kakao.maps.LatLng((LA.min + LA.max) / 2, (LN.min + LN.max) / 2),
-        level: 4, draggable: true, scrollwheel: false,
+        level: 4, draggable: true, scrollwheel: true,
       });
-      map.addControl(new kakao.maps.ZoomControl(), kakao.maps.ControlPosition.RIGHT);
+      // 좌하단 축척(250m) 표기 숨김 — 클래스가 없어 텍스트로 찾는다 (kakao 로고는 저작권 표기라 유지)
+      setTimeout(() => {
+        document.querySelectorAll("#demoMap div").forEach((d) => {
+          if (d.children.length === 0 && /^\d+\s?k?m$/.test((d.textContent || "").trim())) {
+            (d.parentElement ?? d).style.display = "none";
+          }
+        });
+      }, 800);
       const bounds = new kakao.maps.LatLngBounds();
       pts.forEach((p) => bounds.extend(new kakao.maps.LatLng(p.lat, p.lng)));
       map.relayout();
