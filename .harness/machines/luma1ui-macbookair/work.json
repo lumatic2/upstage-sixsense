@@ -329,8 +329,11 @@
         "external_authority_required",
         "user_stopped"
       ],
-      "stop_reason": null,
-      "stop_detail": {},
+      "stop_reason": "external_authority_required",
+      "stop_detail": {
+        "what": "Apps Script 프로젝트에 Google Drive 스코프 승인 필요 (제보 사진 저장). 계정 소유자가 편집기에서 savePhoto 실행 → \"액세스 승인\" 1회.",
+        "blocks": "step-5 E2E 재실행(사진 첨부된 제보 → 검수 대조 → 승인 → 노출)"
+      },
       "session_ids": [
         "claude:4e9799f7-4b94-4c87-86c6-a3e3570c59a9"
       ],
