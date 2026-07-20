@@ -54,14 +54,34 @@ function buildContext(data, todayISO) {
  *  ("8천원 이하 혼밥 추천해줘")에서만 동작하고 "만원 이하로 추천해줘" 에서는 6/6 실패했다
  *  (2026-07-21 독립 검증). 지시를 더 붙이는 건 다음 문형에서 또 샌다 — 확정적으로 뽑히는 값은
  *  코드가 뽑고, 모델은 사람 말로 답하는 일만 한다. */
+const KNUM = { 일: 1, 이: 2, 삼: 3, 사: 4, 오: 5, 육: 6, 칠: 7, 팔: 8, 구: 9 };
+
+/** 받침을 보고 은/는을 고른다. "맥도날드은(는)" 처럼 표기 그대로 내보내면 사람 글이 아니다. */
+export function withParticle(word) {
+  const w = String(word ?? "").trim();
+  const last = w.slice(-1);
+  const code = last.charCodeAt(0);
+  if (!(code >= 0xac00 && code <= 0xd7a3)) return `${w}는`; // 한글이 아니면 기본형
+  return (code - 0xac00) % 28 === 0 ? `${w}는` : `${w}은`;
+}
+
+/** "오천원"·"만 오천원"·"8,000원" 처럼 사람이 실제로 쓰는 표기를 금액으로 읽는다.
+ *  한글 숫자를 아라비아로 바꾼 뒤 같은 규칙을 태운다 — 표기마다 정규식을 늘리면 곧 샌다.
+ *  숫자도 금액어도 없으면 null 이다("망원 이하로" 같은 오타에 금액을 지어내지 않는다). */
+export function parseAmount(raw) {
+  const s = String(raw ?? "").replace(/[일이삼사오육칠팔구]/g, (c) => KNUM[c]).replace(/,/g, "");
+  let m;
+  if ((m = s.match(/(\d+)?\s*만\s*(\d+)\s*천/))) return (m[1] ? Number(m[1]) : 1) * 10000 + Number(m[2]) * 1000;
+  if ((m = s.match(/(\d+(?:\.\d+)?)\s*만/))) return Math.round(Number(m[1]) * 10000);
+  if (/(^|[^\d가-힣])만\s*원/.test(s)) return 10000;
+  if ((m = s.match(/(\d+)\s*천/))) return Number(m[1]) * 1000;
+  if ((m = s.match(/(\d{4,6})\s*원/))) return Number(m[1]);
+  return null;
+}
+
 export function extractConditions(message) {
   const s = String(message ?? "");
-  let budget = null, m;
-  // "만원"(1만) · "3만" · "8천" · "5천원" · "12000원" — 앞에 숫자가 없는 "만원"도 1만으로 읽는다
-  if ((m = s.match(/(\d+(?:\.\d+)?)\s*만\s*원?/))) budget = Math.round(Number(m[1]) * 10000);
-  else if (/(^|[^\d])만\s*원/.test(s)) budget = 10000;
-  else if ((m = s.match(/(\d+)\s*천\s*원?/))) budget = Number(m[1]) * 1000;
-  else if ((m = s.match(/(\d{4,6})\s*원/))) budget = Number(m[1]);
+  let budget = parseAmount(s), m;
   // "둘이서 2만원" 처럼 인원이 섞이면 1인 기준으로 나눈다
   const people = (m = s.match(/(\d+)\s*명|둘이|2인/)) ? (m[1] ? Number(m[1]) : 2) : 1;
   if (budget && people > 1) budget = Math.round(budget / people);
@@ -175,18 +195,23 @@ export default async function handler(req, res) {
     let reply = String(p.reply ?? "").replace(/<\/?데이터>/g, "").replace(/\s{2,}/g, " ").trim();
 
     // 없는 가게를 물었으면 그 사실을 먼저 말한다. 모델은 이걸 자주 건너뛰고 딴 이야기로 샜다.
+    // 단 모델이 이미 그 가게를 짚어 답했으면 덧붙이지 않는다 — 같은 사실을 두 번 말하게 된다.
     const unknown = String(p.unknownPlace ?? "").trim();
-    if (unknown && unknown !== "null") {
-      reply = `${unknown}은(는) 아직 데이터에 없습니다. ${reply}`.trim();
+    if (unknown && unknown !== "null" && !reply.includes(unknown)) {
+      // 모델이 이름 없이 "제가 가진 정보에는 없어요" 식으로 같은 말을 또 하는 문장은 버린다 —
+      // 앞에 우리 문장을 붙이면 같은 사실이 두 번 나온다.
+      const rest = reply.split(/(?<=[.!?])\s+/)
+        .filter((s) => !/(정보|데이터)에?\s*(는|은)?\s*없/.test(s))
+        .join(" ").trim();
+      reply = `${withParticle(unknown)} 아직 데이터에 없습니다. ${rest}`.trim();
     }
 
-    // 조건은 코드 추출을 정본으로 삼고, 모델 값은 코드가 못 뽑은 자리만 메운다.
-    // (모델은 문형이 조금만 달라져도 금액을 흘린다 — 2026-07-21 실측 6/6 실패)
+    // 조건은 **코드 추출만** 쓴다. 모델 값을 폴백으로 두었더니 숫자가 하나도 없는 오타 입력
+    // ("망원 이하로 찾아줘")에 8,000원 같은 그럴듯한 금액을 지어냈다(2026-07-21 3차 검증).
+    // 없는 조건은 없다고 두는 편이 지어낸 조건으로 검색하는 것보다 낫다.
     const code = extractConditions(message);
-    const budget = code.budget ?? (p.budget ?? null);
-    const walkMax = code.walkMax ?? (p.walkMax ?? null);
-    const tags = code.tags.length ? code.tags : (p.tags ?? []);
-    const search = Boolean(budget || walkMax || tags.length) || Boolean(p.search);
+    const { budget, walkMax, tags } = code;
+    const search = Boolean(budget || walkMax || tags.length);
 
     return res.status(200).json({
       reply: reply || "다시 한 번 말씀해 주시겠어요?",
