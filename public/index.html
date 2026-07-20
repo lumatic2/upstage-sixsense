@@ -48,10 +48,17 @@
 
 /* 인터랙티브 데모 — 좌: 실지도 연출 / 우: 에이전트 사이드바 대화 */
 .demo{margin:var(--s16) auto 0;max-width:1000px;background:var(--surface);border-radius:8px;overflow:hidden;text-align:left}
-.demo-body{display:grid;grid-template-columns:minmax(0,1fr) 320px}
-@media (max-width:860px){.demo-body{grid-template-columns:1fr}.demo-side{border-left:0;border-top:1px solid var(--border)}}
+/* 데모 카드 세로 크기 고정 — 콘텐츠 길이와 무관하게 .demo-body 자체에 확정 높이를 줘야
+   그리드 행이 콘텐츠에 맞춰 다시 커지는 걸 막을 수 있음 (사용자 지시 2026-07-20) */
+.demo-body{display:grid;grid-template-columns:minmax(0,1fr) 320px;height:clamp(380px,42vw,500px);overflow:hidden}
+@media (max-width:860px){
+  .demo-body{grid-template-columns:1fr;height:auto}
+  .demo-side{border-left:0;border-top:1px solid var(--border);height:auto}
+  .demo-stage{height:340px}
+  .demo-chat{flex:none;height:280px}
+}
 .demo-stage{
-  position:relative;height:clamp(380px,42vw,500px);
+  position:relative;height:100%;
   background:
     linear-gradient(90deg,var(--border) 1px,transparent 1px) 0 0/64px 64px,
     linear-gradient(180deg,var(--border) 1px,transparent 1px) 0 0/64px 64px,
@@ -82,7 +89,7 @@
 }
 .mlabel.best .sub{display:block;font-weight:400}
 /* 사이드바 */
-.demo-side{border-left:1px solid var(--border);display:flex;flex-direction:column;min-height:0}
+.demo-side{border-left:1px solid var(--border);display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden}
 .demo-side-head{
   display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s4);
   border-bottom:1px solid var(--border);font-size:var(--sm);color:var(--muted);
@@ -90,7 +97,7 @@
 .demo-side-head img{flex:none}
 .demo-chat{
   flex:1;overflow-y:auto;padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3);
-  height:clamp(280px,calc(42vw - 96px),404px);min-height:0;font-size:var(--sm);
+  min-height:0;font-size:var(--sm);
   transition:opacity 200ms ease-out;
 }
 .demo-chat.fade{opacity:0}
