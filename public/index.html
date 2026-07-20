@@ -719,7 +719,7 @@ function startDemo(data) {
       }
       qm.classList.remove("wiggle"); void qm.offsetWidth; // 재생 리셋
       qm.classList.add("wiggle");
-      await new Promise((ok) => setTimeout(ok, reduced ? 3000 : 1100));
+      await new Promise((ok) => setTimeout(ok, reduced ? 3000 : 600));
       hi++;
     }
   })();
