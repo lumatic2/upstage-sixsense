@@ -34,12 +34,17 @@ await page.goto(URL_ + "/app.html", { waitUntil: "networkidle" });
 check("앱 로드: 제목", (await page.title()).includes("한입지도"));
 check("헤더·검색 렌더", await page.locator("#searchForm").isVisible());
 
-// 2. 실데이터
-await page.waitForFunction(() => document.querySelectorAll("#restaurantBlock .card").length > 0, null, { timeout: 15000 }).catch(() => {});
-const restCount = await page.locator("#restaurantBlock .card").count();
-check("실데이터 식당 ≥5", restCount >= 5, `${restCount}곳`);
-const cafText = await page.locator("#cafeteriaBlock").textContent();
-check("학식 표시", (cafText ?? "").includes("학식"));
+// 2. 실데이터 — DR9 에서 하단 전체 목록을 없앴다. 이제 "뭐가 있나"는 지도 마커가 보여주므로
+//    마커 수로 센다. (구 `#restaurantBlock .card` 는 존재하지 않는 셀렉터라 그대로 두면 늘 0이다.)
+await page.waitForFunction(() => document.querySelectorAll('#map img[src*="transparent.gif"]').length > 0, null, { timeout: 15000 }).catch(() => {});
+const restCount = await page.locator('#map img[src*="transparent.gif"]').count();
+check("실데이터 식당 마커 ≥5", restCount >= 5, `${restCount}곳`);
+// 학식은 정식 명칭 보드로 바뀌었다 — 4곳이 다 뜨고 그중 하나 이상이 실제 이름이어야 한다.
+// 셀렉터가 사라지면 예외로 죽지 말고 FAIL 로 보고한다 — 죽으면 어느 항목이 깨졌는지 안 남는다.
+const cafText = (await page.locator("#cafeteriaBlock").textContent({ timeout: 8000 }).catch(() => null)) ?? "";
+const cafNames = ["패컬티식당", "은행골식당", "법고을식당", "금잔디식당"].filter((n) => cafText.includes(n));
+check("학식 4곳 정식 명칭 표시", cafNames.length === 4, `${cafNames.length}/4`);
+check("학식 지난 날짜 미노출", !/20\d\d-\d\d-\d\d/.test(cafText) || cafText.includes(await page.locator("#cafDate").textContent() ?? ""));
 
 // 3. 자연어 검색 → 추천+이유
 await page.fill("#q", "8천원 이하 혼밥");
@@ -67,15 +72,22 @@ check(
 );
 
 // 4. 예산 칩 필터 (6천원) — 표시된 전 메뉴 가격이 상한 이내인지
+//    검사 대상을 추천 카드로 옮겼다. 구 셀렉터(#restaurantBlock)는 DR9 에서 사라져 요소가 0개였고,
+//    그러면 "초과 0건"으로 **그냥 통과**한다 — 아무것도 검사하지 않으면서 PASS 를 찍는 허수였다.
 await page.click('button[data-budget="6000"]');
-await page.waitForTimeout(800);
-const over = await page.evaluate(() => {
-  const prices = [...document.querySelectorAll("#restaurantBlock .menus .price")]
+// 고정 대기는 안 된다 — 추천은 Solar 이유 생성 + 근거 판정까지 도느라 5~9초가 걸린다.
+// 짧게 재면 "검사할 가격 0개"가 되어 필터 검사가 허수로 통과한다.
+await page.waitForFunction(
+  () => document.querySelectorAll("#picksBlock .menus .price").length > 0,
+  null, { timeout: 25000 },
+).catch(() => {});
+const priced = await page.evaluate(() =>
+  [...document.querySelectorAll("#picksBlock .menus .price")]
     .map((e) => Number((e.textContent || "").replace(/[^\d]/g, "")))
-    .filter((n) => n > 0);
-  return prices.filter((p) => p > 6000).length;
-});
-check("예산 칩 필터: 6천원 초과 노출 0", over === 0, `초과 ${over}건`);
+    .filter((n) => n > 0));
+check("예산 칩: 검사할 가격이 실제로 있음", priced.length > 0, `${priced.length}개`);
+const over = priced.filter((p) => p > 6000).length;
+check("예산 칩 필터: 6천원 초과 노출 0", over === 0, `초과 ${over}건 / 검사 ${priced.length}개`);
 
 // 5. 콘솔·스크린샷
 check("콘솔 red error 0", consoleErrors.length === 0, consoleErrors.slice(0, 2).join(" | "));
