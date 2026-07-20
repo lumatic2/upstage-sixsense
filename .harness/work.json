@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "active_work_id": "dr8-agent-console",
+  "active_work_id": "dr9-real-conversation",
   "works": {
     "m2-parse-poc": {
       "work_id": "m2-parse-poc",
@@ -569,6 +569,66 @@
       "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation.",
       "completion_summary": "메뉴 찾기 화면을 대화형 콘솔로 바꿨습니다 — 예산을 말하면 Solar 가 조건을 읽고 근거 검증까지 거친 추천 카드가 아래에 뜹니다. 모바일에서 지도가 사라지고 카드가 늘어나던 것도 고쳤습니다.",
       "notified_at": "2026-07-20T16:46:59.889363+00:00"
+    },
+    "dr9-real-conversation": {
+      "work_id": "dr9-real-conversation",
+      "horizon_id": "demoday-run",
+      "milestone_id": "DR9",
+      "status": "active",
+      "plan_path": "plans/2026-07-21-dr9-real-conversation.md",
+      "changeset_path": "api",
+      "next_step": "step-1",
+      "current_step": "step-1",
+      "steps": [
+        {
+          "id": "step-1",
+          "label": "step-1 `/api/chat` — 진짜 Solar 대화",
+          "status": "pending"
+        },
+        {
+          "id": "step-2",
+          "label": "step-2 대화창을 `/api/chat` 에 연결 + 문구 교체",
+          "status": "pending"
+        },
+        {
+          "id": "step-3",
+          "label": "step-3 지도 마커 클릭 카드",
+          "status": "pending"
+        },
+        {
+          "id": "step-4",
+          "label": "step-4 학식 정본화 + 하단 목록 제거",
+          "status": "pending"
+        },
+        {
+          "id": "step-5",
+          "label": "step-5 통합 검증",
+          "status": "pending"
+        }
+      ],
+      "execution_mode": "continuous",
+      "approval": {
+        "approved_by": "user",
+        "approved_at": "2026-07-21",
+        "plan_sha256": "cc4844b2da58ce91b8f78ea838f93c8509ee0b1afffe457e535080501f28d546"
+      },
+      "allowed_stop_reasons": [
+        "completed",
+        "blocked",
+        "decision_required",
+        "risk_gate",
+        "secret_required",
+        "external_authority_required",
+        "user_stopped"
+      ],
+      "stop_reason": null,
+      "stop_detail": {},
+      "session_ids": [
+        "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4"
+      ],
+      "owner_session_uuid": "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4",
+      "updated_at": "2026-07-21",
+      "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation."
     }
   }
 }
