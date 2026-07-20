@@ -629,7 +629,8 @@
       "owner_session_uuid": "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4",
       "updated_at": "2026-07-21",
       "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation.",
-      "completion_summary": "메뉴 찾기 화면이 진짜로 AI와 대화합니다 — Solar가 직접 답을 쓰고, 없는 가게는 없다고 말하며, 지도 마커를 누르면 메뉴 카드가 뜹니다. 학식은 실제 식당 이름 네 곳으로 오늘 것만 나옵니다."
+      "completion_summary": "메뉴 찾기 화면이 진짜로 AI와 대화합니다 — Solar가 직접 답을 쓰고, 없는 가게는 없다고 말하며, 지도 마커를 누르면 메뉴 카드가 뜹니다. 학식은 실제 식당 이름 네 곳으로 오늘 것만 나옵니다.",
+      "notified_at": "2026-07-20T18:24:53.682438+00:00"
     }
   }
 }

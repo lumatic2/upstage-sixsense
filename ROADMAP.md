@@ -15,16 +15,6 @@
 
 ## Active Milestones
 
-<!-- harness:milestone id="DR1" status="completed" priority="P0" evidence="plans/2026-07-19-dr1-data-pipeline.md" -->
-### DR1 — 실데이터 파이프라인 가동 (사진→파싱→시트, 지오코딩, 학식→시트→DB)
-- DoD: 실사진 유래 식당 ≥5곳 + 좌표 + 학식 실식단이 시트·Supabase 에 있고, 스테이징 검색 E2E 에서 실데이터 관측
-- Evidence: plans/2026-07-19-dr1-data-pipeline.md
-- Gap: 파이프라인 35점 구간이 아직 fixture — 실데이터가 흘러야 실점수
-- Scale: changesets>=3; surfaces: 스크립트 실행 로그·시트·스테이징 URL; capability: 실데이터가 수집→구조화→서비스까지 흐른다
-- Status: [x]
-
-- Completed at: 2026-07-19
-- Summary: 실데이터 파이프라인 가동 — 식당5·메뉴76·학식4·좌표5/5, 스테이징 E2E 실측
 <!-- harness:milestone id="DR2" status="completed" priority="P0" evidence="plans/2026-07-19-dr2-personal-service.md" -->
 ### DR2 — 개인 버전 웹서비스 빌드 (Upstage 심화 + 인터랙티브 데모)
 - DoD: 배포 URL 심사 시연 시나리오(예산→실데이터 추천+이유+Groundedness 배지) Playwright smoke PASS + `verification/matrix.md` 가시화
@@ -98,6 +88,14 @@
 
 - Completed at: 2026-07-21
 - Summary: 진짜 Solar 대화(/api/chat)·지도 마커 카드·학식 정본화 — 독립 검증 5회(4회 반증 후 확인), smoke 14/14
+<!-- harness:milestone id="DR10" status="active" priority="P0" evidence="plans/2026-07-21-dr10-quality-pass.md" -->
+### DR10 — 품질 마감 (자동화·데모 카드·전수 감사 결함)
+- DoD: ① 조건 없는 입력에 화면과 어긋나는 문장 0건 ② cron 이 실제로 돌아 학식이 사람 손 없이 갱신 ③ 랜딩 데모 카드가 마커로 보이고 입력에 실서비스 유도로 반응 ④ 6페이지 nav 동일·모바일 잘림 0·`/test.html` 비공개 ⑤ 이슈 ⑥⑦ 닫힘 ⑥ smoke·단위 PASS·콘솔 red 0
+- Evidence: `plans/2026-07-21-dr10-quality-pass.md` + `verification/matrix.md`
+- Gap: 전수 QA 감사에서 BLOCKER 1건(대화 필터가 전부 걸러지면 원문으로 되돌아가 화면과 모순되는 답을 냄)·MAJOR 3건(모바일 nav 잘림·contribute nav 누락·미완성 test.html 공개)이 나왔고, 학식은 사람이 크롤러를 돌려야만 갱신된다
+- Scale: changesets>=5; surfaces: 배포 URL(데스크톱·모바일)·Vercel Cron·구글 시트·custom-skills; capability: 사람 손 없이 유지되고 판정단 앞에서 흠이 안 잡히는 상태
+- Status: [ ]
+
 ## Completed (product-horizon)
 
 <!-- harness:milestone id="M1" status="completed" priority="P0" evidence="docs/mentoring/2026-07-15-presubmit.md" -->
