@@ -43,14 +43,15 @@
 - Status: [x]
 
 - Completed at: 2026-07-20
-<!-- harness:milestone id="DR5" status="pending" priority="P0" evidence="plans/2026-07-20-dr5-site-completion.md" -->
+<!-- harness:milestone id="DR5" status="completed" priority="P0" evidence="plans/2026-07-20-dr5-site-completion.md" -->
 ### DR5 — 페이지 구조 완성 + 재방문 개인화
 - DoD: 배포 URL 에서 `docs/SITEMAP.md` 공개 5페이지가 전부 살아 있고 nav·푸터에 죽은 링크 0, 재방문 시 추천이 실제로 달라지는 것 관측 + smoke PASS
 - Evidence: `plans/2026-07-20-dr5-site-completion.md` + `verification/matrix.md`
 - Gap: nav 의 `about.html#upstage` 가 깨진 링크(앵커 부재)이고 `/app.html` 만 랜딩 디자인과 톤이 어긋나며, 재방문자 개인화가 없다
 - Scale: changesets>=4; surfaces: 배포 URL·Playwright·verification/; capability: 사용자 여정 5페이지가 일관되게 완결된다
-- Status: [ ]
+- Status: [x]
 
+- Completed at: 2026-07-20
 <!-- harness:milestone id="DR3" status="pending" priority="P1" evidence="plans/2026-07-19-dr3-assembly.md" -->
 ### DR3 — 본선 조립 (hanipmap 이식·API 계약·온보딩)
 - DoD: hanipmap 배포 URL 파싱·검색 E2E PASS + api-contract 실 URL 계약 + 발표 자료 실물 정합
