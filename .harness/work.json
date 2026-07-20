@@ -639,23 +639,23 @@
       "status": "active",
       "plan_path": "plans/2026-07-21-dr10-quality-pass.md",
       "changeset_path": "api",
-      "next_step": "step-1",
-      "current_step": "step-1",
+      "next_step": "step-4",
+      "current_step": "step-4",
       "steps": [
         {
           "id": "step-1",
           "label": "step-1 BLOCKER — 대화 필터가 원문으로 되돌아가는 구멍",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-2",
           "label": "step-2 학식 크롤링 자동화 (Vercel Cron)",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-3",
           "label": "step-3 랜딩 데모 카드 — 지도 마커 + 사이드바 CTA",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-4",

@@ -59,23 +59,28 @@
     var(--bg);
 }
 #demoMap{position:absolute;inset:0}
+/* 지도 위 표시는 마커여야 한다 — 회색 원은 지도 위 요소로 읽히지 않는다(사용자 지시 2026-07-21).
+   끝점이 좌표를 가리키도록 아래쪽 꼭짓점 기준으로 앉힌다. */
 .dot{
-  position:absolute;width:12px;height:12px;border-radius:999px;translate:-50% -50%;
-  background:var(--muted);opacity:.55;transition:all 240ms ease-out;z-index:2;
+  position:absolute;width:20px;height:26px;translate:-50% -100%;
+  color:var(--muted);opacity:.6;transition:all 240ms ease-out;z-index:2;
+  transform-origin:50% 100%;
 }
-.dot.scan{background:var(--accent);opacity:1;box-shadow:0 0 0 6px var(--accent-soft)}
-.dot.out{opacity:.25}
-.dot.best{background:var(--accent);opacity:1;width:16px;height:16px;box-shadow:0 0 0 8px var(--accent-soft)}
+.dot svg{display:block;width:100%;height:100%;fill:currentColor;
+  filter:drop-shadow(0 1px 2px rgba(12,20,32,.28))}
+.dot.scan{color:var(--accent);opacity:1;scale:1.12}
+.dot.out{opacity:.28}
+.dot.best{color:var(--accent);opacity:1;scale:1.32;z-index:4}
 /* 지도 위 이름표 — 이름만 상시 표시(카드 겹침 방지), 선택 시에만 메뉴·가격 확장 */
 .mlabel{
-  position:absolute;translate:-50% calc(-100% - 12px);z-index:3;
+  position:absolute;translate:-50% calc(-100% - 30px);z-index:3;  /* 마커(26px) 위로 — 핀과 겹치지 않게 */
   background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
   padding:3px 8px;font-size:12px;line-height:1.35;white-space:nowrap;color:var(--fg);
   transition:all 240ms ease-out;
 }
 .mlabel.out{opacity:0;pointer-events:none}
 .mlabel.hid{opacity:0;pointer-events:none}
-.mlabel.below{translate:-50% 14px}
+.mlabel.below{translate:-50% 6px}  /* 아래 배치는 핀 끝점 바로 밑 */
 .mlabel.scan{border-color:var(--accent);color:var(--accent)}
 .mlabel.best{
   border-color:var(--accent);background:var(--accent);color:var(--accent-fg);
@@ -603,7 +608,10 @@ function startDemo(data) {
   const amtEl = document.getElementById("budgetText");
   const reduced = matchMedia("(prefers-reduced-motion: reduce)").matches;
 
-  const pts = data.restaurants.filter((r) => r.lat && r.lng);
+  // 시뮬레이션에 실제로 참여하는 식당만 지도에 세운다 — 아래 스캔 루프가 `isCleanMenu` 가 없는
+  // 가게를 건너뛰므로, 전부 찍으면 "왜 저 마커는 아무 일도 안 하지" 가 된다(사용자 지시 2026-07-21).
+  const pts = data.restaurants.filter((r) =>
+    r.lat && r.lng && data.menus.some((m) => m.restaurant_id === r.id && isCleanMenu(m)));
   if (pts.length < 2) { chat.innerHTML = '<div class="cb ai">데모에 쓸 좌표가 부족합니다.</div>'; return; }
   const lats = pts.map((p) => p.lat), lngs = pts.map((p) => p.lng);
   const span = (a) => ({ min: Math.min(...a), max: Math.max(...a) });
@@ -614,9 +622,11 @@ function startDemo(data) {
   });
 
   // 지도 위 요소: 점 + 이름표(이름만 — 카드 겹침 방지)
+  const PIN = `<svg viewBox="0 0 20 26" aria-hidden="true"><path d="M10 0C4.9 0 .8 4.1.8 9.2c0 6.9 9.2 16.8 9.2 16.8s9.2-9.9 9.2-16.8C19.2 4.1 15.1 0 10 0z"/><circle cx="10" cy="9" r="3.4" fill="#fff"/></svg>`;
   const nodes = pts.map((p) => {
     const dot = document.createElement("i");
     dot.className = "dot";
+    dot.innerHTML = PIN;
     stage.appendChild(dot);
     const label = document.createElement("div");
     label.className = "mlabel";
@@ -724,23 +734,24 @@ function startDemo(data) {
   };
 
   let idx = 0;
-  let custom = null; // 사용자가 직접 입력한 질문 (한 번 실행 후 자동 루프 복귀)
 
+  /* 여기는 소개용 데모다 — 대본을 재생할 뿐 실제 API 를 부르지 않는다.
+     그런데 입력창이 있으면 사람은 당연히 서비스인 줄 알고 친다. 그때 대본을 한 번 더 돌리는 건
+     "물어봤는데 딴 얘기를 하는" 셈이라, 솔직히 말하고 실제 서비스로 데려간다(사용자 지시 2026-07-21). */
   document.getElementById("demoAsk").addEventListener("submit", (e) => {
     e.preventDefault();
-    const q = document.getElementById("demoAskInput").value.trim();
+    const input = document.getElementById("demoAskInput");
+    const q = input.value.trim();
     if (!q) return;
-    document.getElementById("demoAskInput").value = "";
-    // 금액 해석: "N만원"·"N천원"·"NNNN원"·숫자만 — 못 읽으면 만원
-    let budget = 10000;
-    let m;
-    if ((m = q.match(/(\d+(?:\.\d+)?)\s*만/))) budget = Math.round(Number(m[1]) * 10000);
-    else if ((m = q.match(/(\d+)\s*천/))) budget = Number(m[1]) * 1000;
-    else if ((m = q.match(/(\d{4,6})/))) budget = Number(m[1]);
-    const pill = budget % 10000 === 0 ? `${budget / 10000}만원`
-      : budget % 1000 === 0 ? `${Math.floor(budget / 1000)}천원` : `${budget.toLocaleString()}원`;
-    custom = { q, budget, pill, typed: true };
-    loop(++token);
+    input.value = "";
+    token++;                       // 재생 중이던 대본을 멈춘다
+    chat.innerHTML = "";
+    bubble("user", q.replace(/[<>&]/g, ""));
+    const el = bubble("ai", "");
+    el.innerHTML = `여기는 <b>소개용 데모</b>라 미리 준비된 장면만 보여드려요.
+      실제로 찾아드리는 건 <b>메뉴 찾기</b> 화면입니다 — 방금 쓰신 문장 그대로 넘겨드릴게요.
+      <a class="btn sm" style="margin-top:10px" href="/app.html?q=${encodeURIComponent(q)}">이 조건으로 찾아보기</a>`;
+    chat.scrollTop = chat.scrollHeight;
   });
 
   // 헤드라인 금액 타이핑 — 데모 카드(지도·챗봇)와 독립된 별도 루프 (사용자 지시 2026-07-20)
@@ -764,8 +775,7 @@ function startDemo(data) {
 
   async function loop(t) {
     while (t === token) {
-      const sc = custom ?? SCENARIOS[idx];
-      custom = null;
+      const sc = SCENARIOS[idx];
       // 시나리오 전환 완충 — 페이드 아웃 후 내용 교체, 페이드 인 (사용자 지시 2026-07-20)
       chat.classList.add("fade");
       if (!(await sleep(reduced ? 0 : 220, t))) return;
