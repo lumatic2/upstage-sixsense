@@ -240,7 +240,10 @@ export default async function handler(req, res) {
     if (!search) {
       const kept = reply.split(/(?<=[.!?])\s+/).filter((s) =>
         !(!budget && /\d[\d,]*\s*원\s*(이하|이내|안|미만)/.test(s)) && !/카드/.test(s));
-      if (kept.join(" ").trim()) reply = kept.join(" ").trim();
+      // 전부 걸러졌다는 건 응답이 통째로 어긋났다는 뜻이다. 원문으로 되돌리면 필터를 안 건 것과 같다
+      // — 실제로 그 구멍으로 "8,000원 이하 소반·홍순두부를 추천해요" 가 화면의 다른 가게 카드와 함께
+      // 나갔다(2026-07-21 전수 감사 BLOCKER). 남는 게 없으면 지어내지 말고 못 알아들었다고 말한다.
+      reply = kept.join(" ").trim() || "조건을 알아듣지 못했어요. 예산이나 상황을 알려주시면 찾아드릴게요.";
     }
 
     return res.status(200).json({

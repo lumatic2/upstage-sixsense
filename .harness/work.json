@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "active_work_id": "dr9-real-conversation",
+  "active_work_id": "dr10-quality-pass",
   "works": {
     "m2-parse-poc": {
       "work_id": "m2-parse-poc",
@@ -631,6 +631,71 @@
       "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation.",
       "completion_summary": "메뉴 찾기 화면이 진짜로 AI와 대화합니다 — Solar가 직접 답을 쓰고, 없는 가게는 없다고 말하며, 지도 마커를 누르면 메뉴 카드가 뜹니다. 학식은 실제 식당 이름 네 곳으로 오늘 것만 나옵니다.",
       "notified_at": "2026-07-20T18:24:53.682438+00:00"
+    },
+    "dr10-quality-pass": {
+      "work_id": "dr10-quality-pass",
+      "horizon_id": "demoday-run",
+      "milestone_id": "DR10",
+      "status": "active",
+      "plan_path": "plans/2026-07-21-dr10-quality-pass.md",
+      "changeset_path": "api",
+      "next_step": "step-1",
+      "current_step": "step-1",
+      "steps": [
+        {
+          "id": "step-1",
+          "label": "step-1 BLOCKER — 대화 필터가 원문으로 되돌아가는 구멍",
+          "status": "pending"
+        },
+        {
+          "id": "step-2",
+          "label": "step-2 학식 크롤링 자동화 (Vercel Cron)",
+          "status": "pending"
+        },
+        {
+          "id": "step-3",
+          "label": "step-3 랜딩 데모 카드 — 지도 마커 + 사이드바 CTA",
+          "status": "pending"
+        },
+        {
+          "id": "step-4",
+          "label": "step-4 감사 결함 정리 (MAJOR·MINOR)",
+          "status": "pending"
+        },
+        {
+          "id": "step-5",
+          "label": "step-5 열린 이슈 정리 (⑥⑦)",
+          "status": "pending"
+        },
+        {
+          "id": "step-6",
+          "label": "step-6 통합 검증",
+          "status": "pending"
+        }
+      ],
+      "execution_mode": "continuous",
+      "approval": {
+        "approved_by": "user",
+        "approved_at": "2026-07-21",
+        "plan_sha256": "bd9f50d2e49ab59ad326c7349219bf455d7f759cb42bbfe24356b5bc1321cffe"
+      },
+      "allowed_stop_reasons": [
+        "completed",
+        "blocked",
+        "decision_required",
+        "risk_gate",
+        "secret_required",
+        "external_authority_required",
+        "user_stopped"
+      ],
+      "stop_reason": null,
+      "stop_detail": {},
+      "session_ids": [
+        "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4"
+      ],
+      "owner_session_uuid": "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4",
+      "updated_at": "2026-07-21",
+      "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation."
     }
   }
 }
