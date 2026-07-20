@@ -15,92 +15,22 @@
 import fs from "node:fs";
 import { gwsSheets, SPREADSHEET_ID } from "./_lib/gws.mjs";
 
-const BASE = "https://www.skku.edu/skku/campus/support/welfare_11.do";
-// welfare_11.do 목록 페이지의 a.cafeteriaBtn data-* 를 그대로 옮김 (식당명은 응답 h6 에서 파싱)
-const CAFETERIAS = [
-  { conspaceCd: "10201030", srResId: "1", srShowTime: "W" },
-  { conspaceCd: "10201031", srResId: "2", srShowTime: "D" },
-  { conspaceCd: "10201034", srResId: "4", srShowTime: "W" },
-  { conspaceCd: "10201033", srResId: "6", srShowTime: "D" },
-];
-const MEALS = ["B", "L", "D"]; // 조식/중식/석식 (간식 S·예약 R 제외)
-
-function decode(s) {
-  return s
-    .replace(/&amp;/g, "&").replace(/&lt;/g, "<").replace(/&gt;/g, ">")
-    .replace(/&nbsp;/g, " ").replace(/&#39;/g, "'").replace(/&quot;/g, '"');
-}
-
-/** weekly/daily 공용: .weeListWrap 블록에서 날짜·식당·코너·메뉴·가격을 뽑는다 */
-export function parseMenus(html, { year, meal }) {
-  const records = [];
-  const wraps = html.split(/class="weeListWrap"/).slice(1);
-  for (const wrap of wraps) {
-    const dateM = wrap.match(/\((\d{2})\.(\d{2})\)/);
-    if (!dateM) continue;
-    const date = `${year}-${dateM[1]}-${dateM[2]}`;
-    for (const cont of wrap.split(/class="weeListCont"/).slice(1)) {
-      const h6 = cont.match(/<h6>\s*([^<]+?)\s*(?:<span>([^<]*)<\/span>)?\s*<\/h6>/s);
-      const pre = cont.match(/<pre>([\s\S]*?)<\/pre>/);
-      if (!h6 || !pre) continue;
-      const items = decode(pre[1]).split("\n").map((l) => l.trim()).filter(Boolean);
-      if (items.length === 0) continue;
-      // 가격: <pre> 다음 <li> 들 중 첫 숫자 텍스트
-      const after = cont.slice(cont.indexOf("</pre>"));
-      const priceM = after.match(/<li>\s*([\d,]{3,7})\s*<\/li>|<li>\s*\n?\s*([\d,]{3,7})\s*\n?\s*<\/li>|>\s*([\d,]{4,7})\s*</);
-      const price = priceM ? Number((priceM[1] ?? priceM[2] ?? priceM[3]).replace(/,/g, "")) : null;
-      records.push({
-        campus: "인사",
-        cafeteria: decode(h6[1]).trim(),
-        corner: h6[2] ? decode(h6[2]).trim() || null : null,
-        menu_date: date,
-        meal,
-        items,
-        price: price && price >= 500 && price <= 50000 ? price : null,
-      });
-    }
-  }
-  return records;
-}
+// 크롤 로직은 서버(api/cron)와 공유한다 — 따로 두면 언젠가 서로 다른 답을 낸다(DR10).
+import { parseMenus, crawlCafeteria, todayKST } from "../api/_lib/cafeteria-crawl.js";
+export { parseMenus };
 
 const isMain = process.argv[1] && import.meta.url.endsWith(process.argv[1].replace(/\\/g, "/").split("/").pop());
 if (isMain) {
   const args = process.argv.slice(2);
   const dateArg = args.includes("--date") ? args[args.indexOf("--date") + 1] : new Date().toISOString().slice(0, 10);
   const outArg = args.includes("--out") ? args[args.indexOf("--out") + 1] : null;
-  const year = dateArg.slice(0, 4);
+  // 실제 크롤은 공유 모듈이 한다 — 여기서 다시 구현하면 서버와 갈라진다.
+  const crawl = await crawlCafeteria(dateArg);
+  const records = crawl.records;
+  for (const e of crawl.errors) console.error(`  skip ${e}`);
+  console.error(`  ${records.length} records (${crawl.status})`);
 
-  const all = [];
-  for (const caf of CAFETERIAS) {
-    for (const meal of MEALS) {
-      const url = `${BASE}?mode=info&conspaceCd=${caf.conspaceCd}&srResId=${caf.srResId}&srShowTime=${caf.srShowTime}&srCategory=${meal}&srDt=${dateArg}`;
-      let html;
-      try {
-        const res = await fetch(url, { headers: { "user-agent": "Mozilla/5.0 (hanipmap crawler)" }, signal: AbortSignal.timeout(15_000) });
-        if (!res.ok) {
-          console.error(`  skip ${caf.conspaceCd}/${meal}: HTTP ${res.status}`);
-          continue;
-        }
-        html = await res.text();
-      } catch (e) {
-        console.error(`  skip ${caf.conspaceCd}/${meal}: ${e.name}`);
-        continue;
-      }
-      const recs = parseMenus(html, { year, meal });
-      all.push(...recs);
-      console.error(`  ${caf.conspaceCd} ${meal}: ${recs.length} records`);
-    }
-  }
-  // 중복 제거 (weekly 뷰가 식당 여러 곳을 한 응답에 실을 수 있음)
-  const seen = new Set();
-  const records = all.filter((r) => {
-    const k = `${r.cafeteria}|${r.menu_date}|${r.meal}|${r.corner}|${r.items[0]}`;
-    if (seen.has(k)) return false;
-    seen.add(k);
-    return true;
-  });
-
-  const out = { status: records.length ? "ok" : "empty", crawledAt: new Date().toISOString(), sourceDate: dateArg, records };
+  const out = { status: crawl.status, crawledAt: new Date().toISOString(), sourceDate: dateArg, records };
   const json = JSON.stringify(out, null, 2);
   if (outArg) fs.writeFileSync(outArg, json);
   console.log(outArg ? `saved ${records.length} records -> ${outArg}` : json);

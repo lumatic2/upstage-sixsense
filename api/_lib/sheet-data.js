@@ -72,10 +72,19 @@ export async function loadSheetData() {
   // 제보가 들어오면 [식당] 행이 먼저 생기므로, 이게 없으면 미검수 가게가 목록·지도에 먼저 뜬다.
   const served = new Set(menus.map((m) => m.restaurant_id));
   const restaurants = allRestaurants.filter((r) => served.has(r.id));
+  // 시트는 사람과 cron 이 함께 쓰는 공유 문서라 같은 행이 두 번 들어갈 수 있다(실제로 발생).
+  // 중복이 남으면 학식 카드의 메뉴가 두 배로 늘어나므로 읽는 쪽에서도 한 번 걸러낸다 —
+  // 쓰는 쪽만 고치면 이미 들어간 중복은 그대로 화면에 남는다.
+  const cafSeen = new Set();
   const cafeteria = caf.slice(1).filter((r) => (r[0] ?? "").match(/^\d{4}-\d{2}-\d{2}/)).map((r) => ({
     menu_date: r[0].trim(), cafeteria: (r[1] ?? "").trim(), corner: (r[2] ?? "").trim() || null,
     items: (r[3] ?? "").split(",").map((s) => s.trim()).filter(Boolean),
     price: r[4] ? Number(String(r[4]).replace(/[^\d]/g, "")) : null,
-  }));
+  })).filter((c) => {
+    const k = `${c.menu_date}|${c.cafeteria}|${c.corner ?? ""}|${c.items.join(",")}`;
+    if (cafSeen.has(k)) return false;
+    cafSeen.add(k);
+    return true;
+  });
   return { restaurants, menus, cafeteria };
 }
