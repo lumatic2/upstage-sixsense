@@ -413,9 +413,13 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
 
 const won = (n) => n.toLocaleString("ko-KR") + "원";
 
-/* 파싱 노이즈 거르기 — 시트 검수 전이라 광고 문구·옵션 행이 섞여 있다.
-   랜딩에서 앞세우는 문구는 사람이 읽어도 메뉴로 보이는 행만 쓴다. */
+/* 파싱 노이즈 거르기 — 광고 문구·옵션 행이 섞여 있다.
+   랜딩에서 앞세우는 문구는 사람이 읽어도 메뉴로 보이는 행만 쓴다.
+   곁들임(공기밥·음료·토핑) 판정은 서버가 붙여 보내는 isSide 를 그대로 쓴다 —
+   여기서 자체 휴리스틱만 쓰다가 "1,000원 → 공기밥 있는 집" 이 랜딩에 뜨고 있었다
+   (2026-07-20 독립 검증에서 적발). 판정은 api/_lib/side-menu.js 한 곳에서만 내린다. */
 const isCleanMenu = (m) =>
+  !m.isSide &&
   m.price >= 1000 && m.price <= 50000 && m.price % 100 === 0 &&
   m.name && m.name.length <= 12 &&
   !/[!?]|추가|Since|Set\s*[A-Z]|세트\s*[A-Z]/i.test(m.name);

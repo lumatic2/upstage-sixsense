@@ -241,9 +241,12 @@ function renderRealResults(q) {
   const items = [];
   for (const r of DATA.restaurants) {
     const ms = byRest.get(r.id) ?? [];
-    if (budget && !ms.length) continue;
-    const cheap = ms.slice().sort((a, b) => a.price - b.price).slice(0, 3);
-    items.push(`<li><b>${esc(r.name)}</b> <span class="muted">${esc(r.category)}</span> — ${budget ? `예산 내 ${ms.length}개: ` : ""}${cheap.map((m) => `${esc(m.name)} ${m.price.toLocaleString()}원`).join(", ")}</li>`);
+    // 검증 페이지가 서비스와 다른 답을 내면 검증이 아니다 — 곁들임만 걸리는 가게는
+    // 여기서도 후보가 아니고, 예산 내 개수도 본메뉴로 센다(2026-07-20 독립 검증 적발).
+    const mains = ms.filter((m) => !m.isSide);
+    if (budget && !mains.length) continue;
+    const cheap = mains.slice().sort((a, b) => a.price - b.price).slice(0, 3);
+    items.push(`<li><b>${esc(r.name)}</b> <span class="muted">${esc(r.category)}</span> — ${budget ? `예산 내 ${mains.length}개: ` : ""}${cheap.map((m) => `${esc(m.name)} ${m.price.toLocaleString()}원`).join(", ")}</li>`);
   }
   for (const c of DATA.cafeteria) {
     if (budget && c.price && c.price > budget) continue;

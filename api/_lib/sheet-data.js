@@ -1,6 +1,6 @@
 /** 구글 시트(팀 데이터 정본) 읽기 — gviz 공개 CSV export (DR1 step-4).
  *  시트는 링크 공유(anyone)라 시크릿 없이 서버에서 읽힌다.
- *  Supabase env 가 있으면 Supabase 를 우선하고, 없거나 실패하면 이 경로가 fallback. */
+ *  읽기 경로는 이 하나뿐이다 — Supabase 분기는 2026-07-20 제거(docs/ARCHITECTURE.md §데이터 정본). */
 
 const SPREADSHEET_ID = "1r_G6Z6FhlCQ_svQifrvQAWjlCyicOeB6UB4PPbboGTQ";
 const TTL_MS = 60_000;
