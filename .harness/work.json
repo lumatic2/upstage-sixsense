@@ -448,7 +448,8 @@
       ],
       "owner_session_uuid": "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4",
       "updated_at": "2026-07-21",
-      "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation."
+      "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation.",
+      "completion_summary": "링크 두 개만으로 팀원이 가져다 쓸 수 있게 내놨습니다 — 비어 있던 레포 첫 화면에 README 를 세우고, 막혔던 지점과 해법을 적은 인계 문서를 붙여 공개 레포에 푸시했습니다."
     }
   }
 }

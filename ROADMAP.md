@@ -68,14 +68,16 @@
 - Status: [x]
 - Completed at: 2026-07-21
 - Summary: 내 버전 완결 — 곁들임 오추천을 5개 노출면 전부에서 제거, 시트 SSOT 단일화, 모바일 붕괴·발표 수치 정합 (smoke 11/11, 독립 검증 3차 confirmed)
-<!-- harness:milestone id="DR7" status="active" priority="P0" evidence="plans/2026-07-20-dr7-team-share.md" -->
+<!-- harness:milestone id="DR7" status="completed" priority="P0" evidence="https://github.com/lumatic2/upstage-sixsense + docs/HANDOFF.md" -->
 ### DR7 — 팀 공유 패키지 (GitHub 레포 + 웹사이트 링크)
 - DoD: 시크릿 창에서 공개 레포 URL·사이트 URL 을 열어 README→HANDOFF 만으로 파이프라인 구조·재사용 지점이 파악되고 깨진 링크 0 + 시크릿 스캔 클린 + origin 동기
-- Evidence: `plans/2026-07-20-dr7-team-share.md`
+- Evidence: https://github.com/lumatic2/upstage-sixsense + docs/HANDOFF.md
 - Gap: 공유 형식이 레포·사이트 링크로 확정됐는데 루트 `README.md` 가 아예 없다 — 팀원이 GitHub 링크로 들어오면 첫 화면이 비어 있음
 - Scale: changesets>=2; surfaces: 공개 레포 렌더 화면·배포 URL; capability: 링크 두 개만으로 팀원이 가져다 쓸 수 있다
-- Status: [ ]
+- Status: [x]
 
+- Completed at: 2026-07-21
+- Summary: 팀 공유 패키지 — README·HANDOFF 신설 후 공개 레포 푸시, 링크 9/9 정상·시크릿 스캔 클린·origin 동기
 ## Completed (product-horizon)
 
 <!-- harness:milestone id="M1" status="completed" priority="P0" evidence="docs/mentoring/2026-07-15-presubmit.md" -->
