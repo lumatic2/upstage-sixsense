@@ -116,9 +116,13 @@ function renderRealResults(q) {
   const items = [];
   for (const r of DATA.restaurants) {
     const ms = byRest.get(r.id) ?? [];
-    if (budget && !ms.length) continue;
-    const cheap = ms.slice().sort((a, b) => a.price - b.price).slice(0, 3);
-    items.push(`<li><b>${r.name}</b> (${r.category}) — ${budget ? `예산 내 메뉴 ${ms.length}개: ` : ""}${cheap.map((m) => `${m.name} ${m.price.toLocaleString()}원`).join(", ")}</li>`);
+    // 이 페이지는 /verify.html 로 승격되기 전의 원본이라 링크는 어디에도 없지만, 배포에는
+    // 그대로 올라가 직접 URL 로 열린다. 곁들임 규칙이 여기만 빠져 있어 같은 예산에서
+    // 다른 답을 냈다(2026-07-20 독립 검증 적발) — 살아 있는 화면인 이상 같은 규칙을 적용한다.
+    const mains = ms.filter((m) => !m.isSide);
+    if (budget && !mains.length) continue;
+    const cheap = mains.slice().sort((a, b) => a.price - b.price).slice(0, 3);
+    items.push(`<li><b>${r.name}</b> (${r.category}) — ${budget ? `예산 내 메뉴 ${mains.length}개: ` : ""}${cheap.map((m) => `${m.name} ${m.price.toLocaleString()}원`).join(", ")}</li>`);
   }
   for (const c of DATA.cafeteria) {
     if (budget && c.price && c.price > budget) continue;
