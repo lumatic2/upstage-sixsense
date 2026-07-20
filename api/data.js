@@ -1,39 +1,21 @@
-/** GET /api/data — 서비스 데이터 소스 (DR1 step-4)
- *  우선순위: Supabase(env 有) → 구글 시트 gviz(팀 정본, fallback)
- *  실패 시 500 크래시 대신 빈 배열 + source:"none" (graceful).
+/** GET /api/data — 서비스 데이터 소스 (DR1 step-4 · DR6 step-2 로 단일화)
+ *  소스는 구글 시트 하나다(팀 정본). 실패 시 500 크래시 대신 빈 배열 + source:"none" (graceful).
+ *
+ *  Supabase 분기 제거 (2026-07-20, OPEN-ISSUES ④): env 가 있으면 Supabase 를 우선하는
+ *  경로가 있었는데, 거기엔 검수 게이트가 없었다. `menus` 테이블에 `review` 열 자체가 없어
+ *  필터를 걸 수도 없고, `scripts/sync-sheet-to-db.mjs` 의 upsert 는 삭제를 안 해서 DR4 이전에
+ *  올라간 미검수 행이 영구 잔존한다. 즉 env 하나가 켜지는 순간 "사람이 확인한 것만 노출한다"는
+ *  파이프라인의 핵심 주장이 조용히 깨지는 구조였다. 시트를 유일한 정본으로 확정해 그 경로를 없앤다.
+ *  (`scripts/sync-sheet-to-db.mjs` 와 `db/` 는 지우지 않았다 — 미사용 상태로 남는다.)
  */
 import { loadSheetData } from "./_lib/sheet-data.js";
-
-async function loadSupabase() {
-  const url = process.env.SUPABASE_URL;
-  const key = process.env.SUPABASE_SERVICE_KEY || process.env.SUPABASE_ANON_KEY;
-  if (!url || !key) return null;
-  const headers = { apikey: key, authorization: `Bearer ${key}` };
-  const get = async (table) => {
-    const res = await fetch(`${url}/rest/v1/${table}?select=*`, { headers, signal: AbortSignal.timeout(5000) });
-    if (!res.ok) throw new Error(`supabase ${table} HTTP ${res.status}`);
-    return res.json();
-  };
-  const [restaurants, menus, cafeteria] = await Promise.all([
-    get("restaurants"), get("menus"), get("cafeteria_menus"),
-  ]);
-  return { restaurants, menus, cafeteria };
-}
 
 export default async function handler(req, res) {
   res.setHeader("access-control-allow-origin", "*");
   try {
-    let data = null, source = "none";
-    try {
-      data = await loadSupabase();
-      if (data) source = "supabase";
-    } catch { data = null; }
-    if (!data) {
-      data = await loadSheetData();
-      source = "sheet";
-    }
-    res.status(200).json({ source, ...data });
-  } catch (e) {
+    const data = await loadSheetData();
+    res.status(200).json({ source: "sheet", ...data });
+  } catch {
     res.status(200).json({ source: "none", restaurants: [], menus: [], cafeteria: [], error: "data unavailable" });
   }
 }
