@@ -18,15 +18,20 @@
  *   list   { sheet, status? }        → 행 배열 (실제 시트 행 번호 포함)
  *   append { sheet, rows: [[...]] }  → 맨 아래에 추가
  *   update { sheet, updates: [{row, col, value}] } → 개별 셀 값 변경 (1-based)
+ *   photo  { name, mimeType, dataBase64 } → 드라이브에 저장하고 fileId 반환 (sheet 불필요)
  */
 
 var SPREADSHEET_ID = "1r_G6Z6FhlCQ_svQifrvQAWjlCyicOeB6UB4PPbboGTQ";
+var PHOTO_FOLDER = "한입지도 제보 사진";
 
 function doPost(e) {
   try {
     var body = JSON.parse(e.postData.contents);
     var expected = PropertiesService.getScriptProperties().getProperty("SHEET_TOKEN");
     if (!expected || body.token !== expected) return json({ error: "unauthorized" }, 401);
+
+    // 사진 저장은 시트를 건드리지 않는다 — 시트 조회보다 먼저 처리한다.
+    if (body.action === "photo") return json({ fileId: savePhoto(body.name, body.mimeType, body.dataBase64) });
 
     var ss = SpreadsheetApp.openById(SPREADSHEET_ID);
     var sheet = ss.getSheetByName(body.sheet);
@@ -72,6 +77,19 @@ function update(sheet, updates) {
     sheet.getRange(u.row, u.col).setValue(u.value);
   }
   return updates.length;
+}
+
+/** 제보 사진을 드라이브에 남기고 링크 공유로 연다.
+ *  왜 필요한가: 검수는 "사진과 대조해 사람이 확인"이 전부인데, 제보 사진을 안 남기면
+ *  운영진이 대조할 원본이 없다. DR4 E2E 에서 실제로 검수 화면이 "사진 없음 — 건너뛰세요"를
+ *  띄웠고, 그러면 제보 데이터는 영원히 대기로 남거나 근거 없이 승인된다. */
+function savePhoto(name, mimeType, dataBase64) {
+  var it = DriveApp.getFoldersByName(PHOTO_FOLDER);
+  var folder = it.hasNext() ? it.next() : DriveApp.createFolder(PHOTO_FOLDER);
+  var blob = Utilities.newBlob(Utilities.base64Decode(dataBase64), mimeType || "image/jpeg", name || "contribution.jpg");
+  var file = folder.createFile(blob);
+  file.setSharing(DriveApp.Access.ANYONE_WITH_LINK, DriveApp.Permission.VIEW);
+  return file.getId();
 }
 
 function json(obj, code) {

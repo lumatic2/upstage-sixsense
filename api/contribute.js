@@ -6,7 +6,7 @@
  *  제보자는 결과를 볼 뿐 고치지 않는다 — 검수 권한은 운영진에게만 있다(`docs/SITEMAP.md` §7-2).
  *  따라서 여기서 들어간 행은 `검수="대기"` 라 서비스에 노출되지 않는다(step-4 게이트).
  */
-import { listRows, appendRows, sheetWriteReady } from "./_lib/sheet-write.js";
+import { listRows, appendRows, updateCells, savePhoto, sheetWriteReady } from "./_lib/sheet-write.js";
 
 const REST_SHEET = "식당";
 const MENU_SHEET = "메뉴";
@@ -44,7 +44,7 @@ export default async function handler(req, res) {
   if (req.method !== "POST") return res.status(405).json({ error: "POST only", code: "method_not_allowed" });
   if (!sheetWriteReady()) return res.status(503).json({ error: "제보 접수가 일시적으로 불가합니다", code: "not_configured" });
 
-  const { name, address = "", category = "", items } = req.body ?? {};
+  const { name, address = "", category = "", items, photo = null } = req.body ?? {};
   const restName = String(name ?? "").trim();
   if (!restName) return res.status(400).json({ error: "식당 이름을 입력해주세요", code: "no_name" });
   if (!Array.isArray(items) || !items.length) {
@@ -60,17 +60,35 @@ export default async function handler(req, res) {
 
   try {
     const rest = await listRows(REST_SHEET, null);
-    const id = nextId(rest.items);
-    const { lat, lng } = await geocode(address);
-    const today = new Date().toISOString().slice(0, 10);
 
-    // [식당] 열 순서: ID·이름·카테고리·주소·위도·경도·태그·사진링크·수집자·촬영일·상태
-    await appendRows(REST_SHEET, [[id, restName, String(category).trim(), String(address).trim(),
-      lat, lng, "", "", "웹 제보", today, "입력완료"]]);
+    // 사진을 먼저 저장한다 — 검수는 사진 대조가 전부라, 사진이 없으면 접수해도 승인할 수 없다.
+    // 저장에 실패하면 접수 자체를 막는다(근거 없는 대기 행을 쌓지 않는다).
+    const photoLink = photo
+      ? `https://drive.google.com/file/d/${await savePhoto(photo, `${restName}-제보.jpg`)}/view`
+      : "";
+
+    // 같은 이름이 이미 있으면 그 식당에 메뉴를 붙인다 — 공개 제보라 같은 가게가 여러 번 들어온다.
+    const iPhoto = rest.header.indexOf("메뉴판 사진 링크");
+    const existing = rest.items.find((r) => String(r.values[1] ?? "").trim() === restName);
+    const id = existing ? String(existing.values[0]).trim() : nextId(rest.items);
+
+    if (existing) {
+      // 새 사진은 기존 링크에 덧붙인다(줄바꿈 구분) — 검수 화면이 여러 장을 탭으로 보여준다.
+      if (photoLink && iPhoto >= 0) {
+        const prev = String(existing.values[iPhoto] ?? "").trim();
+        await updateCells(REST_SHEET, [{ row: existing.row, col: iPhoto + 1, value: prev ? `${prev}\n${photoLink}` : photoLink }]);
+      }
+    } else {
+      const { lat, lng } = await geocode(address);
+      const today = new Date().toISOString().slice(0, 10);
+      // [식당] 열 순서: ID·이름·카테고리·주소·위도·경도·태그·사진링크·수집자·촬영일·상태
+      await appendRows(REST_SHEET, [[id, restName, String(category).trim(), String(address).trim(),
+        lat, lng, "", photoLink, "웹 제보", today, "입력완료"]]);
+    }
     // [메뉴] 열 순서: 식당ID·식당이름·메뉴명·가격·출처·검수·비고
     await appendRows(MENU_SHEET, clean.map((m) => [id, restName, m.name, m.price, "제보", "대기", ""]));
 
-    return res.status(200).json({ restaurantId: id, menus: clean.length, geocoded: lat !== "" });
+    return res.status(200).json({ restaurantId: id, menus: clean.length, photoSaved: photoLink !== "" });
   } catch (e) {
     return res.status(502).json({ error: "접수 중 문제가 생겼습니다", code: "sheet_error", detail: String(e.message ?? e) });
   }

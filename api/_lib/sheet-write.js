@@ -46,6 +46,15 @@ export async function appendRows(sheet, rows) {
   return appended;
 }
 
+/** 제보 사진을 드라이브에 저장하고 파일 id 를 돌려준다.
+ *  dataUrl 은 `data:image/jpeg;base64,...` 형식(브라우저에서 축소한 사본). */
+export async function savePhoto(dataUrl, name) {
+  const m = /^data:(image\/[a-z+]+);base64,(.+)$/i.exec(String(dataUrl ?? ""));
+  if (!m) throw new Error("bad photo data url");
+  const { fileId } = await call({ action: "photo", name, mimeType: m[1], dataBase64: m[2] });
+  return fileId;
+}
+
 /** updates: [{ row, col, value }] — 1-based. 행 삭제 경로는 없다(팀 데이터 파괴 금지). */
 export async function updateCells(sheet, updates) {
   const { updated } = await call({ action: "update", sheet, updates });

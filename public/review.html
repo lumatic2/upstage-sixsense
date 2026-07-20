@@ -28,7 +28,9 @@
   .shot nav{display:flex;gap:var(--s2);padding:var(--s2) var(--s4);border-top:1px solid var(--border);flex-wrap:wrap}
   table{width:100%;border-collapse:collapse;font-size:var(--sm)}
   th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);vertical-align:middle}
-  th{font-weight:500;color:var(--muted);font-size:13px;position:sticky;top:56px;background:var(--surface)}
+  /* sticky 금지 — 마지막 식당 카드의 행이 상단 헤더 뒤에 깔려 확인/제외 버튼이 영영 안 눌렸다
+     (DR4 E2E 실측). 식당별 표는 짧아서 헤더를 따라다니게 할 이유도 없다. */
+  th{font-weight:500;color:var(--muted);font-size:13px;background:var(--surface)}
   td.price{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
   tr.sus{background:color-mix(in srgb,var(--accent-soft) 60%,transparent)}
   tr.done-ok{opacity:.5}

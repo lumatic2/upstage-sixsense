@@ -49,7 +49,7 @@ const isRealId = (v) => {
 /** [식당]·[메뉴]·[학식] → 서비스 도메인 객체 (예시행·미완성행 제외) */
 export async function loadSheetData() {
   const [rest, menu, caf] = await Promise.all([fetchSheet("식당"), fetchSheet("메뉴"), fetchSheet("학식")]);
-  const restaurants = rest.slice(1).filter((r) => isRealId(r[0])).map((r) => ({
+  const allRestaurants = rest.slice(1).filter((r) => isRealId(r[0])).map((r) => ({
     id: r[0].trim(), name: (r[1] ?? "").trim(), category: (r[2] ?? "").trim(), address: (r[3] ?? "").trim(),
     lat: r[4] ? Number(r[4]) : null, lng: r[5] ? Number(r[5]) : null,
     tags: (r[6] ?? "").split(",").map((t) => t.trim()).filter(Boolean),
@@ -63,6 +63,10 @@ export async function loadSheetData() {
     // 이게 없으면 제보 페이지로 들어온 미검수 데이터가 즉시 추천에 노출된다 — 파이프라인의
     // "사람 검수" 단계가 주장으로만 남고 실제로는 무력해진다(docs/SITEMAP.md §7-4).
   })).filter((m) => m.name && m.price && m.review === "확인");
+  // 게이트는 식당에도 걸린다 — 메뉴가 한 줄도 승인되지 않은 가게는 아직 서비스할 데이터가 아니다.
+  // 제보가 들어오면 [식당] 행이 먼저 생기므로, 이게 없으면 미검수 가게가 목록·지도에 먼저 뜬다.
+  const served = new Set(menus.map((m) => m.restaurant_id));
+  const restaurants = allRestaurants.filter((r) => served.has(r.id));
   const cafeteria = caf.slice(1).filter((r) => (r[0] ?? "").match(/^\d{4}-\d{2}-\d{2}/)).map((r) => ({
     menu_date: r[0].trim(), cafeteria: (r[1] ?? "").trim(), corner: (r[2] ?? "").trim() || null,
     items: (r[3] ?? "").split(",").map((s) => s.trim()).filter(Boolean),
