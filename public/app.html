@@ -83,6 +83,23 @@
 .card.liked{cursor:pointer}
 .card.liked:hover{outline:1px solid var(--border)}
 
+/* 마커 클릭 카드 — 열고 닫히는 게 보여야 누른 게 먹혔는지 안다 */
+.mcard-wrap{
+  opacity:0;transform:translateY(6px) scale(.96);transform-origin:50% 100%;
+  transition:opacity 160ms ease-out, transform 160ms ease-out;
+}
+.mcard-wrap.in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){.mcard-wrap{transition:none}}
+.mcard{
+  width:238px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:var(--s3) var(--s4);box-shadow:0 8px 24px rgba(12,20,32,.14);font-size:var(--sm);
+}
+.mcard-head{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s3)}
+.mcard-head b{font-size:var(--base)}
+.mcard .menus{margin-top:var(--s2)}
+.mcard .menus li{padding:1px 0}
+.mcard-addr{margin-top:var(--s2);font-size:12px}
+
 /* 지도는 콘솔 좌측 칸을 그대로 채운다 — 고정 px 높이를 주면 카드 높이와 어긋난다 */
 #map{position:absolute;inset:0;width:100%;height:100%}
 .map-empty{
@@ -323,8 +340,67 @@ async function loadMap() {
   });
   document.head.appendChild(s);
 }
+/* 마커를 누르면 그 가게의 메뉴·가격 카드가 지도 위에 뜬다. 같은 마커를 다시 누르면 닫힌다.
+   기본 InfoWindow 는 이름만 나오는 흰 상자라 우리 토큰과도 어긋나서 CustomOverlay 로 직접 그린다.
+   하단 전체 목록을 없앤 뒤로 "뭐가 있나" 를 훑는 유일한 경로라 메뉴까지 보여준다. */
+let OPEN_OVERLAY = null, OPEN_ID = null;
+
+function closeMarkerCard() {
+  if (!OPEN_OVERLAY) return;
+  const ov = OPEN_OVERLAY, el = ov.getContent();
+  OPEN_OVERLAY = null; OPEN_ID = null;
+  if (el && el.classList) {
+    el.classList.remove("in");                 // 사라지는 것도 보이게 — 툭 없어지면 눌렀는지 알 수 없다
+    setTimeout(() => ov.setMap(null), 160);
+  } else ov.setMap(null);
+}
+
+function markerCardHtml(r) {
+  const ms = menusFor(r.id).filter((m) => !m.isSide)
+    .sort((a, b) => a.price - b.price).slice(0, 4);
+  const rows = ms.length
+    ? ms.map((m) => `<li><span>${esc(m.name)}</span><span class="price">${won(m.price)}</span></li>`).join("")
+    : `<li><span class="muted">예산 조건에 맞는 메뉴가 없습니다</span></li>`;
+  const total = menusFor(r.id).filter((m) => !m.isSide).length;
+  return `<div class="mcard">
+    <div class="mcard-head"><b>${esc(r.name)}</b><span class="muted">${esc(r.category)}</span></div>
+    <ul class="menus">${rows}${total > 4 ? `<li><span class="muted">외 ${total - 4}개</span><span></span></li>` : ""}</ul>
+    ${r.address ? `<p class="muted mcard-addr">${esc(r.address)}</p>` : ""}
+  </div>`;
+}
+
+/* 카드는 마커 위쪽에 서므로 마커를 화면 중앙에 두는 것만으로는 위가 잘린다(실측: 70px 초과).
+   그려진 뒤 실제 사각형을 재서 넘친 만큼만 지도를 민다 — 추정 높이로 계산하면 메뉴 수에 따라 또 어긋난다. */
+function fitCardIntoView(el) {
+  const mapEl = document.getElementById("map");
+  if (!mapEl || !MAP) return;
+  const map = mapEl.getBoundingClientRect(), b = el.getBoundingClientRect();
+  const pad = 12;
+  let dx = 0, dy = 0;
+  if (b.top < map.top + pad) dy = b.top - (map.top + pad);
+  else if (b.bottom > map.bottom - pad) dy = b.bottom - (map.bottom - pad);
+  if (b.left < map.left + pad) dx = b.left - (map.left + pad);
+  else if (b.right > map.right - pad) dx = b.right - (map.right - pad);
+  if (dx || dy) MAP.panBy(dx, dy);
+}
+
+function openMarkerCard(r, pos) {
+  if (OPEN_ID === r.id) { closeMarkerCard(); return; }   // 같은 마커 재클릭 = 닫기
+  closeMarkerCard();
+  const el = document.createElement("div");
+  el.className = "mcard-wrap";
+  el.innerHTML = markerCardHtml(r);
+  el.addEventListener("click", (e) => e.stopPropagation());
+  const ov = new kakao.maps.CustomOverlay({ position: pos, content: el, yAnchor: 1.28, zIndex: 5 });
+  ov.setMap(MAP);
+  OPEN_OVERLAY = ov; OPEN_ID = r.id;
+  requestAnimationFrame(() => { el.classList.add("in"); fitCardIntoView(el); });
+  noteCategory(r.category);                              // 눌러본 분류는 다음 방문 순서에 반영(DR5)
+}
+
 function renderMarkers() {
   if (!MAP || !window.kakao) return;
+  closeMarkerCard();
   MARKERS.forEach((m) => m.setMap(null)); MARKERS = [];
   const bounds = new kakao.maps.LatLngBounds();
   let any = false;
@@ -332,10 +408,10 @@ function renderMarkers() {
     if (!r.lat || !r.lng) continue;
     const pos = new kakao.maps.LatLng(r.lat, r.lng);
     const marker = new kakao.maps.Marker({ map: MAP, position: pos, title: r.name });
-    const iw = new kakao.maps.InfoWindow({ content: `<div style="padding:6px 10px;font-size:13px">${r.name}</div>` });
-    kakao.maps.event.addListener(marker, "click", () => iw.open(MAP, marker));
+    kakao.maps.event.addListener(marker, "click", () => openMarkerCard(r, pos));
     MARKERS.push(marker); bounds.extend(pos); any = true;
   }
+  kakao.maps.event.addListener(MAP, "click", closeMarkerCard);  // 빈 곳을 누르면 닫힌다
   if (any) MAP.setBounds(bounds);
 }
 
