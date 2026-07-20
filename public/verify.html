@@ -1,0 +1,256 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>파이프라인 검증 · 한입지도</title>
+<meta name="description" content="한입지도의 각 단계를 지금 이 자리에서 직접 돌려보는 검증 페이지">
+<meta property="og:title" content="파이프라인 검증 · 한입지도">
+<meta property="og:description" content="설명 대신 실행 — 파싱·구조화·실데이터 조회를 직접 돌려볼 수 있습니다">
+<meta property="og:image" content="https://sixsense.askewly.com/img/og.png">
+<meta property="og:url" content="https://sixsense.askewly.com/verify.html">
+<meta property="og:type" content="website">
+<link rel="icon" type="image/svg+xml" href="/img/favicon.svg?v=2">
+<link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="48x48">
+<link rel="stylesheet" href="/theme.css">
+<style>
+.probe{margin-top:var(--s6)}
+.probe .card{padding:var(--s6)}
+.probe h3{display:flex;align-items:center;gap:var(--s3)}
+.probe .n{
+  display:inline-grid;place-items:center;width:26px;height:26px;flex:none;border-radius:999px;
+  background:var(--accent-soft);color:var(--accent);font-family:var(--font-body);font-size:var(--sm);
+}
+.probe .desc{margin-top:var(--s2)}
+.row{display:flex;gap:var(--s2);align-items:center;flex-wrap:wrap;margin-top:var(--s4)}
+.row input[type=text]{
+  flex:1;min-width:220px;height:40px;padding:0 var(--s3);background:var(--bg);
+  border:1px solid var(--border);border-radius:var(--r);color:inherit;font:inherit;
+}
+.row input[type=text]:focus{border-color:var(--accent);outline:none}
+pre{
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--r);
+  padding:var(--s3);overflow-x:auto;font-size:13px;line-height:1.6;margin:var(--s4) 0 0;
+}
+.plainlist{margin:var(--s4) 0 0;padding:0;list-style:none;font-size:var(--sm)}
+.plainlist li{padding:var(--s1) 0;border-bottom:1px solid var(--border)}
+.plainlist li:last-child{border-bottom:0}
+.stat{font-size:var(--sm);color:var(--muted)}
+.stat.bad{color:var(--accent)}
+.prefill{margin:var(--s4) 0 0;padding:0;list-style:none}
+.prefill li{display:flex;gap:var(--s2);align-items:center;padding:2px 0}
+.prefill input{height:34px;padding:0 var(--s2);background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:inherit;font:inherit;font-size:var(--sm)}
+.prefill input[type=number]{width:7rem;text-align:right;font-variant-numeric:tabular-nums}
+</style>
+</head>
+<body>
+<header class="site-head">
+  <div class="container inner">
+    <a class="brand" href="/" aria-label="한입지도 홈" style="display:inline-flex;align-items:center;gap:8px"><svg viewBox="0 0 24 24" style="width:24px;height:24px;color:var(--accent);flex:none"><path fill="currentColor" fill-rule="evenodd" d="M12 1.25C6.75 1.25 3 5.1 3 9.9c0 5.8 6.1 10.35 8.4 12.45.34.31.86.31 1.2 0C14.9 20.25 21 15.7 21 9.9c0-4.8-3.75-8.65-9-8.65Zm0 2.75c-1.25 0-2.2 1.3-2.2 3.25 0 1.85.65 2.85 1.5 3.25v7.05c0 .45.3.8.7.8s.7-.35.7-.8V10.5c.85-.4 1.5-1.4 1.5-3.25C14.2 5.3 13.25 4 12 4Z"/></svg><span>한입지도</span></a>
+    <nav class="nav-main">
+      <a class="navlink" href="/">홈</a>
+      <a class="navlink" href="/app.html">메뉴 찾기</a>
+      <a class="navlink" href="/contribute.html">사진 제보</a>
+      <a class="navlink" href="/about.html">데이터 파이프라인</a>
+      <a class="navlink" href="/about.html#upstage">Upstage AI</a>
+    </nav>
+    <div class="nav-side">
+      <button class="linklike" id="loginBtn">로그인</button>
+    </div>
+  </div>
+</header>
+
+<dialog class="sheet" id="loginDlg">
+  <h3>로그인은 아직 없습니다</h3>
+  <p>한입지도는 로그인 없이 전부 쓸 수 있습니다. 계정은 "내가 저장한 식당" 기능을 붙일 때 함께 엽니다.</p>
+  <button class="btn" id="loginClose" autofocus>알겠습니다</button>
+</dialog>
+<script>
+document.getElementById("loginBtn").addEventListener("click", () => document.getElementById("loginDlg").showModal());
+document.getElementById("loginClose").addEventListener("click", () => document.getElementById("loginDlg").close());
+</script>
+
+<main>
+<section style="padding-bottom:var(--s6)">
+  <div class="container">
+    <p class="eyebrow">파이프라인 검증</p>
+    <h1>말로 하는 대신 돌려봅니다</h1>
+    <p class="lead">아래 네 블록은 실제 서비스와 같은 API를 그대로 호출합니다.
+      화면에 보이는 건 준비된 예시가 아니라 지금 이 순간의 응답입니다.</p>
+  </div>
+</section>
+
+<section style="padding-top:0">
+  <div class="container">
+
+    <div class="probe">
+      <div class="card">
+        <h3><span class="n">1</span>메뉴판 사진 → Document Parse → 후보 추출</h3>
+        <p class="desc muted small">Upstage Document Parse가 사진에서 읽어낸 메뉴·가격 후보입니다.
+          이 값은 그대로 쓰이지 않습니다 — 사람이 원본 사진과 대조해 확인해야 서비스로 나갑니다.
+          실제 제보는 <a href="/contribute.html">사진 제보</a> 페이지에서 받습니다.</p>
+        <div class="row">
+          <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
+          <button class="btn sm" id="parseBtn" type="button">파싱</button>
+          <span class="stat" id="parseStatus"></span>
+        </div>
+        <ul class="prefill" id="prefill"></ul>
+      </div>
+    </div>
+
+    <div class="probe">
+      <div class="card">
+        <h3><span class="n">2</span>자연어 질의 → Solar 구조화</h3>
+        <p class="desc muted small">문장을 예산·도보시간·태그로 쪼갭니다. 아래는 <code>solar-pro2</code>의 원본 응답입니다.</p>
+        <div class="row">
+          <input type="text" id="query" value="8천원 이하 도보 5분 혼밥" aria-label="검색 문장">
+          <button class="btn sm" id="queryBtn" type="button">구조화</button>
+          <span class="stat" id="queryStatus"></span>
+        </div>
+        <pre id="queryOut">아직 실행하지 않았습니다.</pre>
+      </div>
+    </div>
+
+    <div class="probe">
+      <div class="card">
+        <h3><span class="n">3</span>학식 — 크롤링한 실데이터</h3>
+        <p class="desc muted small">학식은 이미 표로 정리된 HTML이라 Document Parse를 쓰지 않습니다.
+          크롤러가 모아 시트에 넣은 값을 그대로 읽습니다.</p>
+        <ul class="plainlist" id="cafeteria"><li class="muted">불러오는 중…</li></ul>
+      </div>
+    </div>
+
+    <div class="probe">
+      <div class="card">
+        <h3><span class="n">4</span>구조화 결과 → 실데이터 조회</h3>
+        <p class="desc muted small">②의 예산을 시트 실데이터에 적용한 결과입니다.
+          <b>검수를 통과한 행만</b> 여기 나옵니다.</p>
+        <p class="stat" id="dataSource" style="margin-top:var(--s3)">불러오는 중…</p>
+        <ul class="plainlist" id="realResults"></ul>
+      </div>
+    </div>
+
+  </div>
+</section>
+</main>
+
+<footer class="site-foot">
+  <div class="container foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="/" aria-label="한입지도 홈"><svg viewBox="0 0 24 24" style="width:22px;height:22px;color:var(--accent);flex:none"><path fill="currentColor" fill-rule="evenodd" d="M12 1.25C6.75 1.25 3 5.1 3 9.9c0 5.8 6.1 10.35 8.4 12.45.34.31.86.31 1.2 0C14.9 20.25 21 15.7 21 9.9c0-4.8-3.75-8.65-9-8.65Zm0 2.75c-1.25 0-2.2 1.3-2.2 3.25 0 1.85.65 2.85 1.5 3.25v7.05c0 .45.3.8.7.8s.7-.35.7-.8V10.5c.85-.4 1.5-1.4 1.5-3.25C14.2 5.3 13.25 4 12 4Z"/></svg><span>한입지도</span></a>
+      <p>예산으로 고르는 캠퍼스 맛집 지도.<br>AI Document Builders Challenge 출품작.</p>
+    </div>
+    <nav class="foot-col" aria-label="서비스">
+      <p class="k">서비스</p>
+      <a href="/">홈</a>
+      <a href="/app.html">메뉴 찾기</a>
+      <a href="/contribute.html">사진 제보</a>
+    </nav>
+    <nav class="foot-col" aria-label="이야기">
+      <p class="k">이야기</p>
+      <a href="/about.html">데이터 파이프라인</a>
+      <a href="/about.html#upstage">Upstage AI</a>
+      <a href="/verify.html">파이프라인 검증</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+const $ = (id) => document.getElementById(id);
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+// 블록마다 독립적으로 실패한다 — 한 API 가 죽어도 나머지 블록은 계속 돌아야
+// "검증 페이지" 라는 이름값을 한다. 그래서 공통 로더 없이 블록별 try/catch 를 쓴다.
+
+// ① 사진 → parse-menu
+$("parseBtn").onclick = async () => {
+  const f = $("photo").files[0];
+  if (!f) { $("parseStatus").textContent = "사진을 먼저 고르세요."; return; }
+  $("parseBtn").disabled = true;
+  $("parseStatus").className = "stat";
+  $("parseStatus").textContent = "Document Parse 호출 중…";
+  try {
+    const b64 = await new Promise((ok, no) => {
+      const r = new FileReader();
+      r.onload = () => ok(r.result); r.onerror = no;
+      r.readAsDataURL(f);
+    });
+    const res = await fetch("/api/parse-menu", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ image: b64, filename: f.name }),
+    });
+    const j = await res.json();
+    if (!res.ok) throw new Error(`${res.status} ${j.error ?? ""} [${j.code ?? "-"}]`);
+    $("parseStatus").textContent = `후보 ${j.items.length}개 — 사람이 확인하기 전 상태입니다`;
+    $("prefill").innerHTML = j.items
+      .map((it) => `<li><input type="text" value="${esc(it.name)}" aria-label="메뉴명"><input type="number" value="${it.price}" aria-label="가격"><span class="muted small">원</span></li>`)
+      .join("");
+  } catch (e) {
+    $("parseStatus").className = "stat bad";
+    $("parseStatus").textContent = `실패: ${e.message}`;
+  }
+  $("parseBtn").disabled = false;
+};
+
+// ② 자연어 → parse-query (성공 시 ④ 재계산)
+$("queryBtn").onclick = async () => {
+  $("queryBtn").disabled = true;
+  $("queryStatus").className = "stat";
+  $("queryStatus").textContent = "Solar 호출 중…";
+  try {
+    const res = await fetch("/api/parse-query", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ query: $("query").value }),
+    });
+    const q = await res.json();
+    if (!res.ok) throw new Error(`${res.status}`);
+    $("queryStatus").textContent = "";
+    $("queryOut").textContent = JSON.stringify(q, null, 2);
+    renderRealResults(q);
+  } catch (e) {
+    $("queryStatus").className = "stat bad";
+    $("queryStatus").textContent = `실패: ${e.message}`;
+    $("queryOut").textContent = "구조화에 실패했습니다 — ③④ 블록은 그대로 동작합니다.";
+  }
+  $("queryBtn").disabled = false;
+};
+
+// ③④ 실데이터
+let DATA = { restaurants: [], menus: [], cafeteria: [], source: "none" };
+fetch("/api/data").then((r) => r.json()).then((d) => {
+  DATA = d;
+  $("dataSource").textContent = `source=${d.source} · 식당 ${d.restaurants.length} · 메뉴 ${d.menus.length} · 학식 ${d.cafeteria.length}`;
+  $("cafeteria").innerHTML = d.cafeteria
+    .map((r) => `<li><b>${esc(r.cafeteria)}</b>${r.corner ? " · " + esc(r.corner) : ""} <span class="muted">(${esc(r.menu_date)})</span> — ${esc(r.items.slice(0, 4).join(", "))}${r.items.length > 4 ? " 외" : ""} · <b>${r.price ? r.price.toLocaleString() + "원" : "가격 미상"}</b></li>`)
+    .join("") || `<li class="muted">실데이터 없음</li>`;
+  renderRealResults(null);
+}).catch((e) => {
+  $("dataSource").className = "stat bad";
+  $("dataSource").textContent = `실데이터 로드 실패: ${e.message} — ①② 블록은 그대로 동작합니다.`;
+  $("cafeteria").innerHTML = `<li class="muted">불러오지 못했습니다.</li>`;
+});
+
+function renderRealResults(q) {
+  const budget = q?.budget ?? null;
+  const byRest = new Map();
+  for (const m of DATA.menus) {
+    if (budget && m.price > budget) continue;
+    if (!byRest.has(m.restaurant_id)) byRest.set(m.restaurant_id, []);
+    byRest.get(m.restaurant_id).push(m);
+  }
+  const items = [];
+  for (const r of DATA.restaurants) {
+    const ms = byRest.get(r.id) ?? [];
+    if (budget && !ms.length) continue;
+    const cheap = ms.slice().sort((a, b) => a.price - b.price).slice(0, 3);
+    items.push(`<li><b>${esc(r.name)}</b> <span class="muted">${esc(r.category)}</span> — ${budget ? `예산 내 ${ms.length}개: ` : ""}${cheap.map((m) => `${esc(m.name)} ${m.price.toLocaleString()}원`).join(", ")}</li>`);
+  }
+  for (const c of DATA.cafeteria) {
+    if (budget && c.price && c.price > budget) continue;
+    items.push(`<li><b>학식 · ${esc(c.cafeteria)}</b> <span class="muted">(${esc(c.menu_date)})</span> — ${esc(c.items[0] ?? "")} 외 · ${c.price ? c.price.toLocaleString() + "원" : "가격 미상"}</li>`);
+  }
+  $("realResults").innerHTML = items.join("") || `<li class="muted">조건에 맞는 실데이터 없음</li>`;
+}
+</script>
+</body>
+</html>
