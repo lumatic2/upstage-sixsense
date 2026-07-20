@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "active_work_id": "dr2-personal-service",
+  "active_work_id": "dr5-site-completion",
   "works": {
     "m2-parse-poc": {
       "work_id": "m2-parse-poc",
@@ -277,6 +277,66 @@
       "updated_at": "2026-07-20",
       "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation.",
       "completion_summary": "개인 버전 웹서비스를 닫았습니다 — 배포 사이트에서 예산 검색·추천·근거 검증 배지가 실데이터로 통과하고, 검증이 허수가 아님을 결함 주입으로 확인했으며 그 과정에서 발견한 근거 판정 5% 실패도 고쳤습니다."
+    },
+    "dr5-site-completion": {
+      "work_id": "dr5-site-completion",
+      "horizon_id": "demoday-run",
+      "milestone_id": "DR5",
+      "status": "active",
+      "plan_path": "plans/2026-07-20-dr5-site-completion.md",
+      "changeset_path": "public",
+      "next_step": "step-1",
+      "current_step": "step-1",
+      "steps": [
+        {
+          "id": "step-1",
+          "label": "step-1 `about#upstage` 섹션 + 깨진 링크 해소 + 랜딩 제보 CTA",
+          "status": "pending"
+        },
+        {
+          "id": "step-2",
+          "label": "step-2 `/app.html` 톤 정합 + 빈 상태·배지 정리",
+          "status": "pending"
+        },
+        {
+          "id": "step-3",
+          "label": "step-3 `/verify.html` 승격 (`test.html` 테마 적용)",
+          "status": "pending"
+        },
+        {
+          "id": "step-4",
+          "label": "step-4 재방문 개인화 (localStorage 프로필 + rerank)",
+          "status": "pending"
+        },
+        {
+          "id": "step-5",
+          "label": "step-5 사이트 통합 검증",
+          "status": "pending"
+        }
+      ],
+      "execution_mode": "continuous",
+      "approval": {
+        "approved_by": "user",
+        "approved_at": "2026-07-20",
+        "plan_sha256": "3d319189ceb81d564bd6f0529e85c099e3bef1281992528db99779a2ca1ae11c"
+      },
+      "allowed_stop_reasons": [
+        "completed",
+        "blocked",
+        "decision_required",
+        "risk_gate",
+        "secret_required",
+        "external_authority_required",
+        "user_stopped"
+      ],
+      "stop_reason": null,
+      "stop_detail": {},
+      "session_ids": [
+        "claude:4e9799f7-4b94-4c87-86c6-a3e3570c59a9"
+      ],
+      "owner_session_uuid": "claude:4e9799f7-4b94-4c87-86c6-a3e3570c59a9",
+      "updated_at": "2026-07-20",
+      "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation."
     }
   }
 }

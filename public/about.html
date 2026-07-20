@@ -63,6 +63,16 @@ th{color:var(--muted);font-weight:500}
   <button class="btn" id="loginClose" autofocus>알겠습니다</button>
 </dialog>
 <script>
+// 다른 페이지에서 about.html#upstage 로 들어오면 브라우저가 앵커로 안 간다 —
+// scroll-behavior:smooth + 늦게 뜨는 이미지가 겹쳐 위치가 밀리기 때문이다(DR5 실측: scrollY 11).
+// 로드가 끝난 뒤 한 번 더 맞춘다. 같은 페이지 안 목차 클릭은 영향받지 않는다.
+addEventListener("load", () => {
+  if (!location.hash) return;
+  const target = document.getElementById(location.hash.slice(1));
+  // behavior:"auto" 는 CSS 의 scroll-behavior:smooth 를 물려받아 로드 직후엔 씹힌다 — instant 로 못 박는다.
+  if (target) target.scrollIntoView({ behavior: "instant" });
+});
+
 const dlg = document.getElementById("loginDlg");
 document.getElementById("loginBtn").addEventListener("click", () => dlg.showModal());
 document.getElementById("loginClose").addEventListener("click", () => dlg.close());
@@ -77,7 +87,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
       <p>식당 가격은 웹에 구조화된 형태로 존재하지 않습니다. 메뉴판 사진 안에만 있습니다. 그래서 이 서비스의 출발점은 검색이 아니라 <b>사진 수집</b>입니다.</p>
       <div class="stage"><span class="dot">1</span><span><b>수집</b><span class="muted">명륜동·혜화 식당의 메뉴판 사진을 모아 한 저장소에 쌓습니다. 출처와 촬영일을 함께 기록합니다.</span></span></div>
       <div class="stage"><span class="dot">2</span><span><b>파싱</b><span class="muted">Upstage Document Parse에 <code>ocr=force</code>·<code>coordinates=true</code>로 요청해, 사진 속 레이아웃을 유지한 채 메뉴명과 가격을 뽑습니다.</span></span></div>
-      <div class="stage"><span class="dot">3</span><span><b>검수</b><span class="muted">파싱 결과는 바로 쓰지 않습니다. 사람이 고치도록 프리필로 띄우고, 0원·10만원 초과 같은 이상치는 표시해 둡니다.</span></span></div>
+      <div class="stage"><span class="dot">3</span><span><b>검수</b><span class="muted">파싱 결과는 바로 쓰지 않습니다. 운영진이 원본 사진과 나란히 놓고 행마다 확인·제외를 찍고, 틀린 값은 그 자리에서 고칩니다. <b>확인이 찍힌 행만 서비스로 나갑니다.</b></span></span></div>
       <div class="stage"><span class="dot">4</span><span><b>보강</b><span class="muted">주소는 지오코딩으로 좌표를 자동으로 채우고, 학식은 매일 크롤링해 당일 식단을 넣습니다.</span></span></div>
 
       <figure class="figure">
@@ -101,8 +111,39 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
         <p class="small">추천 카드 아래 "Solar 생성 · 근거 검증됨" 또는 "근거 미달 판정으로 데이터 팩트로 교체됨" 배지가 그 결과입니다. 환각을 막았다는 주장이 아니라, 막는 동작을 그대로 보여주는 방식입니다.</p>
       </div>
 
+      <h2 id="upstage">어디에 Upstage를 썼나</h2>
+      <p>제품을 하나 고르고 거기에 문제를 맞추지 않았습니다. 파이프라인의 각 지점에서 <b>무엇이 부족한지</b>를 먼저 정하고, 그 자리에 맞는 것을 넣었습니다. 그래서 안 쓴 자리도 함께 적습니다.</p>
+      <table>
+        <tr><th>제품</th><th>쓴 자리</th><th>왜 여기인가</th></tr>
+        <tr>
+          <td>Document Parse</td>
+          <td>메뉴판 사진 → 메뉴명·가격<br><span class="small muted"><code>ocr=force</code> · <code>coordinates=true</code></span></td>
+          <td>가격은 웹에 구조화돼 있지 않고 사진 안에만 있습니다. 좌표를 살려 받아야 메뉴명과 가격을 같은 줄로 짝지을 수 있습니다.</td>
+        </tr>
+        <tr>
+          <td>Solar <code>solar-pro2</code></td>
+          <td>자연어 질의 구조화 + 추천 이유 생성</td>
+          <td>"둘이서 2만원"에서 인원·예산을 뽑는 나눗셈을 <code>solar-mini</code>는 틀렸습니다. 구조화 출력 실측 0.7~1.3초로 충분히 빠릅니다.</td>
+        </tr>
+        <tr>
+          <td>Solar <code>solar-mini</code></td>
+          <td>추천 이유의 근거 판정</td>
+          <td>생성한 모델이 스스로 채점하면 검증이 아닙니다. 판정은 <b>다른 모델</b>이 맡아 데이터와 대조합니다.</td>
+        </tr>
+        <tr>
+          <td class="muted">— (안 씀)</td>
+          <td class="muted">학식 식단</td>
+          <td class="muted">이미 표로 정리된 HTML입니다. 여기에 사진 파싱을 쓰면 비용은 늘고 정확도는 떨어집니다.</td>
+        </tr>
+      </table>
+      <div class="card">
+        <b>키는 서버에만 있습니다</b>
+        <p class="small">Upstage 호출은 전부 서버 함수(<code>/api/parse-menu</code>·<code>/api/parse-query</code>·<code>/api/recommend</code>)에서 일어납니다. 브라우저는 API 키를 볼 수 없습니다.</p>
+      </div>
+
       <h2 id="s4">데이터가 틀리면</h2>
-      <p>파싱은 완벽하지 않습니다. 그래서 모든 메뉴 행에는 출처(사진 파싱/수기)와 검수 상태가 붙어 있고, 잘못된 값은 사람이 고치면 다음 조회부터 반영됩니다. 틀릴 수 있다는 사실을 숨기지 않는 것이 이 파이프라인의 설계입니다.</p>
+      <p>파싱은 완벽하지 않습니다. 그래서 모든 메뉴 행에는 출처(사진 파싱/제보/수기)와 검수 상태가 붙어 있고, 잘못된 값은 사람이 고치면 다음 조회부터 반영됩니다. 틀릴 수 있다는 사실을 숨기지 않는 것이 이 파이프라인의 설계입니다.</p>
+      <p>새 가게를 발견하셨다면 <a href="/contribute.html">메뉴판 사진 한 장</a>이면 됩니다. 올린 사진은 AI가 읽고, 사람이 그 사진과 대조해 확인한 뒤에 지도에 올라갑니다.</p>
       <div class="cta-row" style="display:flex;gap:var(--s3);margin-top:var(--s8);flex-wrap:wrap">
         <a class="btn" href="/app.html">서비스 써보기</a>
         <a class="btn ghost" href="/test.html">파이프라인 검증 페이지</a>
@@ -114,6 +155,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
       <a href="#s1">사진 속 가격을 데이터로</a>
       <a href="#s2">왜 학식은 파싱하지 않나</a>
       <a href="#s3">추천 이유를 검증합니다</a>
+      <a href="#upstage">어디에 Upstage를 썼나</a>
       <a href="#s4">데이터가 틀리면</a>
     </nav>
   </div>

@@ -29,6 +29,9 @@
 
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}
+/* 헤더가 sticky 라 앵커로 점프하면 제목이 헤더 밑에 깔린다 — 헤더 높이(65px)+여백만큼 띄운다.
+   DR5 실측: /about.html#upstage 로 들어가면 "어디에 Upstage를 썼나" 가 헤더에 가려졌다. */
+[id]{scroll-margin-top:84px}
 body{
   margin:0;background:var(--bg);color:var(--fg);
   font-family:var(--font-body);font-size:var(--base);line-height:1.75;
