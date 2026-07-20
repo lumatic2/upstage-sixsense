@@ -52,12 +52,25 @@
 - Status: [x]
 
 - Completed at: 2026-07-20
-<!-- harness:milestone id="DR3" status="pending" priority="P1" evidence="plans/2026-07-19-dr3-assembly.md" -->
-### DR3 — 본선 조립 (hanipmap 이식·API 계약·온보딩)
-- DoD: hanipmap 배포 URL 파싱·검색 E2E PASS + api-contract 실 URL 계약 + 발표 자료 실물 정합
-- Evidence: `plans/2026-07-19-dr3-assembly.md` + hanipmap PR·E2E 관측
-- Gap: 대표 조립본 보장 책임(7/18 §6) — 이식 4항목 미실행
-- Scale: changesets>=2; surfaces: hanipmap 배포 URL·docs; capability: 팀이 그 위에서 작업 가능한 대표 버전
+<!-- harness:milestone id="DR3" status="archived" priority="P1" evidence="docs/adr/0003-no-assembly-build.md" -->
+### DR3 — 본선 조립 (hanipmap 이식·API 계약·온보딩) — **폐기 2026-07-20**
+- 폐기 사유: 대표 조립본 전제가 사라짐. 팀은 각자 버전을 7/23(목) 21:00 미팅에서 비교·합의해 제출물을 정한다 → 이식 대상이 존재하지 않는다.
+- Evidence: `docs/adr/0003-no-assembly-build.md`
+- 대체: DR6(내 버전 완결) · DR7(팀 공유). 구 step-3(발표 자료 실물 정합)은 DR6 step-5 로 승계.
+- Status: [-]
+<!-- harness:milestone id="DR6" status="active" priority="P0" evidence="plans/2026-07-20-dr6-my-version-final.md" -->
+### DR6 — 내 버전 완결 (미팅 제출 후보 확정판)
+- DoD: 배포 URL 에서 ① 저예산 검색에 사이드 단독 pick 0건 ② `/api/data` 가 시트 단일 경로로 검수 통과분만 반환 ③ 5페이지 톤 일관·콘솔 red 0 ④ 발표 자료 수치·URL 이 실물과 불일치 0 + `demo-smoke` PASS
+- Evidence: `plans/2026-07-20-dr6-my-version-final.md` + `verification/matrix.md`
+- Gap: 7/23 미팅이 실질 마감인데 사이드 메뉴가 한 끼로 추천되고(OPEN-ISSUES ③) 검수 게이트 없는 코드 경로가 남아 있으며(④) 제보 좌표가 미배선(⑤)
+- Scale: changesets>=4; surfaces: 배포 URL·Playwright·docs/presentation; capability: 미팅에서 그대로 열어 보여줄 수 있는 완결 서비스
+- Status: [ ]
+<!-- harness:milestone id="DR7" status="pending" priority="P0" evidence="plans/2026-07-20-dr7-team-share.md" -->
+### DR7 — 팀 공유 패키지 (GitHub 레포 + 웹사이트 링크)
+- DoD: 시크릿 창에서 공개 레포 URL·사이트 URL 을 열어 README→HANDOFF 만으로 파이프라인 구조·재사용 지점이 파악되고 깨진 링크 0 + 시크릿 스캔 클린 + origin 동기
+- Evidence: `plans/2026-07-20-dr7-team-share.md`
+- Gap: 공유 형식이 레포·사이트 링크로 확정됐는데 루트 `README.md` 가 아예 없다 — 팀원이 GitHub 링크로 들어오면 첫 화면이 비어 있음
+- Scale: changesets>=2; surfaces: 공개 레포 렌더 화면·배포 URL; capability: 링크 두 개만으로 팀원이 가져다 쓸 수 있다
 - Status: [ ]
 
 ## Completed (product-horizon)

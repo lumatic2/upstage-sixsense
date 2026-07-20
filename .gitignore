@@ -10,3 +10,5 @@ tests/__screenshots__/*-actual.png
 tests/__screenshots__/*-diff.png
 .playwright-mcp/
 CLAUDE.local.md
+
+.vercel

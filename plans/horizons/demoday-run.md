@@ -5,7 +5,8 @@
 > 진행 상태의 정본은 `ROADMAP.md` marker — 이 문서의 milestone 체크박스는 milestone boundary 에서만 동기화.
 
 ## 목표
-- 7/18 "각자 서비스" 전환 이후 남은 전부를 데모데이(2026-07-25)까지 닫는다: 실데이터 파이프라인 가동 → 개인 버전 웹서비스 완성 → 본선 조립본(대표 버전) 보장.
+- 7/18 "각자 서비스" 전환 이후 남은 전부를 데모데이(2026-07-25)까지 닫는다: 실데이터 파이프라인 가동 → 개인 버전 웹서비스 완성 → **내 버전을 미팅 제출 후보로 완결하고 팀에 공유**.
+- **2026-07-20 방향 정정 (ADR-0003)**: "본선 조립본(hanipmap 이식) 보장" 전제가 폐기됐다. 팀은 각자 버전을 만들어 **2026-07-23(목) 21:00 미팅에서 비교·합의**해 제출물을 정한다. 따라서 실질 마감은 데모데이가 아니라 **미팅**이고, DR3(이식)은 DR6(내 버전 완결)·DR7(팀 공유)로 대체됐다.
 - 플레이북 정합: 개인 슬롯의 Phase 4(킥오프 계약) → Phase 5(구현·검증 루프) → Phase 6(dogfood) 구간. (`docs/playbook/AI_공모전_플레이북.md`)
 
 ## 왜 지금 (이전 horizon 이 드러낸 갭)
@@ -18,11 +19,17 @@
 |---|---|---|---|---|
 | DR1 | 실데이터 파이프라인 가동 (사진→파싱→시트, 지오코딩, 학식→시트) | `plans/2026-07-19-dr1-data-pipeline.md` | 제안 | `research/2026-07-19-demoday-run-data-pipeline.md` |
 | DR2 | 개인 버전 웹서비스 빌드 (Upstage 심화 + 인터랙티브 데모) | `plans/2026-07-19-dr2-personal-service.md` | 제안 | `research/2026-07-19-demoday-run-upstage-depth.md` · `research/2026-07-19-demoday-run-market-differentiation.md` |
-| DR3 | 본선 조립 (hanipmap 이식·API 계약 문서·팀 온보딩) | `plans/2026-07-19-dr3-assembly.md` | 제안 | `research/2026-07-17-m3-e2e.md`(기존 — "이식 시 남는 것" 4항목) |
+| ~~DR3~~ | ~~본선 조립 (hanipmap 이식·API 계약 문서·팀 온보딩)~~ | ~~`plans/2026-07-19-dr3-assembly.md`~~ | **폐기 2026-07-20 (ADR-0003)** | — |
+| DR4 | 제보→검수→승인 루프 | `plans/2026-07-20-dr4-contribute-review-loop.md` | 완료 | — |
+| DR5 | 페이지 구조 완성 + 재방문 개인화 | `plans/2026-07-20-dr5-site-completion.md` | 완료 | — |
+| DR6 | 내 버전 완결 (미팅 제출 후보 확정판) | `plans/2026-07-20-dr6-my-version-final.md` | 승인 대기 | `docs/OPEN-ISSUES.md`(DR4·DR5 실측 이슈) |
+| DR7 | 팀 공유 패키지 (GitHub 레포 + 웹사이트 링크) | `plans/2026-07-20-dr7-team-share.md` | 승인 대기 | 조사 불요 — 공유 형식이 사용자 확정으로 고정 |
 
-- [ ] **DR1** — ≥2 독립 changeset(지오코딩 스크립트 / 학식→시트 경로 / 시트→서비스 read 경로) + 통합검증(실데이터 1건이 시트→API→화면까지 흐름)
-- [ ] **DR2** — ≥2 독립 changeset(Upstage 심화 기능 / UI 빌드 / 검증 가시화) + 통합검증(배포 URL에서 심사 시연 시나리오 smoke)
-- [ ] **DR3** — ≥2 독립 changeset(API·스키마 이식 / 계약 문서·온보딩) + 통합검증(hanipmap 배포 URL에서 파싱·검색 동작)
+- [x] **DR1** — ≥2 독립 changeset(지오코딩 스크립트 / 학식→시트 경로 / 시트→서비스 read 경로) + 통합검증(실데이터 1건이 시트→API→화면까지 흐름)
+- [x] **DR2** — ≥2 독립 changeset(Upstage 심화 기능 / UI 빌드 / 검증 가시화) + 통합검증(배포 URL에서 심사 시연 시나리오 smoke)
+- [x] **DR4** · [x] **DR5** — horizon 진행 중 승격된 milestone (제보·검수 루프 / 페이지 구조 완성)
+- [ ] **DR6** — ≥2 독립 changeset(데이터 품질 게이트 / SSOT 단일화 / 폴리싱 / 발표 정합) + 통합검증(배포 URL smoke + 발표 자료 실물 대조)
+- [ ] **DR7** — ≥2 독립 changeset(README / 인계 문서) + 통합검증(시크릿 창에서 링크 2개만으로 파악 가능)
 
 ## 무감독 분량
 - 승인 후 최소 **3 무감독 세션** (DR1·DR2·DR3 각 1+ 세션 — DR2 는 2세션 이상 예상).
@@ -30,7 +37,7 @@
 ## 닫는 기준 (선언 → close 시 실측 대조)
 1. **실데이터**: 구글 시트 [식당]·[메뉴] 탭에 실사진 유래 식당 ≥5곳 + 좌표 자동 채움 — 관측: 시트 행 수 + 지오코딩 스크립트 실행 로그.
 2. **개인 서비스**: 배포 URL에서 "예산 입력→추천 결과" 시연 시나리오가 실데이터로 통과 — 관측: Playwright smoke PASS + 스크린샷.
-3. **조립본**: hanipmap 배포 URL(https://hanipmap-sandy.vercel.app)에서 사진 제보→프리필과 자연어 검색 동작 — 관측: 실브라우저 E2E 1회.
+3. ~~**조립본**: hanipmap 배포 URL 실브라우저 E2E~~ → **교체 (2026-07-20, ADR-0003)** — **팀 공유 도달성**: 시크릿 창에서 공개 레포 URL(github.com/lumatic2/upstage-sixsense)과 사이트 URL 을 열어 README→HANDOFF 만으로 파이프라인 구조와 재사용 지점이 파악되고 깨진 링크 0 — 관측: 실브라우저 확인 1회 + 링크 대조.
 4. **검증 가시화**: `verification/matrix.md`(command/expected/observed/evidence)가 존재하고 발표 자료가 참조 — 관측: 파일 존재 + docs/presentation 링크.
 
 ## 미리 쓰는 실패 회고(프리모템) — 예방 장치 역주입
