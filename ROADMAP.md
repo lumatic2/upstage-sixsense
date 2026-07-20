@@ -34,14 +34,15 @@
 
 - Completed at: 2026-07-20
 - Summary: 개인 버전 웹서비스 완성 — 배포 URL 시연 시나리오 smoke 11/11, 근거 검증 배지 실동작(판정 5% 실패 수정)
-<!-- harness:milestone id="DR4" status="active" priority="P0" evidence="plans/2026-07-20-dr4-contribute-review-loop.md" -->
+<!-- harness:milestone id="DR4" status="completed" priority="P0" evidence="plans/2026-07-20-dr4-contribute-review-loop.md" -->
 ### DR4 — 제보→검수→승인 루프 (사진 제보 페이지 + 운영진 검수 화면 + 승인 게이트)
 - DoD: 배포 URL 에서 새 메뉴판 사진 1장이 제보 → Document Parse → 시트 `대기` → `/review.html` 검수 → 서비스 추천 노출까지 한 번의 E2E 로 관측되고, 미검수 데이터가 노출되지 않는 것이 역방향 확인
 - Evidence: `plans/2026-07-20-dr4-contribute-review-loop.md` + `verification/matrix.md`
 - Gap: Document Parse(대회 하드 요건 제품)가 실서비스 화면 어디에도 노출되지 않고, `loadSheetData` 가 시트 검수 값을 필터링하지 않아 미검수 행이 그대로 추천에 나감(실측: [메뉴] 189행 중 대기 189·확인 1)
 - Scale: changesets>=4; surfaces: 배포 URL·구글 시트·verification/; capability: 데이터 생산과 품질 게이트가 제품 안에서 닫힌다
-- Status: [ ]
+- Status: [x]
 
+- Completed at: 2026-07-20
 <!-- harness:milestone id="DR5" status="pending" priority="P0" evidence="plans/2026-07-20-dr5-site-completion.md" -->
 ### DR5 — 페이지 구조 완성 + 재방문 개인화
 - DoD: 배포 URL 에서 `docs/SITEMAP.md` 공개 5페이지가 전부 살아 있고 nav·푸터에 죽은 링크 0, 재방문 시 추천이 실제로 달라지는 것 관측 + smoke PASS
