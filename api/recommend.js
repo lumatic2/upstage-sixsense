@@ -5,6 +5,7 @@
  *  이유는 반드시 전달된 실데이터(메뉴·가격·거리)에만 근거하도록 프롬프트 고정 — step-3 Groundedness 가 이를 검증한다.
  */
 import { loadSheetData } from "./_lib/sheet-data.js";
+import { isSideMenu } from "./_lib/side-menu.js";
 
 const CHAT_URL = "https://api.upstage.ai/v1/chat/completions";
 // 이유 생성·근거 판정 타임아웃 — 2026-07-20 상향(구 2500/2000).
@@ -24,7 +25,7 @@ function walkMin(lat, lng) {
 
 function templateReason(p, budget) {
   const bits = [];
-  if (budget) bits.push(`예산 ${budget.toLocaleString()}원 안에 메뉴 ${p.menus.length}개`);
+  if (budget) bits.push(`예산 ${budget.toLocaleString()}원 안에 메뉴 ${p.mainCount}개`);
   if (p.menus[0]) bits.push(`최저 ${p.menus[0].name} ${p.menus[0].price.toLocaleString()}원`);
   if (p.walkMin) bits.push(`도보 약 ${p.walkMin}분`);
   return bits.join(", ") + ".";
@@ -89,12 +90,17 @@ export default async function handler(req, res) {
   try { data = await loadSheetData(); }
   catch { return res.status(200).json({ picks: [], cafeteria: null, error: "data unavailable" }); }
 
+  // 곁들임(공기밥·음료·토핑)은 예산 안에 들어와도 그 가게를 고를 근거가 되지 못한다.
+  // 예산 1,000원 검색이 `공기밥 1,000원` 만 남기고 그 집을 "한 끼 되는 집"으로 추천하던 문제
+  // (docs/OPEN-ISSUES.md ③). 목록에서 지우지는 않고 본메뉴를 앞에 세운다 — 실제로 파는 것이므로.
   const candidates = data.restaurants.map((r) => {
     const menus = data.menus
       .filter((m) => m.restaurant_id === r.id && (!budget || m.price <= budget))
-      .sort((a, b) => a.price - b.price);
-    return { kind: "restaurant", name: r.name, category: r.category, address: r.address, walkMin: walkMin(r.lat, r.lng), menus, tags: r.tags };
-  }).filter((p) => p.menus.length > 0);
+      .map((m) => ({ ...m, isSide: isSideMenu(m) }))
+      .sort((a, b) => (a.isSide === b.isSide ? a.price - b.price : a.isSide ? 1 : -1));
+    const mainCount = menus.filter((m) => !m.isSide).length;
+    return { kind: "restaurant", name: r.name, category: r.category, address: r.address, walkMin: walkMin(r.lat, r.lng), menus, mainCount, tags: r.tags };
+  }).filter((p) => p.mainCount > 0);
 
   // 도보 상한: 전부 걸러지면 상한을 버리고 가까운 순으로 완화 (relaxed 플래그로 정직하게 표시)
   let walkRelaxed = false;
@@ -110,7 +116,8 @@ export default async function handler(req, res) {
   // (메뉴 수 1개 = 10점, 도보 1분 = 1점 → 도보(최대 99)가 메뉴 수를 못 뒤집는다).
   const tagSet = new Set(tags);
   const CAT_BONUS = 60; // 메뉴 수 6개어치 — 취향이 순서를 바꾸되 지배하지는 않는 크기
-  const base = (p) => p.tags.filter((t) => tagSet.has(t)).length * 1000 + Math.min(p.menus.length, 30) * 10 - (p.walkMin ?? 99);
+  // 메뉴 수는 본메뉴만 센다 — 음료 목록이 긴 집이 선택지 많은 집으로 둔갑하지 않도록.
+  const base = (p) => p.tags.filter((t) => tagSet.has(t)).length * 1000 + Math.min(p.mainCount, 30) * 10 - (p.walkMin ?? 99);
   const score = (p) => base(p) + (aff.cat.get(p.category) ?? 0) * CAT_BONUS;
   const baseline = candidates.slice().sort((a, b) => base(b) - base(a));
   candidates.sort((a, b) => score(b) - score(a));
@@ -137,6 +144,7 @@ export default async function handler(req, res) {
     p.reasonSource = reasonMap.has(p.name) ? reasonSource : "template";
     p.menus = p.menus.slice(0, 5);
     delete p.tags;
+    delete p.mainCount;
   }
 
   // 근거 검증 게이트 (step-3): 생성(solar-pro2)과 분리된 판정자(solar-mini)가
