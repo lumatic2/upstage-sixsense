@@ -574,36 +574,36 @@
       "work_id": "dr9-real-conversation",
       "horizon_id": "demoday-run",
       "milestone_id": "DR9",
-      "status": "active",
+      "status": "completed",
       "plan_path": "plans/2026-07-21-dr9-real-conversation.md",
       "changeset_path": "api",
-      "next_step": "step-1",
-      "current_step": "step-1",
+      "next_step": null,
+      "current_step": null,
       "steps": [
         {
           "id": "step-1",
           "label": "step-1 `/api/chat` — 진짜 Solar 대화",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-2",
           "label": "step-2 대화창을 `/api/chat` 에 연결 + 문구 교체",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-3",
           "label": "step-3 지도 마커 클릭 카드",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-4",
           "label": "step-4 학식 정본화 + 하단 목록 제거",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-5",
           "label": "step-5 통합 검증",
-          "status": "pending"
+          "status": "completed"
         }
       ],
       "execution_mode": "continuous",
@@ -628,7 +628,8 @@
       ],
       "owner_session_uuid": "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4",
       "updated_at": "2026-07-21",
-      "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation."
+      "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation.",
+      "completion_summary": "메뉴 찾기 화면이 진짜로 AI와 대화합니다 — Solar가 직접 답을 쓰고, 없는 가게는 없다고 말하며, 지도 마커를 누르면 메뉴 카드가 뜹니다. 학식은 실제 식당 이름 네 곳으로 오늘 것만 나옵니다."
     }
   }
 }
