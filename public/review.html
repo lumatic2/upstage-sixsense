@@ -1,0 +1,232 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<meta name="robots" content="noindex, nofollow">
+<title>제보 검수 — 한입지도</title>
+<link rel="icon" type="image/svg+xml" href="/img/favicon.svg?v=2">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  /* 운영진 전용 화면 — 공개 페이지와 달리 밀도를 우선한다(한 화면에 많이 보여야 검수가 빠름). */
+  .wrap{max-width:1180px;margin:0 auto;padding:var(--s6) var(--s4)}
+  .gate{max-width:420px;margin:var(--s24) auto;text-align:center}
+  .gate input{width:100%;height:44px;padding:0 12px;border:1px solid var(--border);border-radius:var(--r);font:inherit;margin:var(--s4) 0}
+  .bar{position:sticky;top:0;z-index:10;background:color-mix(in srgb,var(--bg) 92%,transparent);backdrop-filter:blur(8px);
+       border-bottom:1px solid var(--border);padding:var(--s3) 0;margin-bottom:var(--s6)}
+  .bar .inner{display:flex;align-items:center;gap:var(--s4);flex-wrap:wrap}
+  .bar .count{font-size:var(--sm);color:var(--muted)}
+  .rest{background:var(--surface);border-radius:var(--r);margin-bottom:var(--s8);overflow:hidden}
+  .rest > header{display:flex;align-items:center;justify-content:space-between;gap:var(--s4);
+                 padding:var(--s4) var(--s6);border-bottom:1px solid var(--border);flex-wrap:wrap}
+  .rest h2{font-size:var(--lg)}
+  .split{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr)}
+  @media (max-width:900px){.split{grid-template-columns:1fr}}
+  .shot{border-right:1px solid var(--border);background:var(--bg);min-height:420px;display:flex;flex-direction:column}
+  .shot iframe{width:100%;flex:1;border:0;min-height:420px}
+  .shot .none{padding:var(--s6);color:var(--muted);font-size:var(--sm)}
+  .shot nav{display:flex;gap:var(--s2);padding:var(--s2) var(--s4);border-top:1px solid var(--border);flex-wrap:wrap}
+  table{width:100%;border-collapse:collapse;font-size:var(--sm)}
+  th,td{padding:8px 10px;text-align:left;border-bottom:1px solid var(--border);vertical-align:middle}
+  th{font-weight:500;color:var(--muted);font-size:13px;position:sticky;top:56px;background:var(--surface)}
+  td.price{text-align:right;white-space:nowrap;font-variant-numeric:tabular-nums}
+  tr.sus{background:color-mix(in srgb,var(--accent-soft) 60%,transparent)}
+  tr.done-ok{opacity:.5}
+  tr.done-no{opacity:.5;text-decoration:line-through}
+  .why{display:block;font-size:12px;color:var(--accent);margin-top:2px}
+  .acts{display:flex;gap:6px;white-space:nowrap}
+  .acts button{height:30px;padding:0 10px;border-radius:var(--r);border:1px solid var(--border);
+               background:var(--surface);font:inherit;font-size:13px;cursor:pointer}
+  .acts button[aria-pressed="true"][data-v="확인"]{background:var(--accent);color:var(--accent-fg);border-color:transparent}
+  .acts button[aria-pressed="true"][data-v="제외"]{background:var(--band-ink);color:var(--band-ink-fg);border-color:transparent}
+  .empty{padding:var(--s12);text-align:center;color:var(--muted)}
+  .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--band-ink);
+         color:var(--band-ink-fg);padding:10px 18px;border-radius:var(--r);font-size:var(--sm);display:none}
+</style>
+</head>
+<body>
+
+<div class="wrap" id="gateWrap">
+  <div class="gate">
+    <h1>제보 검수</h1>
+    <p class="muted small" style="margin-top:var(--s3)">운영진 전용 화면입니다.</p>
+    <input type="password" id="tok" placeholder="검수 토큰" autocomplete="off">
+    <button class="btn" id="enter" style="width:100%">들어가기</button>
+    <p class="small" id="gateErr" style="color:var(--accent);margin-top:var(--s3)"></p>
+  </div>
+</div>
+
+<div class="wrap" id="app" hidden>
+  <div class="bar">
+    <div class="inner">
+      <strong>제보 검수</strong>
+      <span class="count" id="count">불러오는 중…</span>
+      <span style="flex:1"></span>
+      <button class="btn sm ghost" id="reload">새로고침</button>
+      <button class="btn sm" id="save" disabled>저장</button>
+    </div>
+  </div>
+  <div id="list"></div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let TOKEN = sessionStorage.getItem("hanip.reviewToken") || "";
+let DATA = null;
+const pending = new Map(); // row → 확인|제외
+
+/* 1차 스크리닝 — 사람이 189행을 한 줄씩 훑지 않도록 의심 행을 먼저 띄운다.
+   판정이 아니라 "여기부터 보라"는 표시다. 최종 확인/제외는 사람이 사진과 대조해 누른다.
+   규칙은 2026-07-20 실데이터에서 실제로 걸린 패턴에서 뽑았다(100g/·인기준·설명문 유입 등). */
+function suspicion(menu, price) {
+  const m = String(menu ?? "").trim();
+  const p = Number(String(price ?? "").replace(/[^\d]/g, "")) || 0;
+  const why = [];
+  if (m.length < 2) why.push("메뉴명이 너무 짧음");
+  if (m.length > 25) why.push("설명 문장이 메뉴명에 섞임");
+  if (/^\d+\s*(g|kg|ml|l)\s*\/?$/i.test(m) || /^\(?\d+(ml|g)\)?$/i.test(m)) why.push("단위만 남은 파편");
+  if (/기준$|^인기준$/.test(m)) why.push("'1인 기준' 같은 안내 문구 파편");
+  if (/[)\]]$/.test(m) && !/[(\[]/.test(m)) why.push("괄호가 깨진 조각");
+  if (/추가|변경|곱빼기|곱배기|^공기밥$|^사리$/.test(m)) why.push("옵션·부가 항목");
+  if (/영업|주차|배달|포장|문의|전화|원산지|주소/.test(m)) why.push("메뉴가 아닌 안내 문구");
+  if (p === 0) why.push("가격 없음");
+  else if (p < 1000) why.push("가격이 비정상적으로 낮음");
+  else if (p > 60000) why.push("가격이 비정상적으로 높음");
+  else if (p % 10 !== 0) why.push("가격 자릿수 오탐 의심");
+  return why;
+}
+
+function render() {
+  const list = $("#list");
+  const items = DATA.items.filter((i) => i.restaurantId && i.restaurantId !== "R000");
+  if (!items.length) {
+    list.innerHTML = '<div class="empty">검수 대기 중인 항목이 없습니다.</div>';
+    $("#count").textContent = "대기 0건";
+    return;
+  }
+  const byRest = new Map();
+  for (const it of items) {
+    if (!byRest.has(it.restaurantId)) byRest.set(it.restaurantId, []);
+    byRest.get(it.restaurantId).push(it);
+  }
+  let susTotal = 0;
+  list.innerHTML = [...byRest.entries()].map(([rid, rows]) => {
+    const meta = DATA.photos[rid] ?? {};
+    const ids = meta.driveIds ?? [];
+    const shot = ids.length
+      ? `<iframe src="https://drive.google.com/file/d/${ids[0]}/preview" loading="lazy" title="메뉴판 사진"></iframe>
+         ${ids.length > 1 ? `<nav>${ids.map((id, i) => `<button class="btn sm ghost" data-shot="${id}">사진 ${i + 1}</button>`).join("")}</nav>` : ""}`
+      : `<div class="none">등록된 메뉴판 사진 링크가 없습니다.<br>사진 없이 판단하지 말고 이 식당은 건너뛰세요.</div>`;
+    const body = rows.map((it) => {
+      const why = suspicion(it.menu, it.price);
+      if (why.length) susTotal++;
+      return `<tr data-row="${it.row}" class="${why.length ? "sus" : ""}">
+        <td>${escape(it.menu)}${why.length ? `<span class="why">⚑ ${escape(why.join(" · "))}</span>` : ""}</td>
+        <td class="price">${Number(String(it.price).replace(/[^\d]/g, "") || 0).toLocaleString()}원</td>
+        <td><div class="acts">
+          <button data-v="확인" aria-pressed="false">확인</button>
+          <button data-v="제외" aria-pressed="false">제외</button>
+        </div></td>
+      </tr>`;
+    }).join("");
+    return `<section class="rest">
+      <header><h2>${escape(meta.name ?? rid)}</h2>
+        <span class="small muted">${rows.length}건 대기</span></header>
+      <div class="split">
+        <div class="shot" data-rid="${rid}">${shot}</div>
+        <div style="overflow:auto">
+          <table><thead><tr><th>메뉴명</th><th style="text-align:right">가격</th><th style="width:150px">검수</th></tr></thead>
+          <tbody>${body}</tbody></table>
+        </div>
+      </div>
+    </section>`;
+  }).join("");
+  $("#count").textContent = `대기 ${items.length}건 · 식당 ${byRest.size}곳 · 확인 필요 표시 ${susTotal}건`;
+}
+
+const escape = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function toast(msg) {
+  const t = $("#toast");
+  t.textContent = msg; t.style.display = "block";
+  setTimeout(() => { t.style.display = "none"; }, 2600);
+}
+
+async function load() {
+  $("#count").textContent = "불러오는 중…";
+  const res = await fetch("/api/review?status=대기", { headers: { "x-review-token": TOKEN } });
+  if (res.status === 401) throw new Error("토큰이 올바르지 않습니다");
+  if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? `HTTP ${res.status}`);
+  DATA = await res.json();
+  pending.clear();
+  $("#save").disabled = true;
+  render();
+}
+
+$("#enter").addEventListener("click", async () => {
+  TOKEN = $("#tok").value.trim();
+  if (!TOKEN) return;
+  try {
+    await load();
+    sessionStorage.setItem("hanip.reviewToken", TOKEN);
+    $("#gateWrap").hidden = true; $("#app").hidden = false;
+  } catch (e) { $("#gateErr").textContent = e.message; }
+});
+$("#tok").addEventListener("keydown", (e) => { if (e.key === "Enter") $("#enter").click(); });
+
+$("#list").addEventListener("click", (e) => {
+  const shotBtn = e.target.closest("[data-shot]");
+  if (shotBtn) {
+    const box = shotBtn.closest(".shot");
+    box.querySelector("iframe").src = `https://drive.google.com/file/d/${shotBtn.dataset.shot}/preview`;
+    return;
+  }
+  const btn = e.target.closest(".acts button");
+  if (!btn) return;
+  const tr = btn.closest("tr");
+  const row = Number(tr.dataset.row);
+  const value = btn.dataset.v;
+  const already = btn.getAttribute("aria-pressed") === "true";
+  tr.querySelectorAll(".acts button").forEach((b) => b.setAttribute("aria-pressed", "false"));
+  tr.classList.remove("done-ok", "done-no");
+  if (already) { pending.delete(row); }
+  else {
+    btn.setAttribute("aria-pressed", "true");
+    pending.set(row, value);
+    tr.classList.add(value === "확인" ? "done-ok" : "done-no");
+  }
+  $("#save").disabled = pending.size === 0;
+  $("#save").textContent = pending.size ? `저장 (${pending.size})` : "저장";
+});
+
+$("#save").addEventListener("click", async () => {
+  const btn = $("#save"); btn.disabled = true; btn.textContent = "저장 중…";
+  const updates = [...pending.entries()].map(([row, value]) => ({ row, col: DATA.reviewCol, value }));
+  try {
+    const res = await fetch("/api/review", {
+      method: "POST",
+      headers: { "content-type": "application/json", "x-review-token": TOKEN },
+      body: JSON.stringify({ updates }),
+    });
+    if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? `HTTP ${res.status}`);
+    const { updated } = await res.json();
+    toast(`${updated}건 저장했습니다`);
+    await load();
+  } catch (e) {
+    toast(`저장 실패: ${e.message}`);
+    btn.disabled = false; btn.textContent = `저장 (${pending.size})`;
+  }
+});
+
+$("#reload").addEventListener("click", () => load().catch((e) => toast(e.message)));
+
+// 토큰이 세션에 남아 있으면 바로 진입 시도
+if (TOKEN) {
+  load().then(() => { $("#gateWrap").hidden = true; $("#app").hidden = false; })
+        .catch(() => { sessionStorage.removeItem("hanip.reviewToken"); TOKEN = ""; });
+}
+</script>
+</body>
+</html>
