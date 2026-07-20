@@ -285,8 +285,8 @@
       "status": "active",
       "plan_path": "plans/2026-07-20-dr4-contribute-review-loop.md",
       "changeset_path": "public",
-      "next_step": "step-4",
-      "current_step": "step-4",
+      "next_step": "step-5",
+      "current_step": "step-5",
       "steps": [
         {
           "id": "step-1",
@@ -306,7 +306,7 @@
         {
           "id": "step-4",
           "label": "step-4 승인 게이트 ON (`검수=\"확인\"` 행만 서비스 노출)",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-5",
