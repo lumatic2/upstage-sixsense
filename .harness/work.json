@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "active_work_id": "dr7-team-share",
+  "active_work_id": "dr8-agent-console",
   "works": {
     "m2-parse-poc": {
       "work_id": "m2-parse-poc",
@@ -512,6 +512,61 @@
       "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation.",
       "completion_summary": "링크 두 개만으로 팀원이 가져다 쓸 수 있게 내놨습니다 — 비어 있던 레포 첫 화면에 README 를 세우고, 막혔던 지점과 해법을 적은 인계 문서를 붙여 공개 레포에 푸시했습니다.",
       "notified_at": "2026-07-20T16:16:56.490480+00:00"
+    },
+    "dr8-agent-console": {
+      "work_id": "dr8-agent-console",
+      "horizon_id": "demoday-run",
+      "milestone_id": "DR8",
+      "status": "active",
+      "plan_path": "plans/2026-07-21-dr8-agent-console.md",
+      "changeset_path": "public",
+      "next_step": "step-1",
+      "current_step": "step-1",
+      "steps": [
+        {
+          "id": "step-1",
+          "label": "step-1 헤더 CTA 제거 + 통계 라벨 문구",
+          "status": "pending"
+        },
+        {
+          "id": "step-2",
+          "label": "step-2 히어로 데모 카드 모바일 복구",
+          "status": "pending"
+        },
+        {
+          "id": "step-3",
+          "label": "step-3 `/app.html` 에이전트 콘솔 재구성",
+          "status": "pending"
+        },
+        {
+          "id": "step-4",
+          "label": "step-4 통합 검증 + 회귀",
+          "status": "pending"
+        }
+      ],
+      "execution_mode": "continuous",
+      "approval": {
+        "approved_by": "user",
+        "approved_at": "2026-07-21",
+        "plan_sha256": "f3d90a31f3e1cc7ccb7bd02e273af6daa2090dc76809b9e1cde9c6c4f819f9ec"
+      },
+      "allowed_stop_reasons": [
+        "completed",
+        "blocked",
+        "decision_required",
+        "risk_gate",
+        "secret_required",
+        "external_authority_required",
+        "user_stopped"
+      ],
+      "stop_reason": null,
+      "stop_detail": {},
+      "session_ids": [
+        "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4"
+      ],
+      "owner_session_uuid": "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4",
+      "updated_at": "2026-07-21",
+      "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation."
     }
   }
 }

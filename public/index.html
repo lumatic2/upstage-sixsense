@@ -51,12 +51,6 @@
 /* 데모 카드 세로 크기 고정 — 콘텐츠 길이와 무관하게 .demo-body 자체에 확정 높이를 줘야
    그리드 행이 콘텐츠에 맞춰 다시 커지는 걸 막을 수 있음 (사용자 지시 2026-07-20) */
 .demo-body{display:grid;grid-template-columns:minmax(0,1fr) 320px;height:clamp(390px,42vw,485px);overflow:hidden}
-@media (max-width:860px){
-  .demo-body{grid-template-columns:1fr;height:auto}
-  .demo-side{border-left:0;border-top:1px solid var(--border);height:auto}
-  .demo-stage{height:320px}
-  .demo-chat{flex:none;height:300px}
-}
 .demo-stage{
   position:relative;height:100%;
   background:
@@ -95,9 +89,12 @@
   border-bottom:1px solid var(--border);font-size:var(--sm);color:var(--muted);
 }
 .demo-side-head img{flex:none}
+/* 대화창은 "이미 자리를 잡아둔 상자에 글이 채워지는" 방식이다 — 글이 늘어도 카드가 자라지 않고
+   스크롤바도 생기지 않는다. 아래에서 위로 쌓이므로(justify-content:flex-end) 넘치는 옛 말풍선은
+   위로 밀려 잘려 나간다. (사용자 지시 2026-07-21) */
 .demo-chat{
-  flex:1;overflow-y:auto;padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3);
-  min-height:0;font-size:var(--sm);
+  flex:1;overflow:hidden;padding:var(--s4);display:flex;flex-direction:column;justify-content:flex-end;
+  gap:var(--s3);min-height:0;font-size:var(--sm);
   transition:opacity 200ms ease-out;
 }
 .demo-chat.fade{opacity:0}
@@ -108,6 +105,16 @@
   background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:inherit;outline:none;
 }
 .demo-ask input:focus{border-color:var(--accent)}
+/* 모바일 — 이 블록은 위 `.demo-*` 기본 규칙보다 **아래**에 있어야 한다.
+   위에 있던 탓에 같은 명시도에서 밀려 `.demo-stage{height:100%}`(부모 auto → 0px)로 덮여
+   카카오맵이 통째로 사라지고, `.demo-chat{flex:1}`로 덮여 말풍선이 늘 때마다 카드가
+   세로로 자랐다. (2026-07-21 390px 실측) */
+@media (max-width:860px){
+  .demo-body{grid-template-columns:1fr;height:auto}
+  .demo-side{border-left:0;border-top:1px solid var(--border);height:auto}
+  .demo-stage{height:300px}
+  .demo-chat{flex:none;height:290px}
+}
 .cb{line-height:1.55;animation:cbin 260ms ease-out both}
 @keyframes cbin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 @media (prefers-reduced-motion: reduce){.cb{animation:none}}
@@ -245,7 +252,6 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
     </nav>
     <div class="nav-side">
       <button class="linklike" id="loginBtn">로그인</button>
-      <a class="btn sm" href="/app.html">한입지도 열기</a>
     </div>
   </div>
 </header>
@@ -289,9 +295,9 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
       </div>
 
       <div class="proof" id="proof" aria-live="polite">
-        <div><span class="n" id="nRest">–</span><span class="k">수집한 식당</span></div>
-        <div><span class="n" id="nMenu">–</span><span class="k">파싱한 메뉴·가격</span></div>
-        <div><span class="n" id="nCaf">–</span><span class="k">오늘의 학식</span></div>
+        <div><span class="n" id="nRest">–</span><span class="k">식당</span></div>
+        <div><span class="n" id="nMenu">–</span><span class="k">메뉴</span></div>
+        <div><span class="n" id="nCaf">–</span><span class="k">학식</span></div>
       </div>
       <div class="wavewrap" aria-hidden="true">
         <div class="waverow" id="wave1"></div>
