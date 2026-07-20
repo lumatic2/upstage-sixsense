@@ -48,12 +48,17 @@
 .menus li{display:flex;justify-content:space-between;gap:var(--s4);padding:var(--s1) 0}
 .menus .price{font-variant-numeric:tabular-nums;color:var(--muted);white-space:nowrap}
 .reason{margin-top:var(--s4);padding-top:var(--s4);border-top:1px solid var(--border)}
+/* 배지는 판정 결과를 색으로 구분한다 — 전부 액센트 체크로 칠하면 "근거 미달 → 교체"까지
+   검증 통과처럼 보인다. 통과(ok)만 액센트, 나머지는 중립. */
 .badge{
   display:inline-flex;align-items:center;gap:6px;margin-top:var(--s2);
-  font-size:var(--sm);color:var(--accent);background:var(--accent-soft);
+  font-size:var(--sm);color:var(--muted);background:rgba(12,20,32,.05);
   padding:2px 10px;border-radius:var(--r);
 }
+.badge.ok{color:var(--accent);background:var(--accent-soft)}
 .empty{background:var(--surface);border-radius:var(--r);padding:var(--s12) var(--s6);text-align:center;color:var(--muted)}
+.empty h3{color:var(--fg);margin-bottom:var(--s3)}
+.empty .alts{display:flex;gap:var(--s2);justify-content:center;flex-wrap:wrap;margin-top:var(--s6)}
 .skeleton{opacity:.6}
 </style>
 </head>
@@ -87,7 +92,9 @@ document.getElementById("loginClose").addEventListener("click", () => document.g
 <main>
 <section class="search-sec">
   <div class="container">
+    <p class="eyebrow">메뉴 찾기</p>
     <h1>오늘 예산은 얼마인가요</h1>
+    <p class="lead">학식과 명륜동·혜화 식당을 한 판에 놓고 고릅니다. 검수를 통과한 메뉴만 나옵니다.</p>
     <form id="searchForm" role="search" aria-label="예산·조건 검색" style="margin-top:var(--s6)">
       <input type="text" id="q" placeholder="예: 8천원 이하 도보 5분 혼밥" autocomplete="off" aria-label="자연어로 조건 입력">
       <button class="btn" type="submit" id="goBtn">
@@ -124,6 +131,18 @@ document.getElementById("loginClose").addEventListener("click", () => document.g
     <div class="grid" id="restaurantBlock"></div>
   </div>
 </section>
+
+<section class="band-warm">
+  <div class="container centered">
+    <h2>찾던 가게가 없었나요?</h2>
+    <p class="lead">메뉴판 사진 한 장이면 Document Parse가 메뉴와 가격을 읽습니다.
+      운영진이 그 사진과 대조해 확인한 뒤에 이 목록에 올라갑니다.</p>
+    <div style="display:flex;gap:var(--s3);justify-content:center;flex-wrap:wrap;margin-top:var(--s6)">
+      <a class="btn" href="/contribute.html">사진 제보하기</a>
+      <a class="btn tint" href="/about.html#upstage">어떤 AI를 어디에 썼나</a>
+    </div>
+  </div>
+</section>
 </main>
 
 <footer class="site-foot">
@@ -149,6 +168,10 @@ document.getElementById("loginClose").addEventListener("click", () => document.g
 
 <script>
 const $ = (s) => document.querySelector(s);
+const ico = (d) => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${d}</svg>`;
+const CHECK = ico(`<path d="M20 6 9 17l-5-5"/>`);
+const SWAP  = ico(`<path d="M4 8h13l-3-3M20 16H7l3 3"/>`);
+const SPARK = ico(`<path d="M12 4v16M4 12h16"/>`);
 let DATA = { restaurants: [], menus: [], cafeteria: [] };
 let MAP = null, MARKERS = [];
 let state = { budget: null, walkMax: null, tags: [] };
@@ -260,13 +283,13 @@ async function loadPicks() {
         <p class="reason muted">캠퍼스 안에서 해결하는 가장 확실한 선택.</p></div>`);
     }
     for (const p of d.picks ?? []) {
-      const badge = p.grounded === "grounded" ? "Solar 생성 · 근거 검증됨"
-        : p.grounded === "replaced" ? "근거 미달 판정 → 데이터 팩트로 교체"
-        : p.reasonSource === "solar" ? "Solar 생성" : "데이터 기반";
+      const b = p.grounded === "grounded" ? { t: "Solar 생성 · 근거 검증됨", ok: true, i: CHECK }
+        : p.grounded === "replaced" ? { t: "근거 미달 판정 → 데이터 팩트로 교체", ok: false, i: SWAP }
+        : p.reasonSource === "solar" ? { t: "Solar 생성", ok: false, i: SPARK } : { t: "데이터 기반", ok: false, i: SPARK };
       cards.push(`<div class="card pick"><div class="rowhead"><h3>${p.name}</h3><span class="small muted">${p.category}${p.walkMin?` · 도보 ${p.walkMin}분`:""}</span></div>
         <ul class="menus">${p.menus.map((m)=>`<li><span>${m.name}</span><span class="price">${m.price.toLocaleString()}원</span></li>`).join("")}</ul>
-        <div class="reason"><p>${p.reason}</p><span class="badge">
-          <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><path d="M20 6 9 17l-5-5"/></svg>${badge}</span></div></div>`);
+        <div class="reason"><p>${p.reason}</p><span class="badge${b.ok?" ok":""}" title="추천 이유를 solar-mini 가 데이터와 대조해 판정한 결과입니다">
+          ${b.i}${b.t}</span></div></div>`);
     }
     $("#picksNote").textContent = d.walkRelaxed ? "도보 조건에 맞는 곳이 없어 가까운 순으로 보여드립니다" : "";
     block.innerHTML = cards.join("") || `<div class="empty">조건에 맞는 추천이 없습니다 — 예산을 조금 올려보세요.</div>`;
@@ -274,6 +297,39 @@ async function loadPicks() {
     block.innerHTML = `<div class="empty">추천을 불러오지 못했습니다 — 아래 목록으로 골라보세요.</div>`;
   }
 }
+
+/** 결과 0건 화면 — 빈 칸 대신 "왜 없는지 + 지금 뭘 할 수 있는지".
+ *  대안은 문구가 아니라 실제 데이터에서 뽑은 최저가여야 한다. 예산 1000원처럼 아무것도
+ *  안 걸리는 값을 넣으면 "예산을 올리세요"만으로는 얼마를 올려야 하는지 알 수 없다. */
+function cheapest() {
+  const prices = DATA.menus.map((m) => m.price).concat(DATA.cafeteria.map((c) => c.price)).filter((p) => p > 0);
+  return prices.length ? Math.min(...prices) : null;
+}
+function emptyState() {
+  const low = cheapest();
+  const reach = low && state.budget && low > state.budget
+    // "가장 싼 한 끼" 라고 쓰지 않는다 — 실측하니 최저가 1,000원의 정체가 공기밥·꼬치 1개였다.
+    // 사이드 메뉴를 한 끼라고 부르면 그 자체가 거짓말이 된다.
+    ? `<p>지금 모인 데이터의 최저가 메뉴는 <b>${low.toLocaleString()}원</b>입니다.</p>` : "";
+  return `<div class="empty">
+    <h3>조건에 맞는 곳이 아직 없습니다</h3>
+    ${reach}
+    <p>없는 걸 있다고 지어내지 않습니다 — 검수를 통과한 데이터만 보여드리기 때문입니다.</p>
+    <div class="alts">
+      ${low && state.budget && low > state.budget ? `<button class="btn sm" type="button" data-raise="${low}">예산 ${low.toLocaleString()}원으로 올려보기</button>` : ""}
+      <button class="btn sm ghost" type="button" data-raise="">조건 없이 전체 보기</button>
+      <a class="btn sm tint" href="/contribute.html">메뉴판 사진 제보하기</a>
+    </div>
+  </div>`;
+}
+/* 빈 상태의 대안 버튼은 렌더될 때마다 새로 만들어지므로 위임으로 받는다. */
+document.addEventListener("click", (e) => {
+  const btn = e.target.closest("[data-raise]");
+  if (!btn) return;
+  state = { budget: btn.dataset.raise ? Number(btn.dataset.raise) : null, walkMax: null, tags: [] };
+  $("#parsed").textContent = state.budget ? `조건: 예산 ${state.budget.toLocaleString()}원 이하` : "";
+  syncChips(); render(); renderMarkers(); loadPicks();
+});
 
 function menusFor(rid) {
   return DATA.menus.filter((m) => m.restaurant_id === rid && (!state.budget || m.price <= state.budget));
@@ -296,7 +352,7 @@ function render() {
           ${ms.length>5?`<li><span class="muted small">외 ${ms.length-5}개</span><span></span></li>`:""}</ul>
           ${r.address?`<p class="muted small" style="margin-top:var(--s4)">${r.address}</p>`:""}</div>`;
       }).join("")
-    : `<div class="empty">조건에 맞는 곳이 아직 없습니다. 예산을 올리거나 메뉴판 사진을 <a href="/test.html">제보</a>해 주세요.</div>`;
+    : emptyState();
 }
 
 loadData();
