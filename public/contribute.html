@@ -39,6 +39,9 @@
   .note{background:var(--accent-soft);border-radius:var(--r);padding:var(--s4) var(--s6);font-size:var(--sm);margin-top:var(--s6)}
 
   .working{display:flex;align-items:center;gap:var(--s3);color:var(--muted);font-size:var(--sm);margin-top:var(--s6)}
+  /* display 를 지정한 요소는 [hidden] 이 먹지 않는다 — 파싱이 끝나도 "복원하는 중" 이 남아 있던 원인.
+     DR2 에서 .map-empty[hidden] 이 같은 이유로 로딩 문구를 남겼다(verification/matrix.md). */
+  .working[hidden]{display:none}
   .spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp 700ms linear infinite;flex:none}
   @keyframes sp{to{transform:rotate(360deg)}}
   @media (prefers-reduced-motion: reduce){.spin{animation:none}}
