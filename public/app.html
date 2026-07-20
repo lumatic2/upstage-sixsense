@@ -16,6 +16,9 @@
 <link rel="stylesheet" href="/theme.css">
 <style>
 .console-sec{padding:var(--s12) 0 var(--s8)}
+/* 화면 주인공은 콘솔이다 — 제목이 설명문까지 달고 위를 차지하면 지도가 접힌 아래로 밀린다.
+   이름 한 줄만 두고 나머지 설명은 대화가 한다. (사용자 지시 2026-07-21) */
+.console-title{text-align:center;margin-bottom:var(--s2)}
 
 /* 에이전트 콘솔 — 좌: 지도 / 우: 대화. 랜딩 데모 카드와 같은 구조를 쓰되
    여기는 목업이 아니라 실제 서비스라 대화가 실 API(/api/parse-query → /api/recommend)를 부른다.
@@ -148,9 +151,7 @@ document.getElementById("loginClose").addEventListener("click", () => document.g
 <main>
 <section class="console-sec">
   <div class="container">
-    <p class="eyebrow">메뉴 찾기</p>
-    <h1>오늘 예산은 얼마인가요</h1>
-    <p class="lead">학식과 명륜동·혜화 식당을 한 판에 놓고 고릅니다. 검수를 통과한 메뉴만 나옵니다.</p>
+    <h1 class="console-title">한입지도</h1>
 
     <div class="console">
       <div class="console-body">
@@ -161,7 +162,7 @@ document.getElementById("loginClose").addEventListener("click", () => document.g
         <aside class="console-side" aria-label="에이전트 대화">
           <div class="console-side-head">
             <img src="/img/upstage-symbol.svg" alt="" width="16" height="16">
-            <span>Upstage Solar 로 조건을 읽고 골라드립니다</span>
+            <span>Upstage AI 에이전트</span>
           </div>
           <div class="console-chat" id="chat" aria-live="polite"></div>
           <div class="chips" role="group" aria-label="예산 바로 선택">
@@ -279,7 +280,8 @@ let state = { budget: null, walkMax: null, tags: [] };
 async function loadData() {
   try { DATA = await (await fetch("/api/data")).json(); }
   catch { DATA = { restaurants: [], menus: [], cafeteria: [], source: "none" }; }
-  $("#dataNote").textContent = `식당 ${DATA.restaurants.length} · 메뉴 ${DATA.menus.length} · 학식 ${DATA.cafeteria.length}`;
+  // 데이터 카운터(식당 24 · 메뉴 342)는 뺐다 — 쓰는 사람에게 필요한 숫자가 아니다(사용자 지시 2026-07-21).
+  // 규모를 보여주는 자리는 랜딩의 증거 띠와 /verify.html 이다.
   render(); renderMarkers();
   greet();
   applyUrlQuery();
@@ -289,9 +291,8 @@ async function loadData() {
    가진 데이터를 먼저 밝히고(지어내지 않는다는 태도의 시작점) 예시를 하나 준다. */
 function greet() {
   if (chatEl().children.length) return;
-  bubble("ai", `안녕하세요. 지금 <b>식당 ${DATA.restaurants.length}곳 · 메뉴 ${DATA.menus.length}개</b>를 갖고 있습니다.
-    전부 메뉴판 사진에서 읽어 사람이 확인한 것만 있습니다.`);
-  bubble("ai muted", `예산을 말씀해 주세요. "8천원 이하 도보 5분 혼밥" 처럼 조건을 붙여도 됩니다.`);
+  bubble("ai", `오늘은 뭘 먹어 볼까요?`);
+  bubble("ai muted", `예산만 말해도 되고, "8천원 이하 도보 5분 혼밥" 처럼 붙여도 됩니다.`);
 }
 
 /* 랜딩에서 넘어온 조건 이어받기 — /app.html?q=...&budget=8000 */
@@ -364,30 +365,48 @@ function condText(s) {
 }
 
 /** 한 번의 질의를 끝까지 수행한다. q 가 없으면(칩 클릭) 구조화 단계를 건너뛴다. */
+/* 대화 이력 — 서버로 보내되 저장하지는 않는다(무상태). 새로고침하면 사라진다. */
+const history = [];
+
 async function ask({ q = null, budget = null }) {
   $("#goBtn").disabled = true;
-  if (q) bubble("user", esc(q));
-  else if (budget) bubble("user", `${won(budget)} 이하`);
-  else bubble("user", "전체 보기");
+  const label = q ?? (budget ? `${won(budget)} 이하` : "전체 보기");
+  bubble("user", esc(label));
+  history.push({ role: "user", text: label });
 
+  let searched = true;
   if (q) {
-    const wait = bubble("ai muted", `조건을 읽는 중입니다 ${TYPING}`);
+    // 답을 Solar 가 직접 쓴다. 여기서 문장을 만들면 다시 "에이전트인 척하는 if/else" 가 된다.
+    const wait = bubble("ai muted", `${TYPING}`);
+    let r = null;
     try {
-      const p = await (await fetch("/api/parse-query", {
+      r = await (await fetch("/api/chat", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ query: q }),
+        body: JSON.stringify({ message: q, history: history.slice(0, -1).slice(-6) }),
       })).json();
-      state = { budget: p.budget ?? null, walkMax: p.walkMax ?? null, tags: p.tags ?? [] };
-      const t = condText(state);
+    } catch { r = null; }
+    if (r) {
       wait.className = "cb ai";
-      // 조건 문자열은 끝 글자가 매번 달라 조사(로/으로)를 붙이면 틀린다 — 콜론으로 받는다.
-      wait.innerHTML = t
-        ? `이렇게 읽었습니다 — <b>${esc(t)}</b>${p.source === "solar" ? " <span class='muted'>(Solar 구조화)</span>" : ""}`
-        : "조건을 읽지 못해 전체를 보여드립니다.";
-    } catch {
-      state = { budget: null, walkMax: null, tags: [] };
+      wait.textContent = r.reply;
+      history.push({ role: "assistant", text: r.reply });
+      state = r.conditions
+        ? { budget: r.conditions.budget ?? null, walkMax: r.conditions.walkMax ?? null, tags: r.conditions.tags ?? [] }
+        : { budget: null, walkMax: null, tags: [] };
+      searched = Boolean(r.search);
+    } else {
+      // /api/chat 자체가 죽어도 검색은 되게 — 기존 구조화 경로로 떨어진다.
       wait.className = "cb ai";
-      wait.textContent = "조건 해석에 실패해 전체를 보여드립니다.";
+      try {
+        const p = await (await fetch("/api/parse-query", {
+          method: "POST", headers: { "content-type": "application/json" },
+          body: JSON.stringify({ query: q }),
+        })).json();
+        state = { budget: p.budget ?? null, walkMax: p.walkMax ?? null, tags: p.tags ?? [] };
+        wait.textContent = condText(state) ? `${condText(state)} 조건으로 찾아볼게요.` : "조건을 읽지 못해 전체를 보여드립니다.";
+      } catch {
+        state = { budget: null, walkMax: null, tags: [] };
+        wait.textContent = "조건 해석에 실패해 전체를 보여드립니다.";
+      }
     }
   } else {
     state = { budget, walkMax: null, tags: [] };
@@ -396,12 +415,14 @@ async function ask({ q = null, budget = null }) {
   $("#parsed").textContent = condText(state) ? `조건: ${condText(state)}` : "";
   syncChips();
   render(); renderMarkers();
-  const wait = bubble("ai muted", `고르는 중입니다 ${TYPING}`);
-  await loadPicks(wait);
+  if (searched) {
+    const wait = bubble("ai muted", `고르는 중입니다 ${TYPING}`);
+    await loadPicks(wait);
+  }
   $("#goBtn").disabled = false;
   $("#q").value = "";
   // 결과는 대화창 아래에 있다 — 처음 쓰는 사람이 못 찾는 일이 없게 한 번 데려간다.
-  $("#picksWrap").hidden || $("#picksWrap").scrollIntoView({ behavior: "smooth", block: "start" });
+  if (searched && !$("#picksWrap").hidden) $("#picksWrap").scrollIntoView({ behavior: "smooth", block: "start" });
 }
 
 $("#searchForm").addEventListener("submit", (e) => {

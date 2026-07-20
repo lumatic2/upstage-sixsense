@@ -118,6 +118,9 @@ export default async function handler(req, res) {
       body: JSON.stringify({
         model: "solar-pro2",
         messages: msgs,
+        // 대화는 온도를 준다 — 같은 질문에 매번 토씨까지 같은 답이 오면 사람은 그걸 템플릿으로 읽는다.
+        // (조건 추출은 같은 응답의 구조화 필드라 온도의 영향이 거의 없고, 근거 판정은 별도 호출이라 무관.)
+        temperature: 0.7,
         response_format: {
           type: "json_schema",
           json_schema: {
