@@ -1,0 +1,252 @@
+<!doctype html>
+<html lang="ko">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>사진 제보 — 한입지도</title>
+<meta name="description" content="메뉴판 사진 한 장이면 됩니다. Upstage Document Parse 가 메뉴와 가격을 읽고, 검수를 거쳐 한입지도에 반영됩니다.">
+<link rel="icon" type="image/svg+xml" href="/img/favicon.svg?v=2">
+<link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="48x48">
+<link rel="stylesheet" href="/theme.css">
+<style>
+  .steps{display:grid;gap:var(--s6);grid-template-columns:repeat(3,1fr);margin:var(--s8) 0 var(--s12)}
+  @media (max-width:760px){.steps{grid-template-columns:1fr}}
+  .steps li{list-style:none;padding-top:var(--s3);border-top:2px solid var(--border);color:var(--muted);font-size:var(--sm)}
+  .steps li.on{border-top-color:var(--accent);color:var(--fg)}
+  .steps li b{display:block;font-family:var(--font-head);font-weight:400;font-size:var(--base);color:var(--fg);margin-bottom:2px}
+
+  .drop{border:2px dashed var(--border);border-radius:var(--r);padding:var(--s16) var(--s6);text-align:center;
+        background:var(--surface);cursor:pointer;transition:border-color 180ms ease-out,background 180ms ease-out}
+  .drop:hover,.drop.over{border-color:var(--accent);background:var(--accent-soft)}
+  .drop p{margin-top:var(--s3);color:var(--muted);font-size:var(--sm)}
+  .preview{display:grid;grid-template-columns:minmax(0,320px) minmax(0,1fr);gap:var(--s8);align-items:start}
+  @media (max-width:760px){.preview{grid-template-columns:1fr}}
+  .preview img{width:100%;border-radius:var(--r);display:block}
+
+  .fields{display:grid;gap:var(--s4);margin:var(--s8) 0}
+  .fields label{display:block;font-size:var(--sm);color:var(--muted);margin-bottom:6px}
+  .fields input{width:100%;height:44px;padding:0 12px;border:1px solid var(--border);border-radius:var(--r);font:inherit;background:var(--surface)}
+  .fields input:focus{outline:2px solid var(--accent);outline-offset:-1px}
+  .row2{display:grid;gap:var(--s4);grid-template-columns:1fr 200px}
+  @media (max-width:560px){.row2{grid-template-columns:1fr}}
+
+  /* 파싱 결과는 보여주되 고치지 않는다 — 검수 권한은 운영진에게만 있다(docs/SITEMAP.md §7-2). */
+  .found{background:var(--surface);border-radius:var(--r);overflow:hidden;margin-top:var(--s6)}
+  .found table{width:100%;border-collapse:collapse;font-size:var(--sm)}
+  .found th,.found td{padding:9px 14px;text-align:left;border-bottom:1px solid var(--border)}
+  .found th{color:var(--muted);font-weight:500;font-size:13px}
+  .found td.p{text-align:right;font-variant-numeric:tabular-nums;white-space:nowrap}
+  .note{background:var(--accent-soft);border-radius:var(--r);padding:var(--s4) var(--s6);font-size:var(--sm);margin-top:var(--s6)}
+
+  .working{display:flex;align-items:center;gap:var(--s3);color:var(--muted);font-size:var(--sm);margin-top:var(--s6)}
+  .spin{width:18px;height:18px;border:2px solid var(--border);border-top-color:var(--accent);border-radius:50%;animation:sp 700ms linear infinite;flex:none}
+  @keyframes sp{to{transform:rotate(360deg)}}
+  @media (prefers-reduced-motion: reduce){.spin{animation:none}}
+  .err{color:var(--accent);font-size:var(--sm);margin-top:var(--s4)}
+  .done{text-align:center;padding:var(--s16) 0}
+</style>
+</head>
+<body>
+
+<header class="site-head">
+  <div class="container inner">
+    <a class="brand" href="/" aria-label="한입지도 홈" style="display:inline-flex;align-items:center;gap:8px"><svg viewBox="0 0 24 24" style="width:24px;height:24px;color:var(--accent);flex:none"><path fill="currentColor" fill-rule="evenodd" d="M12 1.25C6.75 1.25 3 5.1 3 9.9c0 5.8 6.1 10.35 8.4 12.45.34.31.86.31 1.2 0C14.9 20.25 21 15.7 21 9.9c0-4.8-3.75-8.65-9-8.65Zm0 2.75c-1.25 0-2.2 1.3-2.2 3.25 0 1.85.65 2.85 1.5 3.25v7.05c0 .45.3.8.7.8s.7-.35.7-.8V10.5c.85-.4 1.5-1.4 1.5-3.25C14.2 5.3 13.25 4 12 4Z"/></svg><span>한입지도</span></a>
+    <nav class="nav-main">
+      <a class="navlink" href="/">홈</a>
+      <a class="navlink" href="/app.html">메뉴 찾기</a>
+      <a class="navlink" href="/contribute.html" aria-current="page">사진 제보</a>
+      <a class="navlink" href="/about.html">데이터 파이프라인</a>
+    </nav>
+    <div class="nav-side">
+      <button class="linklike" id="loginBtn">로그인</button>
+      <a class="btn sm" href="/app.html">한입지도 열기</a>
+    </div>
+  </div>
+</header>
+
+<dialog class="sheet" id="loginDlg">
+  <h3>로그인은 아직 없습니다</h3>
+  <p>제보에 계정이 필요하지 않습니다. 사진만 있으면 됩니다.</p>
+  <button class="btn" id="loginClose" autofocus>알겠습니다</button>
+</dialog>
+
+<main class="container" style="padding-top:var(--s12);padding-bottom:var(--s24)">
+  <h1>메뉴판 사진 한 장이면 됩니다</h1>
+  <p class="lead">Upstage Document Parse 가 사진에서 메뉴와 가격을 읽습니다. 운영진 검수를 거쳐 한입지도에 반영됩니다.</p>
+
+  <ol class="steps" id="steps">
+    <li class="on" data-s="1"><b>1. 사진 올리기</b>메뉴와 가격이 보이게</li>
+    <li data-s="2"><b>2. AI 가 읽기</b>Document Parse 가 표 구조를 복원</li>
+    <li data-s="3"><b>3. 접수</b>검수 후 서비스에 반영</li>
+  </ol>
+
+  <!-- 1단계 -->
+  <section id="s1">
+    <div class="drop" id="drop" role="button" tabindex="0" aria-label="메뉴판 사진 올리기">
+      <strong style="font-family:var(--font-head);font-size:var(--lg)">사진을 여기 놓거나 눌러서 고르세요</strong>
+      <p>JPEG · PNG · WebP / 8MB 이하 · 메뉴와 가격이 함께 보이는 사진일수록 잘 읽습니다</p>
+    </div>
+    <input type="file" id="file" accept="image/jpeg,image/png,image/webp" hidden>
+    <p class="err" id="err1"></p>
+  </section>
+
+  <!-- 2·3단계 -->
+  <section id="s2" hidden>
+    <div class="preview">
+      <div>
+        <img id="shot" alt="올린 메뉴판 사진">
+        <button class="btn ghost sm" id="again" style="width:100%;margin-top:var(--s3)">다른 사진 고르기</button>
+      </div>
+      <div>
+        <div class="working" id="working"><span class="spin"></span><span id="workingMsg">Document Parse 가 표 구조를 복원하는 중…</span></div>
+
+        <div id="result" hidden>
+          <h2 style="font-size:var(--lg)">이렇게 읽었습니다</h2>
+          <div class="found">
+            <table><thead><tr><th>메뉴</th><th style="text-align:right">가격</th></tr></thead>
+            <tbody id="rows"></tbody></table>
+          </div>
+          <div class="note">
+            <strong>고치지 않으셔도 됩니다.</strong> 읽은 내용이 조금 틀려도 그대로 접수해주세요 —
+            운영진이 원본 사진과 대조해 검수한 뒤에 서비스에 반영합니다. 검수 전에는 어디에도 노출되지 않습니다.
+          </div>
+
+          <div class="fields">
+            <div>
+              <label for="rname">식당 이름 <span style="color:var(--accent)">*</span></label>
+              <input id="rname" placeholder="예: 백미향마라탕 명륜점" autocomplete="off">
+            </div>
+            <div class="row2">
+              <div>
+                <label for="raddr">주소</label>
+                <input id="raddr" placeholder="예: 서울 종로구 명륜3가 ..." autocomplete="off">
+              </div>
+              <div>
+                <label for="rcat">분류</label>
+                <input id="rcat" placeholder="예: 중식" autocomplete="off">
+              </div>
+            </div>
+          </div>
+
+          <button class="btn" id="submit" style="width:100%">접수하기</button>
+          <p class="err" id="err2"></p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <!-- 완료 -->
+  <section id="s3" hidden>
+    <div class="done">
+      <h2>접수됐습니다</h2>
+      <p class="lead" style="margin-left:auto;margin-right:auto" id="doneMsg"></p>
+      <div style="display:flex;gap:var(--s3);justify-content:center;margin-top:var(--s8);flex-wrap:wrap">
+        <a class="btn" href="/app.html">한입지도 열기</a>
+        <button class="btn ghost" id="more">사진 더 올리기</button>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer class="site-foot">
+  <div class="container foot-grid">
+    <div class="foot-brand">
+      <a class="brand" href="/" aria-label="한입지도 홈"><svg viewBox="0 0 24 24" style="width:22px;height:22px;color:var(--accent);flex:none"><path fill="currentColor" fill-rule="evenodd" d="M12 1.25C6.75 1.25 3 5.1 3 9.9c0 5.8 6.1 10.35 8.4 12.45.34.31.86.31 1.2 0C14.9 20.25 21 15.7 21 9.9c0-4.8-3.75-8.65-9-8.65Zm0 2.75c-1.25 0-2.2 1.3-2.2 3.25 0 1.85.65 2.85 1.5 3.25v7.05c0 .45.3.8.7.8s.7-.35.7-.8V10.5c.85-.4 1.5-1.4 1.5-3.25C14.2 5.3 13.25 4 12 4Z"/></svg><span>한입지도</span></a>
+      <p>예산으로 고르는 캠퍼스 맛집 지도.<br>AI Document Builders Challenge 출품작.</p>
+    </div>
+    <nav class="foot-col" aria-label="서비스">
+      <p class="k">서비스</p>
+      <a href="/">홈</a>
+      <a href="/app.html">메뉴 찾기</a>
+      <a href="/contribute.html">사진 제보</a>
+    </nav>
+    <nav class="foot-col" aria-label="이야기">
+      <p class="k">이야기</p>
+      <a href="/about.html">데이터 파이프라인</a>
+      <a href="/about.html#upstage">Upstage AI</a>
+      <a href="/test.html">파이프라인 검증</a>
+    </nav>
+  </div>
+</footer>
+
+<script>
+const $ = (s) => document.querySelector(s);
+let ITEMS = [];
+
+$("#loginBtn").addEventListener("click", () => $("#loginDlg").showModal());
+$("#loginClose").addEventListener("click", () => $("#loginDlg").close());
+
+function step(n) {
+  document.querySelectorAll("#steps li").forEach((li) => li.classList.toggle("on", Number(li.dataset.s) <= n));
+  $("#s1").hidden = n !== 1;
+  $("#s2").hidden = n !== 2;
+  $("#s3").hidden = n !== 3;
+}
+
+const drop = $("#drop"), file = $("#file");
+drop.addEventListener("click", () => file.click());
+drop.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " ") { e.preventDefault(); file.click(); } });
+["dragenter", "dragover"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.add("over"); }));
+["dragleave", "drop"].forEach((t) => drop.addEventListener(t, (e) => { e.preventDefault(); drop.classList.remove("over"); }));
+drop.addEventListener("drop", (e) => { const f = e.dataTransfer.files?.[0]; if (f) handle(f); });
+file.addEventListener("change", () => { const f = file.files?.[0]; if (f) handle(f); });
+$("#again").addEventListener("click", () => { file.value = ""; step(1); });
+$("#more").addEventListener("click", () => { file.value = ""; ITEMS = []; step(1); });
+
+async function handle(f) {
+  $("#err1").textContent = "";
+  if (!/^image\/(jpeg|png|webp)$/.test(f.type)) { $("#err1").textContent = "JPEG · PNG · WebP 만 올릴 수 있습니다."; return; }
+  if (f.size > 8 * 1024 * 1024) { $("#err1").textContent = "8MB 이하 사진만 올릴 수 있습니다."; return; }
+
+  const dataUrl = await new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(f); });
+  $("#shot").src = dataUrl;
+  step(2);
+  $("#working").hidden = false; $("#result").hidden = true; $("#err2").textContent = "";
+
+  try {
+    const res = await fetch("/api/parse-menu", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ image: dataUrl, filename: f.name }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+    ITEMS = (data.items ?? []).filter((i) => i.name && Number.isFinite(Number(i.price)));
+    if (!ITEMS.length) throw new Error("사진에서 메뉴를 찾지 못했습니다. 메뉴와 가격이 함께 보이는 사진으로 다시 시도해주세요.");
+
+    $("#rows").innerHTML = ITEMS.map((i) =>
+      `<tr><td>${esc(i.name)}</td><td class="p">${Number(i.price).toLocaleString()}원</td></tr>`).join("");
+    $("#working").hidden = true; $("#result").hidden = false;
+  } catch (e) {
+    // 파싱이 실패해도 사진은 남긴다 — 다시 올리라고만 하고 화면을 비우지 않는다.
+    $("#working").hidden = true;
+    $("#result").hidden = true;
+    $("#err1").textContent = e.message;
+    step(1);
+  }
+}
+
+$("#submit").addEventListener("click", async () => {
+  const name = $("#rname").value.trim();
+  $("#err2").textContent = "";
+  if (!name) { $("#err2").textContent = "식당 이름을 입력해주세요."; $("#rname").focus(); return; }
+  const btn = $("#submit"); btn.disabled = true; btn.textContent = "접수 중…";
+  try {
+    const res = await fetch("/api/contribute", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ name, address: $("#raddr").value.trim(), category: $("#rcat").value.trim(), items: ITEMS }),
+    });
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
+    $("#doneMsg").textContent = `${name} 의 메뉴 ${data.menus}개가 검수 대기열에 들어갔습니다. 운영진이 사진과 대조해 확인하면 한입지도에 나타납니다.`;
+    step(3);
+  } catch (e) {
+    $("#err2").textContent = e.message;
+  } finally {
+    btn.disabled = false; btn.textContent = "접수하기";
+  }
+});
+
+const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+</script>
+</body>
+</html>
