@@ -51,7 +51,7 @@
 .demo-body{display:grid;grid-template-columns:minmax(0,1fr) 320px}
 @media (max-width:860px){.demo-body{grid-template-columns:1fr}.demo-side{border-left:0;border-top:1px solid var(--border)}}
 .demo-stage{
-  position:relative;height:clamp(340px,40vw,440px);
+  position:relative;height:clamp(380px,42vw,500px);
   background:
     linear-gradient(90deg,var(--border) 1px,transparent 1px) 0 0/64px 64px,
     linear-gradient(180deg,var(--border) 1px,transparent 1px) 0 0/64px 64px,
@@ -90,15 +90,20 @@
 .demo-side-head img{flex:none}
 .demo-chat{
   flex:1;overflow-y:auto;padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3);
-  height:clamp(240px,calc(40vw - 96px),344px);font-size:var(--sm);
+  height:clamp(280px,calc(42vw - 96px),404px);min-height:0;font-size:var(--sm);
+  transition:opacity 200ms ease-out;
 }
+.demo-chat.fade{opacity:0}
+@media (prefers-reduced-motion: reduce){.demo-chat{transition:none}}
 .demo-ask{display:flex;gap:var(--s2);padding:var(--s3) var(--s4);border-top:1px solid var(--border)}
 .demo-ask input{
   flex:1;min-width:0;height:36px;padding:0 var(--s3);font:inherit;font-size:var(--sm);
   background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:inherit;outline:none;
 }
 .demo-ask input:focus{border-color:var(--accent)}
-.cb{line-height:1.55}
+.cb{line-height:1.55;animation:cbin 260ms ease-out both}
+@keyframes cbin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.cb{animation:none}}
 .cb.user{align-self:flex-end;background:var(--accent);color:var(--accent-fg);border-radius:10px;border-bottom-right-radius:3px;padding:8px 12px;max-width:92%}
 .cb.ai{align-self:stretch;color:var(--fg)}
 .cb.ai.final{font-weight:500;margin-top:var(--s2)}
@@ -728,9 +733,13 @@ function startDemo(data) {
     while (t === token) {
       const sc = custom ?? SCENARIOS[idx];
       custom = null;
+      // 시나리오 전환 완충 — 페이드 아웃 후 내용 교체, 페이드 인 (사용자 지시 2026-07-20)
+      chat.classList.add("fade");
+      if (!(await sleep(reduced ? 0 : 220, t))) return;
       chat.innerHTML = "";
       nodes.forEach((n) => { n.dot.className = "dot"; n.label.className = "mlabel"; n.label.textContent = n.p.name; });
       declutter();
+      chat.classList.remove("fade");
 
       // 1) 사용자 질문 타이핑
       const u = bubble("user", '<span class="utext"></span><span class="caret"></span>');
