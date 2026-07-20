@@ -88,3 +88,4 @@ Status: approved
   - defer → DR5 (`plans/2026-07-20-dr5-site-completion.md`): 페이지 구조 완성(about#upstage 깨진 앵커·app 톤 정합·verify 승격) · 재방문 개인화
   - 근거 설계: `docs/SITEMAP.md`
 - 2026-07-20 rerun smoke PASS 9/9 (`node scripts/demo-smoke.mjs --url https://sixsense.askewly.com`) → DR2 DoD 충족, milestone 종료
+- 2026-07-20 독립검증 refuted → 갭 2건 수정 후 재검증: ① smoke 에 Groundedness 배지·판정 assert 추가(결함주입으로 실제 FAIL 확인) ② `docs/presentation/rubric-map.md` 가 `verification/matrix.md` 참조. 부수로 프로덕션 결함(근거 판정 5% 폴백) 발견 → Solar 타임아웃 상향(5s/3.5s), 재측정 20/20 null 0건. smoke 3연속 11/11 PASS.

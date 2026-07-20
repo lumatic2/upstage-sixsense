@@ -36,3 +36,6 @@
 - 2026-07-19 도메인: sixsense.askewly.com Vercel 등록·verified. KAKAO_JS_KEY env 등록 완료 — 카카오 콘솔 Web 플랫폼 도메인 등록(sixsense.askewly.com) 후 지도 활성 예정(현재 ERR_BLOCKED_BY_ORB, graceful 폴백 동작).
 - 2026-07-19 지도 활성: 카카오 콘솔 JS SDK 도메인 등록(sixsense.askewly.com·staging.vercel.app) — 브라우저 실측 kakao.maps 로드·타일 26·마커 렌더. 발견 결함: .map-empty[hidden] 이 display:flex 에 밀려 로딩 문구 잔존 → CSS 수정 + setBounds 로 결과 전체 뷰. 재배포 후 SMOKE 9/9 PASS.
 - 2026-07-19 3페이지 전환: 랜딩(/) · 설명(/about.html) · 서비스(/app.html), theme.css 토큰 SSOT. sixsense.askewly.com 라이브. 실측: 랜딩 카운터(5·76·4) 실데이터, 서비스 지도 마커 5·추천 3·근거 배지 3/3, about 라이트·다크 성립. SMOKE 9/9 PASS.
+- 2026-07-20 독립검증 지적 반영 (허수 검증 제거): smoke 에 Groundedness 배지·판정 assert 2건 추가. 이전 9/9 는 배지를 **전혀 검사하지 않아** 판정기가 죽어도 PASS 가 났다. 결함 주입(판정 문자열을 존재하지 않는 값으로 치환)에서 해당 항목 실제 FAIL(10/11) 확인 후 원복.
+- 2026-07-20 프로덕션 결함 발견·수정: 배포 API 18회 실측 분포 `solar/grounded 14 · template/replaced 3 · template/None 1` — grounded=null 약 5%(생성 또는 판정 타임아웃). 원인은 상한 2.5s/2s 가 실측 왕복 2.3~3.5s 대비 빠듯. `SOLAR_TIMEOUT_MS 5000` · `SOLAR_JUDGE_TIMEOUT_MS 3500` 으로 상향 후 재측정 **20/20 에서 null 0건**(`solar/grounded 10 · template/replaced 10`). smoke 3연속 11/11 PASS.
+  - 주: `template/replaced` 는 장애가 아니라 판정기가 notGrounded 를 내고 데이터 팩트로 교체한 **설계대로의 동작**이다. 배지가 "근거 미달 판정 → 데이터 팩트로 교체"로 뜨는 것이 정상 경로.
