@@ -1,6 +1,6 @@
 # ROADMAP
 
-> 마지막 업데이트: 2026-07-19
+> 마지막 업데이트: 2026-07-21
 > 상태: demoday-run horizon
 > 북극성: 정해진 예산 안에서 오늘 뭘 먹을지 — 학식과 주변 식당을 한 판에 놓고 정해주는 서비스
 > line budget: <=150
@@ -8,9 +8,10 @@
 ## Current Horizon
 
 <!-- harness:goal id="demoday-run" -->
-목표: 7/18 "각자 서비스" 전환 이후 남은 전부를 데모데이(7/25)까지 닫는다 — 실데이터 파이프라인 가동, 개인 버전 웹서비스 완성, 본선 조립본 보장. (상세 plan → `plans/horizons/demoday-run.md`)
+목표: 7/18 "각자 서비스" 전환 이후 남은 전부를 닫는다 — 실데이터 파이프라인 가동, 개인 버전 웹서비스 완성, **내 버전을 미팅 제출 후보로 완결하고 팀에 공유**. (상세 plan → `plans/horizons/demoday-run.md`)
 
-일정 제약 (`docs/CHALLENGE.md`): 빌드업 마감 7/24 · 데모데이 7/25.
+일정 제약: **팀 합의 미팅 2026-07-23(목) 21:00 = 실질 마감** · 빌드업 마감 7/24 · 데모데이 7/25.
+본선 조립본(hanipmap 이식) 전제는 폐기 — `docs/adr/0003-no-assembly-build.md`.
 
 ## Active Milestones
 
@@ -58,14 +59,16 @@
 - Evidence: `docs/adr/0003-no-assembly-build.md`
 - 대체: DR6(내 버전 완결) · DR7(팀 공유). 구 step-3(발표 자료 실물 정합)은 DR6 step-5 로 승계.
 - Status: [-]
-<!-- harness:milestone id="DR6" status="active" priority="P0" evidence="plans/2026-07-20-dr6-my-version-final.md" -->
+<!-- harness:milestone id="DR6" status="completed" priority="P0" evidence="verification/matrix.md #58-72" -->
 ### DR6 — 내 버전 완결 (미팅 제출 후보 확정판)
 - DoD: 배포 URL 에서 ① 저예산 검색에 사이드 단독 pick 0건 ② `/api/data` 가 시트 단일 경로로 검수 통과분만 반환 ③ 5페이지 톤 일관·콘솔 red 0 ④ 발표 자료 수치·URL 이 실물과 불일치 0 + `demo-smoke` PASS
-- Evidence: `plans/2026-07-20-dr6-my-version-final.md` + `verification/matrix.md`
+- Evidence: verification/matrix.md #58-72
 - Gap: 7/23 미팅이 실질 마감인데 사이드 메뉴가 한 끼로 추천되고(OPEN-ISSUES ③) 검수 게이트 없는 코드 경로가 남아 있으며(④) 제보 좌표가 미배선(⑤)
 - Scale: changesets>=4; surfaces: 배포 URL·Playwright·docs/presentation; capability: 미팅에서 그대로 열어 보여줄 수 있는 완결 서비스
-- Status: [ ]
-<!-- harness:milestone id="DR7" status="pending" priority="P0" evidence="plans/2026-07-20-dr7-team-share.md" -->
+- Status: [x]
+- Completed at: 2026-07-21
+- Summary: 내 버전 완결 — 곁들임 오추천을 5개 노출면 전부에서 제거, 시트 SSOT 단일화, 모바일 붕괴·발표 수치 정합 (smoke 11/11, 독립 검증 3차 confirmed)
+<!-- harness:milestone id="DR7" status="active" priority="P0" evidence="plans/2026-07-20-dr7-team-share.md" -->
 ### DR7 — 팀 공유 패키지 (GitHub 레포 + 웹사이트 링크)
 - DoD: 시크릿 창에서 공개 레포 URL·사이트 URL 을 열어 README→HANDOFF 만으로 파이프라인 구조·재사용 지점이 파악되고 깨진 링크 0 + 시크릿 스캔 클린 + origin 동기
 - Evidence: `plans/2026-07-20-dr7-team-share.md`

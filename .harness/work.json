@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "active_work_id": "dr6-my-version-final",
+  "active_work_id": "dr7-team-share",
   "works": {
     "m2-parse-poc": {
       "work_id": "m2-parse-poc",
@@ -397,6 +397,57 @@
       ],
       "owner_session_uuid": "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4",
       "updated_at": "2026-07-20",
+      "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation.",
+      "completion_summary": "미팅에서 열어 보여줄 상태로 서비스를 닫았습니다 — 1,000원에 공기밥·음료만 뜨던 문제를 다섯 화면 전부에서 없애고, 검수 안 거친 데이터가 나갈 경로를 지웠으며, 모바일 헤더와 낡은 발표 수치를 고쳤습니다."
+    },
+    "dr7-team-share": {
+      "work_id": "dr7-team-share",
+      "horizon_id": "demoday-run",
+      "milestone_id": "DR7",
+      "status": "active",
+      "plan_path": "plans/2026-07-20-dr7-team-share.md",
+      "changeset_path": "docs",
+      "next_step": "step-1",
+      "current_step": "step-1",
+      "steps": [
+        {
+          "id": "step-1",
+          "label": "step-1 루트 `README.md` 신설 — 레포 첫 화면",
+          "status": "pending"
+        },
+        {
+          "id": "step-2",
+          "label": "step-2 `docs/HANDOFF.md` — 팀원용 인계 문서",
+          "status": "pending"
+        },
+        {
+          "id": "step-3",
+          "label": "step-3 공개 상태 점검 + 공유 링크 확정",
+          "status": "pending"
+        }
+      ],
+      "execution_mode": "continuous",
+      "approval": {
+        "approved_by": "user",
+        "approved_at": "2026-07-21",
+        "plan_sha256": "f899172dfd141a570f95c43048540e2bda1c06a0e151e1d9b44beae6d73fb3e1"
+      },
+      "allowed_stop_reasons": [
+        "completed",
+        "blocked",
+        "decision_required",
+        "risk_gate",
+        "secret_required",
+        "external_authority_required",
+        "user_stopped"
+      ],
+      "stop_reason": null,
+      "stop_detail": {},
+      "session_ids": [
+        "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4"
+      ],
+      "owner_session_uuid": "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4",
+      "updated_at": "2026-07-21",
       "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation."
     }
   }
