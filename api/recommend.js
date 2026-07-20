@@ -1,12 +1,18 @@
 /** POST /api/recommend — 조건 → 실데이터 추천 Top3 + Solar 이유 생성 (DR2 step-2)
  *  요청: { budget: number|null, walkMax: number|null, tags: string[] }
  *  응답: 200 { picks: [{ kind, name, category, walkMin, menus, reason, reasonSource }], cafeteria: {...}|null }
- *  이유 생성: solar-pro2, 타임아웃 2.5s (TRD §5.10) — 실패 시 데이터 기반 템플릿 이유로 폴백(추천 루프는 불사).
+ *  이유 생성: solar-pro2, 타임아웃 5s(SOLAR_TIMEOUT_MS) — 실패 시 데이터 기반 템플릿 이유로 폴백(추천 루프는 불사).
  *  이유는 반드시 전달된 실데이터(메뉴·가격·거리)에만 근거하도록 프롬프트 고정 — step-3 Groundedness 가 이를 검증한다.
  */
 import { loadSheetData } from "./_lib/sheet-data.js";
 
 const CHAT_URL = "https://api.upstage.ai/v1/chat/completions";
+// 이유 생성·근거 판정 타임아웃 — 2026-07-20 상향(구 2500/2000).
+// 실측 18회에서 grounded=null(생성 또는 판정 타임아웃) 이 약 5% 발생했다. 폴백이 있어 추천 루프는
+// 죽지 않지만, 그 5% 에서는 Upstage 심화 적용(근거 검증)이 화면에 안 보인다 — 심사 시연에서 잃는 게 크다.
+// 실측 왕복이 2.3~3.5s(콜드 포함) 이므로 상한을 늘려도 최악 합계가 Vercel 함수 한도 안에 들어온다.
+const REASON_TIMEOUT_MS = Number(process.env.SOLAR_TIMEOUT_MS || 5000);
+const JUDGE_TIMEOUT_MS = Number(process.env.SOLAR_JUDGE_TIMEOUT_MS || 3500);
 const CAMPUS = { lat: 37.5877, lng: 126.9938 }; // 명륜캠 정문 부근 (parse-query 80m=1분 환산과 동일 기준)
 
 function walkMin(lat, lng) {
@@ -32,7 +38,7 @@ async function solarReasons(picks, conditions, key) {
   const res = await fetch(CHAT_URL, {
     method: "POST",
     headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
-    signal: AbortSignal.timeout(2500),
+    signal: AbortSignal.timeout(REASON_TIMEOUT_MS),
     body: JSON.stringify({
       model: "solar-pro2",
       messages: [
@@ -123,7 +129,7 @@ export default async function handler(req, res) {
         const r = await fetch(CHAT_URL, {
           method: "POST",
           headers: { authorization: `Bearer ${key}`, "content-type": "application/json" },
-          signal: AbortSignal.timeout(2000),
+          signal: AbortSignal.timeout(JUDGE_TIMEOUT_MS),
           body: JSON.stringify({
             model: "solar-mini",
             messages: [
