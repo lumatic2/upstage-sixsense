@@ -25,15 +25,7 @@
   --s1:4px; --s2:8px; --s3:12px; --s4:16px; --s6:24px; --s8:32px; --s12:48px; --s16:64px; --s24:96px;
   --container:1040px;
 }
-@media (prefers-color-scheme: dark){
-  :root{
-    --bg:#14181D; --surface:#1C222A;
-    --fg:rgba(247,249,252,.95); --muted:rgba(247,249,252,.66);
-    --border:rgba(247,249,252,.14);
-    --accent:#D4794F; --accent-fg:#14181D; --accent-soft:rgba(212,121,79,.14);
-    --band-warm:#221B17; --band-ink:#0E1216;
-  }
-}
+/* dark mode 2026-07-20 사용자 결정으로 제외 — light mode 고정 */
 
 *{box-sizing:border-box}
 html{scroll-behavior:smooth}

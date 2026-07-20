@@ -676,7 +676,7 @@ function startDemo(data) {
   };
   let token = 0;
   const sleep = (ms, t) => new Promise((ok) => setTimeout(() => ok(t === token), ms));
-  const typeText = async (el, text, t, speed = 26) => {
+  const typeText = async (el, text, t, speed = 38) => {
     for (const ch of text) {
       if (!(await sleep(reduced ? 0 : speed, t))) return false;
       el.textContent += ch;
@@ -729,7 +729,7 @@ function startDemo(data) {
       const ut = u.querySelector(".utext");
       if (sc.typed) ut.textContent = sc.q; // 사용자가 직접 입력한 질문은 그대로
       else for (const ch of sc.q) {
-        if (!(await sleep(reduced ? 0 : 40, t))) return;
+        if (!(await sleep(reduced ? 0 : 55, t))) return;
         ut.textContent += ch;
       }
       u.querySelector(".caret").remove();
@@ -798,8 +798,8 @@ function startDemo(data) {
       best.n.label.innerHTML = `${best.n.p.name}<span class="sub">${menuLabel(best.menu.name)} ${won(best.menu.price)}</span>`;
       const fin = bubble("ai final", "");
       if (!(await typeText(fin, `${best.n.p.name}의 ${menuLabel(best.menu.name)} ${won(best.menu.price)}을 추천해요. ${won(sc.budget)} 예산을 가장 알차게 쓰는 조합이에요.`, t))) return;
-      // 시나리오 종료 대기 — 원래 2800ms 에서 30% 단축 (사용자 피드백 2026-07-20)
-      if (!(await sleep(reduced ? 3000 : 2000, t))) return;
+      // 시나리오 종료 대기 — 타이핑 느리게+대기 추가 단축 (사용자 피드백 2026-07-20)
+      if (!(await sleep(reduced ? 3000 : 1100, t))) return;
       idx = (idx + 1) % SCENARIOS.length;
     }
   }
