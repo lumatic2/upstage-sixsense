@@ -69,7 +69,12 @@ export function withParticle(word) {
  *  한글 숫자를 아라비아로 바꾼 뒤 같은 규칙을 태운다 — 표기마다 정규식을 늘리면 곧 샌다.
  *  숫자도 금액어도 없으면 null 이다("망원 이하로" 같은 오타에 금액을 지어내지 않는다). */
 export function parseAmount(raw) {
-  const s = String(raw ?? "").replace(/[일이삼사오육칠팔구]/g, (c) => KNUM[c]).replace(/,/g, "");
+  const s = String(raw ?? "")
+    .replace(/,/g, "")
+    .replace(/(\d)\s+(?=\d)/g, "$1")                 // "8 000 원" → "8000원"
+    .replace(/[일이삼사오육칠팔구]/g, (c) => KNUM[c])
+    .replace(/(\d)?백/g, (_, d) => String((d ? Number(d) : 1) * 100))
+    .replace(/(\d)?십/g, (_, d) => String((d ? Number(d) : 1) * 10)); // "2십만" → "20만"
   let m;
   if ((m = s.match(/(\d+)?\s*만\s*(\d+)\s*천/))) return (m[1] ? Number(m[1]) : 1) * 10000 + Number(m[2]) * 1000;
   if ((m = s.match(/(\d+(?:\.\d+)?)\s*만/))) return Math.round(Number(m[1]) * 10000);
@@ -145,9 +150,18 @@ export default async function handler(req, res) {
     return res.status(200).json(regexFallback(message));
   }
 
+  // 조건은 코드가 먼저 뽑고 그 결과를 모델에 알려준다. 모델에게 따로 뽑게 두면
+  // 화면(코드 값)과 말(모델 문장)이 어긋난다 — "망원 이하로" 처럼 금액이 없는 입력에
+  // 검색은 안 걸리는데 말로는 "8천원 이하로는…" 을 읊었다(2026-07-21 4차 검증).
+  const code0 = extractConditions(message);
+  const known = code0.budget
+    ? `예산 1인 ${code0.budget}원${code0.walkMax ? `, 도보 ${code0.walkMax}분` : ""}`
+    : "예산 조건 없음(사용자가 금액을 말하지 않았다)";
+
   const msgs = [
     { role: "system", content: SYSTEM },
     { role: "system", content: `<데이터>\n${JSON.stringify(context)}\n</데이터>` },
+    { role: "system", content: `<확정조건>${known}</확정조건>\n이 조건이 정본이다. 여기에 없는 금액을 지어내 말하지 마라.` },
     ...history.slice(-MAX_HISTORY).map((h) => ({
       role: h.role === "assistant" ? "assistant" : "user",
       content: String(h.text ?? "").slice(0, 500),
@@ -206,12 +220,28 @@ export default async function handler(req, res) {
       reply = `${withParticle(unknown)} 아직 데이터에 없습니다. ${rest}`.trim();
     }
 
+    // 브랜드명 안의 글자가 태그로 잡히면 안 된다 — "교촌치킨 배달돼요?" 가 `치킨` 태그를 만들어
+    // "그 가게는 없습니다" 라고 답한 직후 추천 3곳을 내놓았다(2026-07-21 4차 검증).
+    // 사용자가 말하지 않은 검색 의도를 지어낸 셈이다.
+    if (unknown && unknown !== "null") {
+      code0.tags = code0.tags.filter((t) => !unknown.includes(t));
+    }
+
     // 조건은 **코드 추출만** 쓴다. 모델 값을 폴백으로 두었더니 숫자가 하나도 없는 오타 입력
     // ("망원 이하로 찾아줘")에 8,000원 같은 그럴듯한 금액을 지어냈다(2026-07-21 3차 검증).
     // 없는 조건은 없다고 두는 편이 지어낸 조건으로 검색하는 것보다 낫다.
-    const code = extractConditions(message);
-    const { budget, walkMax, tags } = code;
+    const { budget, walkMax, tags } = code0;
     const search = Boolean(budget || walkMax || tags.length);
+
+    // 검색을 안 거는 턴에서는 말과 화면이 어긋날 수 있는 두 가지를 지운다:
+    //  ① "N원 이하…" — 사용자가 금액을 말한 적 없는데 모델이 지어낸 예산 문장
+    //  ② "카드를 확인하세요" — 카드가 안 뜨는데 카드를 가리키는 안내
+    // (2026-07-21 4차 검증: "만넌 이하로 부탁해요" 가 8천원 추천 문장을 읊었다.)
+    if (!search) {
+      const kept = reply.split(/(?<=[.!?])\s+/).filter((s) =>
+        !(!budget && /\d[\d,]*\s*원\s*(이하|이내|안|미만)/.test(s)) && !/카드/.test(s));
+      if (kept.join(" ").trim()) reply = kept.join(" ").trim();
+    }
 
     return res.status(200).json({
       reply: reply || "다시 한 번 말씀해 주시겠어요?",
