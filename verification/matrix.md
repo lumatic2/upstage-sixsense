@@ -39,3 +39,16 @@
 - 2026-07-20 독립검증 지적 반영 (허수 검증 제거): smoke 에 Groundedness 배지·판정 assert 2건 추가. 이전 9/9 는 배지를 **전혀 검사하지 않아** 판정기가 죽어도 PASS 가 났다. 결함 주입(판정 문자열을 존재하지 않는 값으로 치환)에서 해당 항목 실제 FAIL(10/11) 확인 후 원복.
 - 2026-07-20 프로덕션 결함 발견·수정: 배포 API 18회 실측 분포 `solar/grounded 14 · template/replaced 3 · template/None 1` — grounded=null 약 5%(생성 또는 판정 타임아웃). 원인은 상한 2.5s/2s 가 실측 왕복 2.3~3.5s 대비 빠듯. `SOLAR_TIMEOUT_MS 5000` · `SOLAR_JUDGE_TIMEOUT_MS 3500` 으로 상향 후 재측정 **20/20 에서 null 0건**(`solar/grounded 10 · template/replaced 10`). smoke 3연속 11/11 PASS.
   - 주: `template/replaced` 는 장애가 아니라 판정기가 notGrounded 를 내고 데이터 팩트로 교체한 **설계대로의 동작**이다. 배지가 "근거 미달 판정 → 데이터 팩트로 교체"로 뜨는 것이 정상 경로.
+
+## 제보 검수 루프 (DR4)
+
+| # | command | expected | observed (2026-07-20) | evidence |
+|---|---|---|---|---|
+| 11 | Apps Script 웹훅 append/update/list | 시트에 반영 | append 1행 생성(행192)→update 반영→삭제 정리 확인 | node 모듈 실측 |
+| 12 | 웹훅에 토큰 없이/틀린 토큰 POST | unauthorized, 시트 미기록 | `{"error":"unauthorized"}` + R998 행 미생성 | curl 실측 |
+| 13 | `GET /api/review` 토큰 없이·틀린 토큰 | 401 | 401 / 401 | curl 실측 |
+| 14 | `/review.html` 실브라우저 검수 | 대기 행 + 사진 대조 렌더 | 대기 188건·식당 13곳·의심표시 21건, 드라이브 사진 preview 로드 | 실브라우저 |
+| 15 | 검수 화면에서 수정+확인 후 저장 | 시트 메뉴명·가격·검수 반영 | 행171/172/180 → 마라탕·마라샹궈·마라반 복원, 가격 number 유지, 검수=확인 | 실브라우저 → 시트 실측 |
+| 16 | 편집 불가 열(출처)·임의 검수값·가격 범위밖 | 400 거부, 시트 불변 | `col not editable` / `review value` / `price range` 3건 모두 400, 행171 불변 | curl 실측 |
+
+- 실물 대조로 드러난 것: `100g/` 파편 3건은 쓰레기가 아니라 **마라탕(100g/2,000)·마라반(100g/2,300)·마라샹궈(100g/3,300)의 이름이 날아간 것**이었다. 확인/제외만으로는 정보가 사라지므로 검수 화면에 수정 기능을 추가했다(설계 결함 시정).
