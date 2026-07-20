@@ -24,12 +24,30 @@
 
 - Completed at: 2026-07-19
 - Summary: 실데이터 파이프라인 가동 — 식당5·메뉴76·학식4·좌표5/5, 스테이징 E2E 실측
-<!-- harness:milestone id="DR2" status="active" priority="P0" evidence="plans/2026-07-19-dr2-personal-service.md" -->
+<!-- harness:milestone id="DR2" status="completed" priority="P0" evidence="plans/2026-07-19-dr2-personal-service.md" -->
 ### DR2 — 개인 버전 웹서비스 빌드 (Upstage 심화 + 인터랙티브 데모)
 - DoD: 배포 URL 심사 시연 시나리오(예산→실데이터 추천+이유+Groundedness 배지) Playwright smoke PASS + `verification/matrix.md` 가시화
-- Evidence: `plans/2026-07-19-dr2-personal-service.md` + smoke 결과·스크린샷
+- Evidence: plans/2026-07-19-dr2-personal-service.md
 - Gap: "각자 서비스" 전환 후 개인 버전 미착수 — 루브릭 20점(Upstage)·차별화 축 실현체
 - Scale: changesets>=4; surfaces: 배포 URL·Playwright·verification/; capability: 심사 가능한 완결 데모 서비스
+- Status: [x]
+
+- Completed at: 2026-07-20
+- Summary: 개인 버전 웹서비스 완성 — 배포 URL 시연 시나리오 smoke 11/11, 근거 검증 배지 실동작(판정 5% 실패 수정)
+<!-- harness:milestone id="DR4" status="active" priority="P0" evidence="plans/2026-07-20-dr4-contribute-review-loop.md" -->
+### DR4 — 제보→검수→승인 루프 (사진 제보 페이지 + 운영진 검수 화면 + 승인 게이트)
+- DoD: 배포 URL 에서 새 메뉴판 사진 1장이 제보 → Document Parse → 시트 `대기` → `/review.html` 검수 → 서비스 추천 노출까지 한 번의 E2E 로 관측되고, 미검수 데이터가 노출되지 않는 것이 역방향 확인
+- Evidence: `plans/2026-07-20-dr4-contribute-review-loop.md` + `verification/matrix.md`
+- Gap: Document Parse(대회 하드 요건 제품)가 실서비스 화면 어디에도 노출되지 않고, `loadSheetData` 가 시트 검수 값을 필터링하지 않아 미검수 행이 그대로 추천에 나감(실측: [메뉴] 189행 중 대기 189·확인 1)
+- Scale: changesets>=4; surfaces: 배포 URL·구글 시트·verification/; capability: 데이터 생산과 품질 게이트가 제품 안에서 닫힌다
+- Status: [ ]
+
+<!-- harness:milestone id="DR5" status="pending" priority="P0" evidence="plans/2026-07-20-dr5-site-completion.md" -->
+### DR5 — 페이지 구조 완성 + 재방문 개인화
+- DoD: 배포 URL 에서 `docs/SITEMAP.md` 공개 5페이지가 전부 살아 있고 nav·푸터에 죽은 링크 0, 재방문 시 추천이 실제로 달라지는 것 관측 + smoke PASS
+- Evidence: `plans/2026-07-20-dr5-site-completion.md` + `verification/matrix.md`
+- Gap: nav 의 `about.html#upstage` 가 깨진 링크(앵커 부재)이고 `/app.html` 만 랜딩 디자인과 톤이 어긋나며, 재방문자 개인화가 없다
+- Scale: changesets>=4; surfaces: 배포 URL·Playwright·verification/; capability: 사용자 여정 5페이지가 일관되게 완결된다
 - Status: [ ]
 
 <!-- harness:milestone id="DR3" status="pending" priority="P1" evidence="plans/2026-07-19-dr3-assembly.md" -->
