@@ -4,7 +4,9 @@
  *  배포 절차는 `scripts/apps-script/sheet-webhook.gs` 헤더 주석 참조.
  */
 
-const TIMEOUT_MS = 10_000;
+// Apps Script 는 warm 일 때 실측 3.2~3.7s 인데 cold start 에서 10s 를 넘겨 한 번 끊겼다(2026-07-20).
+// 검수 화면은 운영진 전용이라 지연에 관대하므로, 재시도로 복잡도를 올리지 않고 상한만 넉넉히 둔다.
+const TIMEOUT_MS = 20_000;
 
 function config() {
   const url = process.env.SHEET_WEBHOOK_URL;
