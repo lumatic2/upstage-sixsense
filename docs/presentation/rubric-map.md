@@ -6,7 +6,7 @@
 | Data Architecture & Process (20) | #4 파이프라인 3종 + 오염 방지 3단 | m3-e2e.md, changesets 4건 |
 | Solution Depth (15) | #5 정확도 실측·개선 서사·경계 설계 | accuracy.md (76.4%, 표 전체) |
 | Effective Use of Upstage (20) | #6 적재적소 적용 + 실측 기여도 | parse-query changeset (모델·타임아웃 실측), ADR-0001 |
-| Service Impact (20) | #7 배포·96곳·확장 | hanipmap 데모, 스테이징 E2E |
+| Service Impact (20) | #7 라이브·검증 페이지·확장 | sixsense.askewly.com, `verification/matrix.md` |
 | Presentation & Documentation (15) | 덱 전체 + #8 시연 + demo-script.md | deck.html 렌더, 리허설 기록 |
 
 빈 항목: 없음 (6/6). 전 수치 각주 출처 = 레포 내 evidence 파일.
