@@ -329,8 +329,10 @@
         "external_authority_required",
         "user_stopped"
       ],
-      "stop_reason": null,
-      "stop_detail": {},
+      "stop_reason": "secret_required",
+      "stop_detail": {
+        "message": "제보·검수 기능이 시트에 쓰려면 구글 Apps Script 웹앱을 한 번 배포하고 주소·토큰을 등록해주셔야 합니다. 코드는 준비돼 있고, 등록만 되면 바로 검수 화면과 제보 페이지로 이어집니다."
+      },
       "session_ids": [
         "claude:4e9799f7-4b94-4c87-86c6-a3e3570c59a9"
       ],
