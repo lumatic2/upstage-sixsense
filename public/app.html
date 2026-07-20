@@ -15,15 +15,53 @@
 <link rel="icon" type="image/x-icon" href="/favicon.ico" sizes="48x48">
 <link rel="stylesheet" href="/theme.css">
 <style>
-.search-sec{padding:var(--s12) 0 var(--s8)}
-.search-sec form{display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap}
-.search-sec input[type=text]{
-  flex:1;min-width:260px;height:52px;padding:0 var(--s4);
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
-  color:inherit;font:inherit;font-size:var(--lg);outline:none;transition:border-color 180ms ease-out;
+.console-sec{padding:var(--s12) 0 var(--s8)}
+
+/* 에이전트 콘솔 — 좌: 지도 / 우: 대화. 랜딩 데모 카드와 같은 구조를 쓰되
+   여기는 목업이 아니라 실제 서비스라 대화가 실 API(/api/parse-query → /api/recommend)를 부른다.
+   높이를 확정해 두는 이유는 랜딩과 같다 — 말풍선이 늘어도 카드가 자라 페이지가 튀지 않게. */
+.console{margin-top:var(--s8);background:var(--surface);border-radius:8px;overflow:hidden;text-align:left}
+.console-body{display:grid;grid-template-columns:minmax(0,1fr) 340px;height:clamp(400px,44vw,500px);overflow:hidden}
+.console-stage{position:relative;min-width:0}
+.console-side{
+  border-left:1px solid var(--border);display:flex;flex-direction:column;
+  height:100%;min-height:0;overflow:hidden;
 }
-.search-sec input[type=text]:focus{border-color:var(--accent)}
-.chips{display:flex;gap:var(--s2);margin-top:var(--s4);flex-wrap:wrap}
+.console-side-head{
+  display:flex;align-items:center;gap:var(--s2);padding:var(--s3) var(--s4);
+  border-bottom:1px solid var(--border);font-size:var(--sm);color:var(--muted);
+}
+.console-side-head img{flex:none}
+/* 대화는 세션 동안 쌓이므로 스크롤을 허용한다(랜딩 데모는 대본 재생이라 스크롤을 막았다).
+   상자 높이가 고정이라 스크롤이 생겨도 페이지 레이아웃은 움직이지 않는다. */
+.console-chat{
+  flex:1;min-height:0;overflow-y:auto;scrollbar-width:thin;
+  padding:var(--s4);display:flex;flex-direction:column;gap:var(--s3);font-size:var(--sm);
+}
+.console-ask{display:flex;gap:var(--s2);padding:var(--s3) var(--s4);border-top:1px solid var(--border)}
+.console-ask input{
+  flex:1;min-width:0;height:38px;padding:0 var(--s3);font:inherit;font-size:var(--sm);
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:inherit;outline:none;
+  transition:border-color 180ms ease-out;
+}
+.console-ask input:focus{border-color:var(--accent)}
+.console-ask .btn.sm{flex:none;padding:0 var(--s3)}
+
+/* 말풍선 — 랜딩의 .cb 계약을 그대로 따른다 */
+.cb{line-height:1.55;animation:cbin 260ms ease-out both}
+@keyframes cbin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
+@media (prefers-reduced-motion: reduce){.cb{animation:none}}
+.cb.user{align-self:flex-end;background:var(--accent);color:var(--accent-fg);border-radius:10px;border-bottom-right-radius:3px;padding:8px 12px;max-width:92%}
+.cb.ai{align-self:stretch;color:var(--fg)}
+.cb.ai.muted{color:var(--muted)}
+.cb .cbrow{display:flex;justify-content:space-between;gap:var(--s3);padding:2px 0}
+.cb .p{color:var(--accent);white-space:nowrap}
+.typing{display:inline-flex;gap:3px;align-items:center;height:1em}
+.typing i{width:4px;height:4px;border-radius:99px;background:var(--muted);animation:tdot 1s ease-in-out infinite}
+.typing i:nth-child(2){animation-delay:.16s}.typing i:nth-child(3){animation-delay:.32s}
+@keyframes tdot{0%,100%{opacity:.3;transform:none}50%{opacity:1;transform:translateY(-3px)}}
+
+.chips{display:flex;gap:var(--s2);padding:0 var(--s4) var(--s3);flex-wrap:wrap}
 .chip{
   height:36px;padding:0 var(--s4);border:1px solid var(--border);border-radius:var(--r);
   background:transparent;color:var(--muted);font:inherit;font-size:var(--sm);cursor:pointer;
@@ -42,12 +80,22 @@
 .card.liked{cursor:pointer}
 .card.liked:hover{outline:1px solid var(--border)}
 
-#map{height:360px;width:100%;border-radius:var(--r)}
+/* 지도는 콘솔 좌측 칸을 그대로 채운다 — 고정 px 높이를 주면 카드 높이와 어긋난다 */
+#map{position:absolute;inset:0;width:100%;height:100%}
 .map-empty{
-  height:360px;display:grid;place-items:center;background:var(--surface);
-  border-radius:var(--r);color:var(--muted);text-align:center;padding:var(--s4);
+  position:absolute;inset:0;display:grid;place-items:center;background:var(--surface);
+  color:var(--muted);text-align:center;padding:var(--s4);
 }
 .map-empty[hidden]{display:none}
+
+/* 모바일 — 이 블록은 위 .console-* 기본 규칙보다 **아래**에 있어야 한다.
+   (랜딩에서 순서가 뒤집혀 지도가 0px 이 됐던 것과 같은 실패, 2026-07-21) */
+@media (max-width:860px){
+  .console-body{grid-template-columns:1fr;height:auto}
+  .console-stage{height:300px}
+  .console-side{border-left:0;border-top:1px solid var(--border);height:auto}
+  .console-chat{flex:none;height:260px}
+}
 
 .results{padding:var(--s8) 0 var(--s16)}
 .rowhead{display:flex;align-items:baseline;justify-content:space-between;gap:var(--s4);margin-bottom:var(--s4)}
@@ -98,37 +146,46 @@ document.getElementById("loginClose").addEventListener("click", () => document.g
 </script>
 
 <main>
-<section class="search-sec">
+<section class="console-sec">
   <div class="container">
     <p class="eyebrow">메뉴 찾기</p>
     <h1>오늘 예산은 얼마인가요</h1>
     <p class="lead">학식과 명륜동·혜화 식당을 한 판에 놓고 고릅니다. 검수를 통과한 메뉴만 나옵니다.</p>
-    <form id="searchForm" role="search" aria-label="예산·조건 검색" style="margin-top:var(--s6)">
-      <input type="text" id="q" placeholder="예: 8천원 이하 도보 5분 혼밥" autocomplete="off" aria-label="자연어로 조건 입력">
-      <button class="btn" type="submit" id="goBtn">
-        <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
-        찾기
-      </button>
-    </form>
-    <div class="chips" role="group" aria-label="예산 바로 선택">
-      <button class="chip" type="button" data-budget="6000" aria-pressed="false">6천원 이하</button>
-      <button class="chip" type="button" data-budget="8000" aria-pressed="false">8천원 이하</button>
-      <button class="chip" type="button" data-budget="10000" aria-pressed="false">1만원 이하</button>
-      <button class="chip" type="button" data-budget="" aria-pressed="false">전체</button>
+
+    <div class="console">
+      <div class="console-body">
+        <div class="console-stage">
+          <div class="map-empty" id="mapEmpty">지도를 불러오는 중입니다.</div>
+          <div id="map" hidden></div>
+        </div>
+        <aside class="console-side" aria-label="에이전트 대화">
+          <div class="console-side-head">
+            <img src="/img/upstage-symbol.svg" alt="" width="16" height="16">
+            <span>Upstage Solar 로 조건을 읽고 골라드립니다</span>
+          </div>
+          <div class="console-chat" id="chat" aria-live="polite"></div>
+          <div class="chips" role="group" aria-label="예산 바로 선택">
+            <button class="chip" type="button" data-budget="6000" aria-pressed="false">6천원</button>
+            <button class="chip" type="button" data-budget="8000" aria-pressed="false">8천원</button>
+            <button class="chip" type="button" data-budget="10000" aria-pressed="false">1만원</button>
+            <button class="chip" type="button" data-budget="" aria-pressed="false">전체</button>
+          </div>
+          <form class="console-ask" id="searchForm" role="search" aria-label="예산·조건 검색">
+            <input type="text" id="q" placeholder="예: 8천원 이하 도보 5분 혼밥" autocomplete="off" aria-label="자연어로 조건 입력">
+            <button class="btn sm" type="submit" id="goBtn" aria-label="찾기">
+              <svg class="icon" viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5"/></svg>
+            </button>
+          </form>
+        </aside>
+      </div>
     </div>
+
     <p class="parsed" id="parsed" aria-live="polite"></p>
     <div class="revisit" id="revisit" hidden>
       <span id="revisitText"></span>
       <button class="btn sm" type="button" id="revisitGo">그 조건으로 보기</button>
       <button class="linklike" type="button" id="revisitClear">기록 지우기</button>
     </div>
-  </div>
-</section>
-
-<section style="padding:0">
-  <div class="container">
-    <div class="map-empty" id="mapEmpty">지도를 불러오는 중입니다.</div>
-    <div id="map" hidden></div>
   </div>
 </section>
 
@@ -224,7 +281,17 @@ async function loadData() {
   catch { DATA = { restaurants: [], menus: [], cafeteria: [], source: "none" }; }
   $("#dataNote").textContent = `식당 ${DATA.restaurants.length} · 메뉴 ${DATA.menus.length} · 학식 ${DATA.cafeteria.length}`;
   render(); renderMarkers();
+  greet();
   applyUrlQuery();
+}
+
+/* 첫 인사 — 빈 대화창으로 시작하면 뭘 해야 하는지 알 수 없다.
+   가진 데이터를 먼저 밝히고(지어내지 않는다는 태도의 시작점) 예시를 하나 준다. */
+function greet() {
+  if (chatEl().children.length) return;
+  bubble("ai", `안녕하세요. 지금 <b>식당 ${DATA.restaurants.length}곳 · 메뉴 ${DATA.menus.length}개</b>를 갖고 있습니다.
+    전부 메뉴판 사진에서 읽어 사람이 확인한 것만 있습니다.`);
+  bubble("ai muted", `예산을 말씀해 주세요. "8천원 이하 도보 5분 혼밥" 처럼 조건을 붙여도 됩니다.`);
 }
 
 /* 랜딩에서 넘어온 조건 이어받기 — /app.html?q=...&budget=8000 */
@@ -271,35 +338,80 @@ function renderMarkers() {
   if (any) MAP.setBounds(bounds);
 }
 
-$("#searchForm").addEventListener("submit", async (e) => {
+/* ── 대화창 ──
+   랜딩의 데모 카드는 대본을 재생하지만 여기는 실제 서비스다 — 입력이 들어오면
+   /api/parse-query(Solar 구조화) → /api/recommend(추천·이유·근거 판정)를 실제로 부르고,
+   그 사이의 기다림을 말풍선으로 덮는다. 응답이 늦어도 화면이 멈춘 것처럼 보이지 않게. */
+const chatEl = () => $("#chat");
+function bubble(cls, html) {
+  const el = document.createElement("div");
+  el.className = "cb " + cls;
+  el.innerHTML = html;
+  chatEl().appendChild(el);
+  chatEl().scrollTop = chatEl().scrollHeight;
+  return el;
+}
+const TYPING = `<span class="typing"><i></i><i></i><i></i></span>`;
+const won = (n) => n.toLocaleString("ko-KR") + "원";
+const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
+
+function condText(s) {
+  const bits = [];
+  if (s.budget) bits.push(`예산 ${won(s.budget)} 이하`);
+  if (s.walkMax) bits.push(`도보 ${s.walkMax}분`);
+  if (s.tags?.length) bits.push(s.tags.join("·"));
+  return bits.join(" · ");
+}
+
+/** 한 번의 질의를 끝까지 수행한다. q 가 없으면(칩 클릭) 구조화 단계를 건너뛴다. */
+async function ask({ q = null, budget = null }) {
+  $("#goBtn").disabled = true;
+  if (q) bubble("user", esc(q));
+  else if (budget) bubble("user", `${won(budget)} 이하`);
+  else bubble("user", "전체 보기");
+
+  if (q) {
+    const wait = bubble("ai muted", `조건을 읽는 중입니다 ${TYPING}`);
+    try {
+      const p = await (await fetch("/api/parse-query", {
+        method: "POST", headers: { "content-type": "application/json" },
+        body: JSON.stringify({ query: q }),
+      })).json();
+      state = { budget: p.budget ?? null, walkMax: p.walkMax ?? null, tags: p.tags ?? [] };
+      const t = condText(state);
+      wait.className = "cb ai";
+      // 조건 문자열은 끝 글자가 매번 달라 조사(로/으로)를 붙이면 틀린다 — 콜론으로 받는다.
+      wait.innerHTML = t
+        ? `이렇게 읽었습니다 — <b>${esc(t)}</b>${p.source === "solar" ? " <span class='muted'>(Solar 구조화)</span>" : ""}`
+        : "조건을 읽지 못해 전체를 보여드립니다.";
+    } catch {
+      state = { budget: null, walkMax: null, tags: [] };
+      wait.className = "cb ai";
+      wait.textContent = "조건 해석에 실패해 전체를 보여드립니다.";
+    }
+  } else {
+    state = { budget, walkMax: null, tags: [] };
+  }
+
+  $("#parsed").textContent = condText(state) ? `조건: ${condText(state)}` : "";
+  syncChips();
+  render(); renderMarkers();
+  const wait = bubble("ai muted", `고르는 중입니다 ${TYPING}`);
+  await loadPicks(wait);
+  $("#goBtn").disabled = false;
+  $("#q").value = "";
+  // 결과는 대화창 아래에 있다 — 처음 쓰는 사람이 못 찾는 일이 없게 한 번 데려간다.
+  $("#picksWrap").hidden || $("#picksWrap").scrollIntoView({ behavior: "smooth", block: "start" });
+}
+
+$("#searchForm").addEventListener("submit", (e) => {
   e.preventDefault();
   const q = $("#q").value.trim();
-  if (!q) { render(); return; }
-  $("#goBtn").disabled = true;
-  $("#parsed").textContent = "조건을 읽는 중입니다…";
-  try {
-    const p = await (await fetch("/api/parse-query", {
-      method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ query: q }),
-    })).json();
-    state.budget = p.budget ?? null; state.tags = p.tags ?? []; state.walkMax = p.walkMax ?? null;
-    const bits = [];
-    if (state.budget) bits.push(`예산 ${state.budget.toLocaleString()}원 이하`);
-    if (state.walkMax) bits.push(`도보 ${state.walkMax}분`);
-    if (state.tags.length) bits.push(state.tags.join("·"));
-    $("#parsed").textContent = bits.length ? `조건: ${bits.join(" / ")}` : "조건을 읽지 못했습니다 — 전체를 보여드립니다.";
-    syncChips();
-  } catch {
-    $("#parsed").textContent = "조건 해석에 실패했습니다 — 전체를 보여드립니다.";
-    state = { budget: null, walkMax: null, tags: [] };
-  }
-  $("#goBtn").disabled = false;
-  render(); renderMarkers(); loadPicks();
+  if (!q) return;
+  ask({ q });
 });
 document.querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => {
-  state = { budget: c.dataset.budget ? Number(c.dataset.budget) : null, walkMax: null, tags: [] };
-  $("#parsed").textContent = state.budget ? `조건: 예산 ${state.budget.toLocaleString()}원 이하` : "";
-  syncChips(); render(); renderMarkers(); loadPicks();
+  ask({ budget: c.dataset.budget ? Number(c.dataset.budget) : null });
 }));
 function syncChips() {
   document.querySelectorAll(".chip").forEach((c) => {
@@ -308,12 +420,18 @@ function syncChips() {
   });
 }
 
-async function loadPicks() {
+async function loadPicks(wait = null) {
   const wrap = $("#picksWrap"), block = $("#picksBlock");
-  if (!state.budget && !state.tags.length) { wrap.hidden = true; return; }
+  if (!state.budget && !state.tags.length) {
+    wrap.hidden = true;
+    if (wait) { wait.className = "cb ai"; wait.innerHTML = `조건 없이 전체 <b>${DATA.restaurants.length}곳</b>을 아래에 놓았습니다.`; }
+    return;
+  }
   wrap.hidden = false;
   block.innerHTML = `<div class="card skeleton">추천을 고르는 중입니다…</div>`;
   $("#picksNote").textContent = "";
+  // 네트워크 실패와 화면 렌더 버그를 한 catch 로 묶지 않는다 — 묶었더니 요약 함수의
+  // TypeError 가 "추천을 불러오지 못했습니다"(=서버 탓)로 둔갑했다. (2026-07-21 프로브에서 적발)
   try {
     const d = await (await fetch("/api/recommend", {
       method: "POST", headers: { "content-type": "application/json" },
@@ -339,9 +457,33 @@ async function loadPicks() {
     $("#picksNote").textContent = d.walkRelaxed ? "도보 조건에 맞는 곳이 없어 가까운 순으로 보여드립니다"
       : d.personalized ? "이 브라우저에 남은 취향으로 순서를 바꿨습니다" : "";
     block.innerHTML = cards.join("") || `<div class="empty">조건에 맞는 추천이 없습니다 — 예산을 조금 올려보세요.</div>`;
+    if (wait) { try { chatSummary(wait, d); } catch { wait.className = "cb ai"; wait.textContent = "결과는 아래 카드에서 확인하세요."; } }
   } catch {
     block.innerHTML = `<div class="empty">추천을 불러오지 못했습니다 — 아래 목록으로 골라보세요.</div>`;
+    if (wait) { wait.className = "cb ai"; wait.textContent = "추천을 불러오지 못했습니다 — 아래 전체 목록에서 골라보세요."; }
   }
+}
+
+/** 추천 결과를 대화 한 덩어리로 요약한다. 카드가 정보의 본체이고 여기는 길잡이다 —
+ *  같은 내용을 두 번 늘어놓지 않고, 몇 곳을 왜 골랐는지와 근거 판정 결과만 말한다. */
+function chatSummary(el, d) {
+  el.className = "cb ai";
+  const picks = d.picks ?? [];
+  if (!picks.length && !d.cafeteria) {
+    // cheapest() 는 객체가 아니라 "최저가 숫자"를 돌려준다. 또 그 최저가의 정체가
+    // 공기밥·꼬치 1개일 수 있어 "가장 싼 한 끼"라고 부르지 않는다(DR5 실측).
+    const low = cheapest();
+    el.innerHTML = `조건에 맞는 곳이 없습니다.${low ? ` 지금 가장 낮은 가격은 <b>${won(low)}</b> 입니다.` : ""} 없는 걸 지어내지는 않습니다.`;
+    return;
+  }
+  const rows = picks.map((p) =>
+    `<span class="cbrow"><span>${esc(p.name)}</span><span class="p">${won(p.menus[0]?.price ?? 0)}~</span></span>`).join("");
+  const grounded = picks.filter((p) => p.grounded === "grounded").length;
+  const note = grounded ? `추천 이유는 <b>다른 모델이 데이터와 대조</b>해 ${grounded}건이 근거 검증을 통과했습니다.`
+    : "추천 이유는 데이터 사실로 적었습니다.";
+  el.innerHTML = `${picks.length}곳을 골랐습니다.${d.cafeteria ? " 학식도 함께 놓았습니다." : ""}
+    <div style="margin-top:6px">${rows}</div>
+    <div class="muted" style="margin-top:6px">${note} 아래 카드에서 메뉴와 근거를 확인하세요.</div>`;
 }
 
 /** 결과 0건 화면 — 빈 칸 대신 "왜 없는지 + 지금 뭘 할 수 있는지".
