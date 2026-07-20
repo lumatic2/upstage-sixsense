@@ -1,6 +1,6 @@
 {
   "schema_version": 1,
-  "active_work_id": null,
+  "active_work_id": "dr5-site-completion",
   "works": {
     "m2-parse-poc": {
       "work_id": "m2-parse-poc",
