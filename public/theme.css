@@ -67,7 +67,16 @@ img{max-width:100%}
 .site-head a.navlink:hover,.site-head .linklike:hover,.site-head a.navlink[aria-current="page"]{color:var(--fg)}
 @media (max-width:760px){
   .site-head .inner{grid-template-columns:auto 1fr;height:auto;padding-top:var(--s3);padding-bottom:var(--s3)}
-  .site-head .nav-main{grid-column:1/-1;order:3;justify-content:flex-start;gap:var(--s4);flex-wrap:wrap}
+  /* 링크 5개가 줄바꿈되면 헤더가 3줄이 되고 마지막 항목("Upstage AI")이 본문 위에
+     떨어진 것처럼 보인다(2026-07-20 390px 실측). 접지 말고 한 줄로 두되 넘치는 만큼만
+     가로로 흘린다 — 스크롤은 nav 안에 가둔다. */
+  .site-head .nav-main{
+    grid-column:1/-1;order:3;justify-content:flex-start;gap:var(--s4);
+    flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;
+    margin:0 calc(-1 * var(--s6));padding:0 var(--s6);
+  }
+  .site-head .nav-main::-webkit-scrollbar{display:none}
+  .site-head .nav-main a.navlink{white-space:nowrap}
 }
 
 /* ── login dialog (인증 미구현 — 정직한 안내만) ── */

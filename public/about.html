@@ -37,6 +37,17 @@
 table{width:100%;border-collapse:collapse;margin-top:var(--s6);font-size:var(--sm)}
 th,td{text-align:left;padding:var(--s3) var(--s2);border-bottom:1px solid var(--border);vertical-align:top}
 th{color:var(--muted);font-weight:500}
+/* 산문이 긴 표는 좁은 폭에서 3열을 유지하면 셀마다 두세 글자씩 세로로 늘어진다
+   (2026-07-20 390px 실측). 그 표만 행 단위 블록으로 쌓는다 — 첫 칸이 제목 역할을 하므로
+   머리행 없이도 읽힌다. 셀이 짧은 표(입력/형태/처리)는 그대로 둔다. */
+@media (max-width:640px){
+  table.stacked, table.stacked tr, table.stacked td, table.stacked th{display:block}
+  table.stacked tr:first-child{display:none}
+  table.stacked tr{padding:var(--s4) 0;border-bottom:1px solid var(--border)}
+  table.stacked td{border:0;padding:0}
+  table.stacked td:first-child{font-weight:500;color:var(--fg)}
+  table.stacked td+td{margin-top:var(--s2);color:var(--muted)}
+}
 </style>
 </head>
 <body>
@@ -113,7 +124,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
 
       <h2 id="upstage">어디에 Upstage를 썼나</h2>
       <p>제품을 하나 고르고 거기에 문제를 맞추지 않았습니다. 파이프라인의 각 지점에서 <b>무엇이 부족한지</b>를 먼저 정하고, 그 자리에 맞는 것을 넣었습니다. 그래서 안 쓴 자리도 함께 적습니다.</p>
-      <table>
+      <table class="stacked">
         <tr><th>제품</th><th>쓴 자리</th><th>왜 여기인가</th></tr>
         <tr>
           <td>Document Parse</td>
