@@ -5,11 +5,20 @@
 
 ## 열려 있는 것
 
-### ⑥ 하네스 장부 이원화 — 이 레포 밖 문제
+### ⑥ 하네스 장부 이원화 — 근본 원인은 이 레포 밖
 
 `.harness/work.json`(SKILL.md 가 지정한 **정본**) vs `.harness/machines/<host>/work.json`(훅 메시지가 지시).
-그래서 DR4 는 머신 로컬에만, DR5 등록은 정본에만 들어갔다. **DR4 가 정본에 없는 상태는 그대로**다.
-고칠 자리는 `~/projects/custom-skills` 의 `/harness` 원본(훅 문구를 정본 경로로) — 배포본 직접 편집 금지.
+그래서 DR4 는 머신 로컬에만 들어가 있었다.
+
+- **2026-07-21 정리**: DR4 항목을 머신 로컬에서 정본으로 이관해 데이터 drift 는 해소했다.
+  지금 정본에는 M2~DR7 9건이 전부 `completed` 로 들어 있다.
+- **남은 것**: 훅 문구가 여전히 머신 로컬 경로를 가리키므로 **다른 기기에서 작업하면 또 갈라진다.**
+  고칠 자리는 `~/projects/custom-skills` 의 `/harness` 원본 — 배포본 직접 편집 금지.
+
+> 곁들여 배운 것: milestone 완료 hook 에서 ledger 3-event 와 `roadmap_sync complete` 는 돌리고
+> **`work.json` step 상태 갱신을 빠뜨리면**, 장부상으로는 "3/3 미착수" 로 남아 다음 세션이
+> 이미 끝난 일을 다시 시작한다(2026-07-21 실제로 Stop hook 이 DR7 을 미완으로 잡았다).
+> 완료 처리는 ledger · ROADMAP · work.json **셋 다** 건드려야 끝난다.
 
 ### ⑦ 곁들임 규칙이 못 잡는 잔여 — 사람 손이 이김
 
