@@ -59,7 +59,7 @@ th{color:var(--muted);font-weight:500}
 
 <dialog class="sheet" id="loginDlg">
   <h3>로그인은 아직 없습니다</h3>
-  <p>한입지도는 로그인 없이 전부 쓸 수 있습니다. 계정은 "내가 저장한 식당" 기능을 붙일 때 함께 엽니다.</p>
+  <p>한입지도는 로그인 없이 전부 쓸 수 있습니다. 재방문 시 순서를 바꾸는 <b>이력은 이 브라우저에만 저장됩니다</b> — 서버로 보내 쌓지 않습니다. 기기나 브라우저를 바꾸면 기록은 사라집니다.</p>
   <button class="btn" id="loginClose" autofocus>알겠습니다</button>
 </dialog>
 <script>
@@ -144,6 +144,10 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
       <h2 id="s4">데이터가 틀리면</h2>
       <p>파싱은 완벽하지 않습니다. 그래서 모든 메뉴 행에는 출처(사진 파싱/제보/수기)와 검수 상태가 붙어 있고, 잘못된 값은 사람이 고치면 다음 조회부터 반영됩니다. 틀릴 수 있다는 사실을 숨기지 않는 것이 이 파이프라인의 설계입니다.</p>
       <p>새 가게를 발견하셨다면 <a href="/contribute.html">메뉴판 사진 한 장</a>이면 됩니다. 올린 사진은 AI가 읽고, 사람이 그 사진과 대조해 확인한 뒤에 지도에 올라갑니다.</p>
+      <h2 id="s5">개인화는 하되, 쌓지는 않습니다</h2>
+      <p>두 번째 방문부터는 추천 순서가 조금 달라집니다. 이전에 눌러본 가게의 분류를 기억해 같은 계열을 위로 올립니다. 다만 이 기억은 <b>이 브라우저 안에만</b> 있습니다(<code>localStorage</code>). 서버는 추천을 만들 때 그 값을 함께 받아 순서만 바꾸고, 저장하지 않습니다. 계정을 만들지 않는 이유가 이것입니다.</p>
+      <p>대가는 분명합니다. <b>기기나 브라우저를 바꾸면 기록은 사라지고, 시크릿 모드에서는 아예 남지 않습니다.</b> 방문 기록을 지우면 함께 지워집니다. 개인화는 필터가 아니라 가점이라, 기록이 없거나 깨져 있어도 추천 결과가 사라지지는 않습니다. 지금 지우고 싶으시면 <a href="/app.html">메뉴 찾기</a> 화면의 "기록 지우기"를 누르시면 됩니다.</p>
+
       <div class="cta-row" style="display:flex;gap:var(--s3);margin-top:var(--s8);flex-wrap:wrap">
         <a class="btn" href="/app.html">서비스 써보기</a>
         <a class="btn ghost" href="/verify.html">파이프라인 검증 페이지</a>
@@ -157,6 +161,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
       <a href="#s3">추천 이유를 검증합니다</a>
       <a href="#upstage">어디에 Upstage를 썼나</a>
       <a href="#s4">데이터가 틀리면</a>
+      <a href="#s5">개인화는 하되, 쌓지는 않습니다</a>
     </nav>
   </div>
 </section>

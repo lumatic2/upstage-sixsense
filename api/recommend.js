@@ -64,10 +64,27 @@ async function solarReasons(picks, conditions, key) {
   return new Map((parsed.reasons ?? []).map((r) => [r.name, r.reason]));
 }
 
+/** 브라우저가 보낸 취향 프로필을 읽는다 — 서버는 이걸 저장하지 않는다(무상태).
+ *  프로필은 순서를 바꾸는 가점 신호일 뿐 필터가 아니다. 그래서 값이 깨져 있어도
+ *  "가점 없음"으로 떨어지기만 하고 후보를 지우지 않는다 — 손상된 프로필이 추천을
+ *  0건으로 만드는 게 가장 나쁜 실패다. */
+function readProfile(profile) {
+  const cat = new Map();
+  const cats = profile && typeof profile === "object" ? profile.cats : null;
+  if (cats && typeof cats === "object") {
+    for (const [k, v] of Object.entries(cats)) {
+      const n = Number(v);
+      if (typeof k === "string" && k && Number.isFinite(n) && n > 0) cat.set(k, Math.min(n, 5));
+    }
+  }
+  return { cat, used: cat.size > 0 };
+}
+
 export default async function handler(req, res) {
   res.setHeader("access-control-allow-origin", "*");
   if (req.method !== "POST") return res.status(405).json({ error: "POST only", code: "method_not_allowed" });
-  const { budget = null, walkMax = null, tags = [] } = req.body ?? {};
+  const { budget = null, walkMax = null, tags = [], profile = null } = req.body ?? {};
+  const aff = readProfile(profile);
   let data;
   try { data = await loadSheetData(); }
   catch { return res.status(200).json({ picks: [], cafeteria: null, error: "data unavailable" }); }
@@ -87,15 +104,21 @@ export default async function handler(req, res) {
     else { walkRelaxed = true; candidates.sort((a, b) => (a.walkMin ?? 99) - (b.walkMin ?? 99)); }
   }
 
-  // 랭킹: 태그 일치 > 예산 내 메뉴 수 > 도보 시간
+  // 랭킹: 태그 일치 > 예산 내 메뉴 수 > 도보 시간, 그 위에 재방문 취향 가점.
+  // 점수식으로 바꾼 이유: 취향을 기존 우선순위 사이에 "끼워넣을" 자리가 필요한데
+  // 사전식 비교로는 가중치를 조절할 수 없다. 계수는 기존 순서를 보존하도록 잡았다
+  // (메뉴 수 1개 = 10점, 도보 1분 = 1점 → 도보(최대 99)가 메뉴 수를 못 뒤집는다).
   const tagSet = new Set(tags);
-  candidates.sort((a, b) => {
-    const at = a.tags.filter((t) => tagSet.has(t)).length, bt = b.tags.filter((t) => tagSet.has(t)).length;
-    if (at !== bt) return bt - at;
-    if (a.menus.length !== b.menus.length) return b.menus.length - a.menus.length;
-    return (a.walkMin ?? 99) - (b.walkMin ?? 99);
-  });
+  const CAT_BONUS = 60; // 메뉴 수 6개어치 — 취향이 순서를 바꾸되 지배하지는 않는 크기
+  const base = (p) => p.tags.filter((t) => tagSet.has(t)).length * 1000 + Math.min(p.menus.length, 30) * 10 - (p.walkMin ?? 99);
+  const score = (p) => base(p) + (aff.cat.get(p.category) ?? 0) * CAT_BONUS;
+  const baseline = candidates.slice().sort((a, b) => base(b) - base(a));
+  candidates.sort((a, b) => score(b) - score(a));
   const picks = candidates.slice(0, 3);
+  // 취향 때문에 순서가 실제로 바뀐 경우에만 개인화됐다고 말한다 — 안 바뀌었는데
+  // "개인화됨"이라고 붙이면 그것도 거짓말이다.
+  const personalized = aff.used && picks.some((p, i) => p.name !== baseline[i]?.name);
+  for (const p of picks) p.affinity = (aff.cat.get(p.category) ?? 0) > 0;
 
   // 학식: 최신 날짜 1건 (예산 내면)
   const caf = data.cafeteria.slice().sort((a, b) => a.menu_date < b.menu_date ? 1 : -1)
@@ -155,5 +178,5 @@ export default async function handler(req, res) {
     }));
   }
 
-  res.status(200).json({ picks, cafeteria: caf, conditions, walkRelaxed });
+  res.status(200).json({ picks, cafeteria: caf, conditions, walkRelaxed, personalized });
 }
