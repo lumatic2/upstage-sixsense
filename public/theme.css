@@ -71,10 +71,16 @@ img{max-width:100%}
      떨어진 것처럼 보인다(2026-07-20 390px 실측). 접지 말고 한 줄로 두되 넘치는 만큼만
      가로로 흘린다 — 스크롤은 nav 안에 가둔다. */
   .site-head .nav-main{
-    grid-column:1/-1;order:3;justify-content:flex-start;gap:var(--s4);
+    grid-column:1/-1;order:3;justify-content:flex-start;gap:var(--s3);
     flex-wrap:nowrap;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;
     margin:0 calc(-1 * var(--s6));padding:0 var(--s6);
+    /* 넘치는 항목이 그냥 잘리면 "고장" 으로 읽힌다 — 오른쪽을 흐리게 해서 더 있다는 걸 알린다.
+       (2026-07-21 감사: 390px 에서 `Upstage AI` 가 13px 잘려 클릭 못 하는 것처럼 보였다.) */
+    -webkit-mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);
+    mask-image:linear-gradient(90deg,#000 calc(100% - 28px),transparent);
   }
+  /* 끝까지 스크롤했으면 페이드를 걷는다 — 마지막 항목이 흐린 채로 남으면 그것도 잘린 것처럼 보인다 */
+  .site-head .nav-main.at-end{-webkit-mask-image:none;mask-image:none}
   .site-head .nav-main::-webkit-scrollbar{display:none}
   .site-head .nav-main a.navlink{white-space:nowrap}
 }

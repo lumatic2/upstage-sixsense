@@ -32,8 +32,9 @@
 .hero h1{font-size:clamp(38px,8vw,88px);line-height:1.12;margin:0 auto}
 .hero .lead{margin:var(--s6) auto 0;max-width:44ch}
 .cta-row{display:flex;gap:var(--s3);justify-content:center;margin-top:var(--s8);flex-wrap:wrap}
-/* 금액 자리 — 폭을 미리 확보해 문구가 흔들리지 않게 (알약 제거). "1만원"(숫자+한글 2자) 기준 타이트하게 */
-.amt{display:inline-block;width:2.6em;margin-left:.08em;text-align:center;color:var(--accent)}
+/* 금액 자리 — 폭을 미리 확보해 문구가 흔들리지 않게. 가운데 정렬이면 짧은 금액("8천원")일 때
+   오른쪽에 빈칸이 남아 "8천원 으로" 처럼 띈 것처럼 보인다(2026-07-21 감사) → 오른쪽 정렬. */
+.amt{display:inline-block;min-width:2.6em;margin-left:.08em;text-align:right;color:var(--accent)}
 /* 캐럿이 라인박스를 키우지 않게 — 캡하이트보다 낮게, 베이스라인 정렬 (흔들림 방지) */
 .amt .caret{width:.06em;height:.74em;vertical-align:0;background:var(--accent)}
 /* 물음표 — "먹지"와 살짝 띄우고, 상시 가벼운 플로팅 + 타이핑 직후 위글 */
@@ -866,5 +867,6 @@ function startDemo(data) {
   loop(++token);
 }
 </script>
+<script src="/nav.js" defer></script>
 </body>
 </html>

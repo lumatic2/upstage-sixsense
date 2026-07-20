@@ -54,11 +54,18 @@ if (process.argv.includes("--set-env")) {
 // 배포는 "여기 있는 파일이 전부"라서, 목록에 안 적힌 파일은 추가되지 않는 게 아니라
 // **라이브에서 사라진다**. DR4·DR5 가 만든 contribute/review/verify 가 목록에 없어서
 // 다음 배포 한 번이면 그 페이지들이 통째로 없어질 상태였다.
+// 배포에서 뺄 것 — 파일은 레포에 남기되 판정단이 볼 수 있는 자리에는 올리지 않는다.
+// test.html 은 /verify.html 로 승격되기 전의 원본이라 스타일도 헤더도 없다. 링크는 없지만
+// URL 로 열리는 미완성 페이지가 공개돼 있었다(2026-07-21 감사). 삭제하지 않는 이유는
+// "승격 실패 시 원복 경로" 라는 기존 약속 때문이다(docs/OPEN-ISSUES.md).
+const DEPLOY_EXCLUDE = new Set(["public/test.html"]);
+
 function collect(dir) {
   return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
     const p = path.posix.join(dir, e.name);
     if (e.isDirectory()) return collect(p);
-    return e.name.startsWith(".") ? [] : [p];
+    if (e.name.startsWith(".") || DEPLOY_EXCLUDE.has(p)) return [];
+    return [p];
   });
 }
 const FILES = ["package.json", "vercel.json", ...collect("api"), ...collect("public")];

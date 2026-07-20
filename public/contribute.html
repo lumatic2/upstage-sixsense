@@ -59,6 +59,7 @@
       <a class="navlink" href="/app.html">메뉴 찾기</a>
       <a class="navlink" href="/contribute.html" aria-current="page">사진 제보</a>
       <a class="navlink" href="/about.html">데이터 파이프라인</a>
+      <a class="navlink" href="/about.html#upstage">Upstage AI</a>
     </nav>
     <div class="nav-side">
       <button class="linklike" id="loginBtn">로그인</button>
@@ -263,5 +264,6 @@ $("#submit").addEventListener("click", async () => {
 
 const esc = (s) => String(s ?? "").replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 </script>
+<script src="/nav.js" defer></script>
 </body>
 </html>

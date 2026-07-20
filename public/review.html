@@ -59,8 +59,12 @@
   <div class="gate">
     <h1>제보 검수</h1>
     <p class="muted small" style="margin-top:var(--s3)">운영진 전용 화면입니다.</p>
-    <input type="password" id="tok" placeholder="검수 토큰" autocomplete="off">
-    <button class="btn" id="enter" style="width:100%">들어가기</button>
+    <!-- form 으로 감싼다 — 비밀번호 입력이 form 밖에 있으면 브라우저가 경고를 남기고
+         엔터로 제출도 안 된다(2026-07-21 감사). -->
+    <form id="gateForm" autocomplete="off">
+      <input type="password" id="tok" placeholder="검수 토큰" autocomplete="current-password" aria-label="검수 토큰">
+      <button class="btn" id="enter" type="submit" style="width:100%">들어가기</button>
+    </form>
     <p class="small" id="gateErr" style="color:var(--accent);margin-top:var(--s3)"></p>
   </div>
 </div>
@@ -177,7 +181,9 @@ async function load() {
   render();
 }
 
-$("#enter").addEventListener("click", async () => {
+// form 제출로 받는다 — 버튼 클릭과 엔터 키가 같은 경로를 타야 한다.
+$("#gateForm").addEventListener("submit", async (e) => {
+  e.preventDefault();
   TOKEN = $("#tok").value.trim();
   if (!TOKEN) return;
   try {
