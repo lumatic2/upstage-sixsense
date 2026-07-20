@@ -50,12 +50,12 @@
 .demo{margin:var(--s16) auto 0;max-width:1000px;background:var(--surface);border-radius:8px;overflow:hidden;text-align:left}
 /* 데모 카드 세로 크기 고정 — 콘텐츠 길이와 무관하게 .demo-body 자체에 확정 높이를 줘야
    그리드 행이 콘텐츠에 맞춰 다시 커지는 걸 막을 수 있음 (사용자 지시 2026-07-20) */
-.demo-body{display:grid;grid-template-columns:minmax(0,1fr) 320px;height:clamp(420px,45vw,530px);overflow:hidden}
+.demo-body{display:grid;grid-template-columns:minmax(0,1fr) 320px;height:clamp(390px,42vw,485px);overflow:hidden}
 @media (max-width:860px){
   .demo-body{grid-template-columns:1fr;height:auto}
   .demo-side{border-left:0;border-top:1px solid var(--border);height:auto}
-  .demo-stage{height:340px}
-  .demo-chat{flex:none;height:330px}
+  .demo-stage{height:320px}
+  .demo-chat{flex:none;height:300px}
 }
 .demo-stage{
   position:relative;height:100%;
