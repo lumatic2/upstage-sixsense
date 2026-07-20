@@ -44,7 +44,14 @@ check("실데이터 식당 마커 ≥5", restCount >= 5, `${restCount}곳`);
 const cafText = (await page.locator("#cafeteriaBlock").textContent({ timeout: 8000 }).catch(() => null)) ?? "";
 const cafNames = ["패컬티식당", "은행골식당", "법고을식당", "금잔디식당"].filter((n) => cafText.includes(n));
 check("학식 4곳 정식 명칭 표시", cafNames.length === 4, `${cafNames.length}/4`);
-check("학식 지난 날짜 미노출", !/20\d\d-\d\d-\d\d/.test(cafText) || cafText.includes(await page.locator("#cafDate").textContent() ?? ""));
+// 구 버전은 "카드 텍스트에 날짜 문자열이 없으면 통과"였는데, 카드에는 원래 날짜를 안 넣는다 —
+// 즉 무슨 짓을 해도 통과하는 허수였다(2026-07-21 감사 적발). 실제로 검증할 것 두 가지로 바꾼다:
+// ① 보드에 4곳이 다 있는가 ② 화면이 말하는 날짜가 오늘(KST)인가.
+const cafCards = await page.locator("#cafeteriaBlock .card").count();
+check("학식 카드 4장", cafCards === 4, `${cafCards}장`);
+const shownDate = ((await page.locator("#cafDate").textContent().catch(() => "")) ?? "").trim();
+const todayKST = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
+check("학식 날짜 = 오늘(KST)", shownDate === todayKST, `화면 ${shownDate || "(없음)"} / 오늘 ${todayKST}`);
 
 // 3. 자연어 검색 → 추천+이유
 await page.fill("#q", "8천원 이하 혼밥");

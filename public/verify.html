@@ -220,8 +220,12 @@ let DATA = { restaurants: [], menus: [], cafeteria: [], source: "none" };
 fetch("/api/data").then((r) => r.json()).then((d) => {
   DATA = d;
   $("dataSource").textContent = `source=${d.source} · 식당 ${d.restaurants.length} · 메뉴 ${d.menus.length} · 학식 ${d.cafeteria.length}`;
-  $("cafeteria").innerHTML = d.cafeteria
-    .map((r) => `<li><b>${esc(r.cafeteria)}</b>${r.corner ? " · " + esc(r.corner) : ""} <span class="muted">(${esc(r.menu_date)})</span> — ${esc(r.items.slice(0, 4).join(", "))}${r.items.length > 4 ? " 외" : ""} · <b>${r.price ? r.price.toLocaleString() + "원" : "가격 미상"}</b></li>`)
+  // 서버가 만든 오늘자 보드(정식 명칭·휴무 포함)를 쓴다. raw `cafeteria` 를 그대로 그리면
+  // 시트의 빈 코너값이 그대로 나와 `패컬티 · 코너` 라는 실재하지 않는 이름이 뜬다(2026-07-21 적발).
+  $("cafeteria").innerHTML = (d.cafeteriaBoard ?? [])
+    .map((c) => c.open
+      ? `<li><b>${esc(c.name)}</b> <span class="muted">(${esc(d.today ?? "")})</span> — ${esc(c.items.slice(0, 4).join(", "))}${c.items.length > 4 ? " 외" : ""} · <b>${c.price ? c.price.toLocaleString() + "원" : "가격 미상"}</b></li>`
+      : `<li><b>${esc(c.name)}</b> <span class="muted">${esc(c.place)}</span> — 휴무</li>`)
     .join("") || `<li class="muted">실데이터 없음</li>`;
   renderRealResults(null);
 }).catch((e) => {
@@ -248,9 +252,10 @@ function renderRealResults(q) {
     const cheap = mains.slice().sort((a, b) => a.price - b.price).slice(0, 3);
     items.push(`<li><b>${esc(r.name)}</b> <span class="muted">${esc(r.category)}</span> — ${budget ? `예산 내 ${mains.length}개: ` : ""}${cheap.map((m) => `${esc(m.name)} ${m.price.toLocaleString()}원`).join(", ")}</li>`);
   }
-  for (const c of DATA.cafeteria) {
+  for (const c of (DATA.cafeteriaBoard ?? [])) {
+    if (!c.open) continue;
     if (budget && c.price && c.price > budget) continue;
-    items.push(`<li><b>학식 · ${esc(c.cafeteria)}</b> <span class="muted">(${esc(c.menu_date)})</span> — ${esc(c.items[0] ?? "")} 외 · ${c.price ? c.price.toLocaleString() + "원" : "가격 미상"}</li>`);
+    items.push(`<li><b>${esc(c.name)}</b> <span class="muted">(${esc(DATA.today ?? "")})</span> — ${esc(c.items[0] ?? "")} 외 · ${c.price ? c.price.toLocaleString() + "원" : "가격 미상"}</li>`);
   }
   $("realResults").innerHTML = items.join("") || `<li class="muted">조건에 맞는 실데이터 없음</li>`;
 }

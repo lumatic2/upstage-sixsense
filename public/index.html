@@ -563,7 +563,9 @@ function startMini(data) {
       return ms.length ? { r, ms } : null;
     }).filter(Boolean).slice(0, 3);
 
-    const caf = data.cafeteria.filter((c) => !c.price || c.price <= budget)[0];
+    // 서버가 오늘자만 골라 정식 명칭으로 만들어 준 보드를 쓴다.
+    // 예전엔 raw `cafeteria` 를 그대로 써서 8일 전 날짜와 축약 이름("패컬티")이 랜딩에 떴다.
+    const caf = (data.cafeteriaBoard ?? []).filter((c) => c.open && (!c.price || c.price <= budget))[0];
     const cards = hits.map(({ r, ms }) => `
       <div class="card">
         <h3>${r.name}</h3>
@@ -572,8 +574,8 @@ function startMini(data) {
       </div>`);
     if (caf) cards.push(`
       <div class="card">
-        <h3>학식 · ${caf.cafeteria}</h3>
-        <p class="small muted">${caf.menu_date}</p>
+        <h3>${caf.name}</h3>
+        <p class="small muted">${caf.place}</p>
         <ul><li><span>${caf.items.slice(0, 3).join(", ")}${caf.items.length > 3 ? " 외" : ""}</span><span class="p">${caf.price ? won(caf.price) : ""}</span></li></ul>
       </div>`);
     out.innerHTML = cards.join("") || `<p class="mini-empty">${won(budget)} 이하로 담기는 메뉴가 아직 없습니다 — 예산을 올려보세요.</p>`;

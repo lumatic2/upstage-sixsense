@@ -98,8 +98,11 @@ const dataReady = fetch("/api/data")
   .then((d) => {
     DATA = d;
     $("dataSource").textContent = `source=${d.source} · 식당 ${d.restaurants.length} · 메뉴 ${d.menus.length} · 학식 ${d.cafeteria.length}`;
-    $("cafeteria").innerHTML = d.cafeteria
-      .map((r) => `<li><b>${r.cafeteria}</b>${r.corner ? " · " + r.corner : ""} (${r.menu_date}) — ${r.items.slice(0, 4).join(", ")}${r.items.length > 4 ? " 외" : ""} · <b>${r.price ?? "?"}원</b></li>`)
+    // 정식 명칭·오늘자 보드를 쓴다 — raw `cafeteria` 는 빈 코너값 탓에 `패컬티 · 코너` 로 나온다.
+    $("cafeteria").innerHTML = (d.cafeteriaBoard ?? [])
+      .map((c) => c.open
+        ? `<li><b>${c.name}</b> (${d.today ?? ""}) — ${c.items.slice(0, 4).join(", ")}${c.items.length > 4 ? " 외" : ""} · <b>${c.price ?? "?"}원</b></li>`
+        : `<li><b>${c.name}</b> ${c.place} — 휴무</li>`)
       .join("") || "<li>실데이터 없음</li>";
     renderRealResults(null);
   })

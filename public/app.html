@@ -395,7 +395,12 @@ function openMarkerCard(r, pos) {
   const ov = new kakao.maps.CustomOverlay({ position: pos, content: el, yAnchor: 1.28, zIndex: 5 });
   ov.setMap(MAP);
   OPEN_OVERLAY = ov; OPEN_ID = r.id;
-  requestAnimationFrame(() => { el.classList.add("in"); fitCardIntoView(el); });
+  requestAnimationFrame(() => el.classList.add("in"));
+  // 전환이 끝난 뒤에 잰다. 같은 rAF 안에서 재면 아직 translateY(6px)·scale(.96) 중인 사각형을
+  // 재게 되어 보정이 3px 모자랐다(2026-07-21 독립 검증 적발). 애니메이션이 꺼진 환경도 있으므로
+  // transitionend 만 믿지 않고 타이머로도 받는다 — 두 번 불려도 두 번째는 넘침이 0이라 no-op.
+  el.addEventListener("transitionend", () => fitCardIntoView(el), { once: true });
+  setTimeout(() => fitCardIntoView(el), 200);
   noteCategory(r.category);                              // 눌러본 분류는 다음 방문 순서에 반영(DR5)
 }
 
