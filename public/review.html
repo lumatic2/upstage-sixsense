@@ -34,6 +34,13 @@
   tr.done-ok{opacity:.5}
   tr.done-no{opacity:.5;text-decoration:line-through}
   .why{display:block;font-size:12px;color:var(--accent);margin-top:2px}
+  /* 메뉴명·가격은 그 자리에서 고친다 — 파편이 정답을 담고 있을 때 제외로 버리면 정보가 사라진다. */
+  .ed{font:inherit;font-size:var(--sm);border:1px solid transparent;border-radius:var(--r);
+      padding:4px 6px;background:transparent;width:100%}
+  .ed:hover{border-color:var(--border)}
+  .ed:focus{border-color:var(--accent);outline:none;background:var(--bg)}
+  .ed.num{width:88px;text-align:right;font-variant-numeric:tabular-nums}
+  tr.edited{box-shadow:inset 3px 0 0 var(--accent)}
   .acts{display:flex;gap:6px;white-space:nowrap}
   .acts button{height:30px;padding:0 10px;border-radius:var(--r);border:1px solid var(--border);
                background:var(--surface);font:inherit;font-size:13px;cursor:pointer}
@@ -76,6 +83,8 @@ const $ = (s) => document.querySelector(s);
 let TOKEN = sessionStorage.getItem("hanip.reviewToken") || "";
 let DATA = null;
 const pending = new Map(); // row → 확인|제외
+const edits = new Map();   // row → { menu?, price? }  (원본과 다를 때만)
+const COL_MENU = 3, COL_PRICE = 4;
 
 /* 1차 스크리닝 — 사람이 189행을 한 줄씩 훑지 않도록 의심 행을 먼저 띄운다.
    판정이 아니라 "여기부터 보라"는 표시다. 최종 확인/제외는 사람이 사진과 대조해 누른다.
@@ -122,9 +131,10 @@ function render() {
     const body = rows.map((it) => {
       const why = suspicion(it.menu, it.price);
       if (why.length) susTotal++;
-      return `<tr data-row="${it.row}" class="${why.length ? "sus" : ""}">
-        <td>${escape(it.menu)}${why.length ? `<span class="why">⚑ ${escape(why.join(" · "))}</span>` : ""}</td>
-        <td class="price">${Number(String(it.price).replace(/[^\d]/g, "") || 0).toLocaleString()}원</td>
+      const price = Number(String(it.price).replace(/[^\d]/g, "") || 0);
+      return `<tr data-row="${it.row}" data-menu0="${escape(it.menu)}" data-price0="${price}" class="${why.length ? "sus" : ""}">
+        <td><input class="ed menu" value="${escape(it.menu)}" aria-label="메뉴명">${why.length ? `<span class="why">⚑ ${escape(why.join(" · "))}</span>` : ""}</td>
+        <td class="price"><input class="ed num" value="${price}" inputmode="numeric" aria-label="가격">원</td>
         <td><div class="acts">
           <button data-v="확인" aria-pressed="false">확인</button>
           <button data-v="제외" aria-pressed="false">제외</button>
@@ -160,7 +170,7 @@ async function load() {
   if (res.status === 401) throw new Error("토큰이 올바르지 않습니다");
   if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? `HTTP ${res.status}`);
   DATA = await res.json();
-  pending.clear();
+  pending.clear(); edits.clear();
   $("#save").disabled = true;
   render();
 }
@@ -197,13 +207,44 @@ $("#list").addEventListener("click", (e) => {
     pending.set(row, value);
     tr.classList.add(value === "확인" ? "done-ok" : "done-no");
   }
-  $("#save").disabled = pending.size === 0;
-  $("#save").textContent = pending.size ? `저장 (${pending.size})` : "저장";
+  syncSave();
 });
+
+/* 메뉴명·가격 수정 추적 — 원본과 같아지면 수정 목록에서 뺀다(빈 저장 방지). */
+$("#list").addEventListener("input", (e) => {
+  const inp = e.target.closest(".ed");
+  if (!inp) return;
+  const tr = inp.closest("tr");
+  const row = Number(tr.dataset.row);
+  const cur = edits.get(row) ?? {};
+  if (inp.classList.contains("menu")) {
+    const v = inp.value.trim();
+    if (v && v !== tr.dataset.menu0) cur.menu = v; else delete cur.menu;
+  } else {
+    const v = Number(inp.value.replace(/[^\d]/g, ""));
+    if (Number.isInteger(v) && String(v) !== tr.dataset.price0) cur.price = v; else delete cur.price;
+  }
+  if (Object.keys(cur).length) edits.set(row, cur); else edits.delete(row);
+  tr.classList.toggle("edited", edits.has(row));
+  syncSave();
+});
+
+function syncSave() {
+  const n = pending.size + edits.size;
+  $("#save").disabled = n === 0;
+  $("#save").textContent = n ? `저장 (${n})` : "저장";
+}
 
 $("#save").addEventListener("click", async () => {
   const btn = $("#save"); btn.disabled = true; btn.textContent = "저장 중…";
-  const updates = [...pending.entries()].map(([row, value]) => ({ row, col: DATA.reviewCol, value }));
+  // 수정을 먼저 보내고 검수 값을 나중에 — 순서가 뒤집히면 고치기 전 내용이 확인 처리된 것처럼 남는다.
+  const updates = [
+    ...[...edits.entries()].flatMap(([row, e]) => [
+      ...(e.menu !== undefined ? [{ row, col: COL_MENU, value: e.menu }] : []),
+      ...(e.price !== undefined ? [{ row, col: COL_PRICE, value: e.price }] : []),
+    ]),
+    ...[...pending.entries()].map(([row, value]) => ({ row, col: DATA.reviewCol, value })),
+  ];
   try {
     const res = await fetch("/api/review", {
       method: "POST",

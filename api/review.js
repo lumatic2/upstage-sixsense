@@ -11,6 +11,27 @@ import { listRows, updateCells, sheetWriteReady } from "./_lib/sheet-write.js";
 const MENU_SHEET = "메뉴";
 const REST_SHEET = "식당";
 const ALLOWED = new Set(["확인", "제외", "대기"]);
+// [메뉴] 탭 열 순서: 1 식당ID · 2 식당이름 · 3 메뉴명 · 4 가격(원) · 5 출처 · 6 검수 · 7 비고
+const COL_MENU = 3, COL_PRICE = 4, COL_REVIEW = 6;
+const MAX_PRICE = 200_000;
+
+/** 검수는 확인/제외만으로 끝나지 않는다 — 파싱 파편이 정답을 담고 있을 때가 있다.
+ *  실측(2026-07-20): 백미향마라탕의 `100g/` 3건은 쓰레기가 아니라 마라탕·마라반·마라샹궈의
+ *  이름이 날아간 것이었다. 제외만 가능하면 그 식당의 핵심 메뉴가 통째로 사라진다.
+ *  그래서 메뉴명·가격 수정을 허용하되, 정본에 아무 값이나 박히지 않도록 열별로 검증한다. */
+function invalid(u) {
+  if (!Number.isInteger(u.row) || u.row < 2) return "row";
+  if (u.col === COL_REVIEW) return ALLOWED.has(u.value) ? null : "review value";
+  if (u.col === COL_MENU) {
+    const s = String(u.value ?? "").trim();
+    return s.length >= 1 && s.length <= 60 ? null : "menu name length";
+  }
+  if (u.col === COL_PRICE) {
+    const n = Number(u.value);
+    return Number.isInteger(n) && n >= 0 && n <= MAX_PRICE ? null : "price range";
+  }
+  return "col not editable";
+}
 
 function authed(req) {
   const expected = process.env.REVIEW_TOKEN;
@@ -61,11 +82,14 @@ export default async function handler(req, res) {
       if (!Array.isArray(updates) || !updates.length) {
         return res.status(400).json({ error: "updates required", code: "bad_request" });
       }
-      // 허용된 검수 값만 통과 — 검수 화면 버그나 조작으로 임의 문자열이 정본에 박히는 걸 막는다.
-      const bad = updates.find((u) => !ALLOWED.has(u.value) || !Number.isInteger(u.row) || u.row < 2);
-      if (bad) return res.status(400).json({ error: `invalid update: ${JSON.stringify(bad)}`, code: "bad_value" });
-
-      const n = await updateCells(MENU_SHEET, updates);
+      // 화면 버그나 조작으로 임의 값이 정본에 박히는 걸 막는다 — 편집 가능한 열만, 열별 규칙으로.
+      for (const u of updates) {
+        const why = invalid(u);
+        if (why) return res.status(400).json({ error: `invalid update (${why}): ${JSON.stringify(u)}`, code: "bad_value" });
+      }
+      // 가격은 숫자로 넣어야 시트가 문자열로 굳지 않는다(서비스 read 가 숫자 파싱에 의존).
+      const norm = updates.map((u) => (u.col === COL_PRICE ? { ...u, value: Number(u.value) } : u));
+      const n = await updateCells(MENU_SHEET, norm);
       return res.status(200).json({ updated: n });
     }
 
