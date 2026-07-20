@@ -82,3 +82,9 @@ Status: approved
 - 2026-07-19 step-3: 전용 groundedness-check 모델 제공 종료 실측(/v1/models) → solar-mini 독립 판정자로 같은 계약 구현(사용자 추인 대기 — 억지 적용 아님·정직 서사는 presentation 메모). 실관측: 3/3 grounded, notGrounded 시 템플릿 교체 경로.
 - 2026-07-19 step-5 dogfood finding(사용자): UI 다듬기 필요·페이지 분리(랜딩/설명/서비스 3페이지)·컬러/디자인 방향·실사 이미지 활용 결정 필요 → 디자인 브리프 절차로 승격. 전략층 확정: 톤=힙·에너지·대학가 / 구조=랜딩+설명+서비스 3페이지 / 이미지=실사 적극(히어로·카드). 시각층은 Brief Studio(localhost:8791)로 사용자 선택 대기.
 - 2026-07-19 도메인: sixsense.askewly.com — Vercel 등록 + Cloudflare CNAME(cname.vercel-dns.com, proxied=false) 생성. DNS 전파 대기.
+- 2026-07-20 step-5 dogfood finding 분류 (사용자 전결 세션):
+  - fix 완료(랜딩 polish, 배포·실측 확인): light mode 고정·dark 제거 / 히어로 금액 타이핑을 데모 카드 루프와 분리(독립 속도·대기) / 시나리오 전환 크로스페이드 / 데모 카드 높이 고정(그리드 행 auto-size 원인 제거) / 증거 카운터·마키 순서 교체 / 아시안테이블 메뉴 정규화·돈까스백반 정정
+  - defer → DR4 (`plans/2026-07-20-dr4-contribute-review-loop.md`): 사진 제보 페이지 신설 · 검수 화면 · 승인 게이트(미검수 행이 서비스에 노출되는 문제)
+  - defer → DR5 (`plans/2026-07-20-dr5-site-completion.md`): 페이지 구조 완성(about#upstage 깨진 앵커·app 톤 정합·verify 승격) · 재방문 개인화
+  - 근거 설계: `docs/SITEMAP.md`
+- 2026-07-20 rerun smoke PASS 9/9 (`node scripts/demo-smoke.mjs --url https://sixsense.askewly.com`) → DR2 DoD 충족, milestone 종료

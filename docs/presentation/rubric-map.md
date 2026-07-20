@@ -10,3 +10,10 @@
 | Presentation & Documentation (15) | 덱 전체 + #8 시연 + demo-script.md | deck.html 렌더, 리허설 기록 |
 
 빈 항목: 없음 (6/6). 전 수치 각주 출처 = 레포 내 evidence 파일.
+
+## 검증 매트릭스 (DR2)
+
+위 표의 "근거 evidence" 를 **실행 가능한 형태**로 재현하는 정본은 `verification/matrix.md` 다 — command / expected / observed / evidence 4열로, 각 주장이 어떤 커맨드로 관측됐는지를 남긴다. 발표에서 "이게 진짜 도나요" 질문이 오면 이 파일과 `/verify.html`(배포 검증 페이지)을 근거로 제시한다.
+
+- 시연 시나리오 smoke: `node scripts/demo-smoke.mjs --url https://sixsense.askewly.com` (Groundedness 배지·판정 포함)
+- 결함 주입 기록: 가격 필터 역전 시 smoke 가 실제로 FAIL 하는 것을 1회 확인 (허수 테스트 방지)

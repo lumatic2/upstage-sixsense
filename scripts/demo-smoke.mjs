@@ -6,7 +6,7 @@
  * 시나리오 = 심사 시연 그대로:
  *   1. 앱 로드 → 헤더·검색 렌더, 콘솔 red error 0
  *   2. 실데이터 로드 → 식당 ≥5, 학식 ≥1
- *   3. "8천원 이하 혼밥" 검색 → 조건 파싱 표시 + 오늘의 추천 ≥1 + 이유 문구 존재
+ *   3. "8천원 이하 혼밥" 검색 → 조건 파싱 표시 + 오늘의 추천 ≥1 + 이유 문구 + Groundedness 배지·판정
  *   4. 예산 칩(6천원) → 목록이 예산 내로 필터
  *   5. 스크린샷 저장 (verification/screenshots/smoke-*.png)
  * 종료 코드: 전부 PASS=0, 하나라도 FAIL=1 (CI 없이 로컬 실행 계약)
@@ -54,6 +54,17 @@ const reasonText = await page.locator("#picksBlock .reason").first().textContent
 check("추천 이유 문구", (reasonText ?? "").trim().length > 5, (reasonText ?? "").slice(0, 40));
 const parsedText = await page.locator("#parsed").textContent();
 check("조건 파싱 표시", (parsedText ?? "").includes("8,000"));
+
+// 3-2. Groundedness 배지 — DoD 가 시연 시나리오에 포함하므로 실제로 검사한다.
+//   구조 검사만 하면 판정기(solar-mini)가 죽어 배지가 폴백 문구로 떨어져도 PASS 가 난다(2026-07-20 독립검증 지적).
+//   그래서 "배지가 있다"와 "판정이 실제로 돌았다"를 나눠 본다.
+const badgeText = (await page.locator("#picksBlock .badge").first().textContent().catch(() => "")) ?? "";
+check("Groundedness 배지 렌더", badgeText.trim().length > 0, badgeText.trim().slice(0, 40));
+check(
+  "Groundedness 판정 실행",
+  badgeText.includes("근거 검증됨") || badgeText.includes("근거 미달"),
+  badgeText.includes("근거") ? "판정 결과 반영됨" : `판정 미실행 — 폴백 배지("${badgeText.trim()}")`,
+);
 
 // 4. 예산 칩 필터 (6천원) — 표시된 전 메뉴 가격이 상한 이내인지
 await page.click('button[data-budget="6000"]');
