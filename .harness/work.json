@@ -517,31 +517,31 @@
       "work_id": "dr8-agent-console",
       "horizon_id": "demoday-run",
       "milestone_id": "DR8",
-      "status": "active",
+      "status": "completed",
       "plan_path": "plans/2026-07-21-dr8-agent-console.md",
       "changeset_path": "public",
-      "next_step": "step-1",
-      "current_step": "step-1",
+      "next_step": null,
+      "current_step": null,
       "steps": [
         {
           "id": "step-1",
           "label": "step-1 헤더 CTA 제거 + 통계 라벨 문구",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-2",
           "label": "step-2 히어로 데모 카드 모바일 복구",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-3",
           "label": "step-3 `/app.html` 에이전트 콘솔 재구성",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-4",
           "label": "step-4 통합 검증 + 회귀",
-          "status": "pending"
+          "status": "completed"
         }
       ],
       "execution_mode": "continuous",
@@ -566,7 +566,8 @@
       ],
       "owner_session_uuid": "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4",
       "updated_at": "2026-07-21",
-      "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation."
+      "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation.",
+      "completion_summary": "메뉴 찾기 화면을 대화형 콘솔로 바꿨습니다 — 예산을 말하면 Solar 가 조건을 읽고 근거 검증까지 거친 추천 카드가 아래에 뜹니다. 모바일에서 지도가 사라지고 카드가 늘어나던 것도 고쳤습니다."
     }
   }
 }
