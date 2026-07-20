@@ -88,6 +88,14 @@
 
 - Completed at: 2026-07-21
 - Summary: 에이전트 콘솔 재구성 + 모바일 히어로 복구 — 실 API 왕복·근거 배지 렌더, 카드 높이 고정, smoke 11/11(허수 아님 검증)
+<!-- harness:milestone id="DR9" status="active" priority="P0" evidence="plans/2026-07-21-dr9-real-conversation.md" -->
+### DR9 — 진짜 Solar 대화 + 지도 마커 카드 + 학식 정본화
+- DoD: 배포 URL 에서 ① 같은 질문에 매번 다른 문장이 오고 `/api/chat` 호출 관측 ② 마커 클릭으로 메뉴 카드 열림·닫힘 ③ 학식이 정식 명칭 4곳·당일치만·휴무 표시 ④ 하단 전체 목록 없음 ⑤ smoke PASS·콘솔 red 0
+- Evidence: `plans/2026-07-21-dr9-real-conversation.md` + `verification/matrix.md`
+- Gap: 대화창이 Solar 로 조건만 뽑고 문장은 코드에 박힌 템플릿이라 "에이전트와 대화한다"는 주장이 실제와 다르다(사용자 dogfood 지적). 지도 마커는 눌러지지 않고, 학식은 `패컬티 · 코너` 라는 실재하지 않는 이름으로 지난 날짜까지 나온다
+- Scale: changesets>=4; surfaces: 배포 URL(데스크톱·모바일)·Playwright·verification/; capability: 심사위원이 가장 먼저 만지는 표면이 실제로 AI 와 대화한다
+- Status: [ ]
+
 ## Completed (product-horizon)
 
 <!-- harness:milestone id="M1" status="completed" priority="P0" evidence="docs/mentoring/2026-07-15-presubmit.md" -->

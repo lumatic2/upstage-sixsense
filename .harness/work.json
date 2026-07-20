@@ -567,7 +567,8 @@
       "owner_session_uuid": "claude:8e5bc5d1-c345-4dee-bbd9-463d6240a1c4",
       "updated_at": "2026-07-21",
       "notes": "Registered atomically by canonical harness approve_harness_plan.py after plan validation.",
-      "completion_summary": "메뉴 찾기 화면을 대화형 콘솔로 바꿨습니다 — 예산을 말하면 Solar 가 조건을 읽고 근거 검증까지 거친 추천 카드가 아래에 뜹니다. 모바일에서 지도가 사라지고 카드가 늘어나던 것도 고쳤습니다."
+      "completion_summary": "메뉴 찾기 화면을 대화형 콘솔로 바꿨습니다 — 예산을 말하면 Solar 가 조건을 읽고 근거 검증까지 거친 추천 카드가 아래에 뜹니다. 모바일에서 지도가 사라지고 카드가 늘어나던 것도 고쳤습니다.",
+      "notified_at": "2026-07-20T16:46:59.889363+00:00"
     }
   }
 }
