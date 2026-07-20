@@ -50,33 +50,20 @@ if (process.argv.includes("--set-env")) {
 }
 
 // 3) 파일 인라인 배포
-const FILES = [
-  "package.json",
-  "vercel.json",
-  "api/parse-menu.js",
-  "api/parse-query.js",
-  "api/data.js",
-  "api/config.js",
-  "api/recommend.js",
-  "api/_lib/extract-menu.js",
-  "api/_lib/sheet-data.js",
-  "public/test.html",
-  "public/index.html",
-  "public/app.html",
-  "public/about.html",
-  "public/theme.css",
-  "public/img/hero.jpg",
-  "public/img/app-shot.png",
-  "public/img/logo-mark.svg",
-  "public/img/favicon.svg",
-  "public/img/upstage-symbol.svg",
-  "public/img/upstage-logo.png",
-  "public/img/og.png",
-  "public/favicon.ico",
-  "public/img/about-1.jpg",
-  "public/img/about-2.jpg",
-];
+// 목록을 손으로 관리하던 걸 자동 수집으로 바꿨다 (2026-07-20, DR6 step-3).
+// 배포는 "여기 있는 파일이 전부"라서, 목록에 안 적힌 파일은 추가되지 않는 게 아니라
+// **라이브에서 사라진다**. DR4·DR5 가 만든 contribute/review/verify 가 목록에 없어서
+// 다음 배포 한 번이면 그 페이지들이 통째로 없어질 상태였다.
+function collect(dir) {
+  return fs.readdirSync(dir, { withFileTypes: true }).flatMap((e) => {
+    const p = path.posix.join(dir, e.name);
+    if (e.isDirectory()) return collect(p);
+    return e.name.startsWith(".") ? [] : [p];
+  });
+}
+const FILES = ["package.json", "vercel.json", ...collect("api"), ...collect("public")];
 const files = FILES.map((f) => ({ file: f, data: fs.readFileSync(f, "base64"), encoding: "base64" }));
+console.log(`배포 파일 ${files.length}개 (api ${FILES.filter((f) => f.startsWith("api/")).length} · public ${FILES.filter((f) => f.startsWith("public/")).length})`);
 // 학식 fixture 를 정적으로 동봉 (Supabase 권한 전 대체 경로 — M3 결정 로그)
 files.push({ file: "public/cafeteria-sample.json", data: fs.readFileSync("db/fixtures/cafeteria-sample.json", "base64"), encoding: "base64" });
 

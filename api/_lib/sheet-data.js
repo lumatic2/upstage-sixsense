@@ -41,6 +41,8 @@ async function fetchSheet(sheetName) {
   return rows;
 }
 
+import { isSideMenu } from "./side-menu.js";
+
 const isRealId = (v) => {
   const s = (v ?? "").trim();
   return /^R\d{3}$/.test(s) && s !== "R000"; // R000 = 시트 예시행
@@ -62,7 +64,10 @@ export async function loadSheetData() {
     // 승인 게이트 (DR4 step-4): 사람이 사진과 대조해 "확인" 을 찍은 행만 서비스에 나간다.
     // 이게 없으면 제보 페이지로 들어온 미검수 데이터가 즉시 추천에 노출된다 — 파이프라인의
     // "사람 검수" 단계가 주장으로만 남고 실제로는 무력해진다(docs/SITEMAP.md §7-4).
-  })).filter((m) => m.name && m.price && m.review === "확인");
+  })).filter((m) => m.name && m.price && m.review === "확인")
+    // 곁들임 표시는 여기서 한 번만 붙인다 — 화면(app.html)과 추천(recommend.js)이 같은
+    // 판정을 봐야 "추천엔 안 나오는데 목록엔 한 끼처럼 뜨는" 어긋남이 생기지 않는다.
+    .map((m) => ({ ...m, isSide: isSideMenu(m) }));
   // 게이트는 식당에도 걸린다 — 메뉴가 한 줄도 승인되지 않은 가게는 아직 서비스할 데이터가 아니다.
   // 제보가 들어오면 [식당] 행이 먼저 생기므로, 이게 없으면 미검수 가게가 목록·지도에 먼저 뜬다.
   const served = new Set(menus.map((m) => m.restaurant_id));

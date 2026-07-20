@@ -20,18 +20,20 @@ const NOTE_MAIN = /한끼|한 끼/;
 const SET = /세트|정식|Set\b/i;
 
 // 다른 메뉴에 얹는 것 — 그 자체로는 끼니가 아니다.
-const ADDON = /추가|변경|곱빼기|곱배기|토핑|사리|리필|소스$|드레싱/;
+const ADDON = /추가|변경|곱빼기|곱배기|토핑|사리|리필|소스$|드레싱|^Add\b/i;
 
-// 음료·주류.
+// 음료·주류. 종류 이름만으로는 안 잡히는 게 있어 브랜드도 넣는다 —
+// `청하`·`테라 330ml` 이 카드 맨 앞에 서 있었다(2026-07-20 실측).
 const DRINK = /음료|콜라|사이다|펩시|탄산|맥주|소주|막걸리|하이볼|에이드|커피|아메리카노|에스프레소|라떼|주스|워터|스무디|티\)$/;
+const DRINK_BRAND = /청하|테라|카스|하이트|켈리|처음처럼|참이슬|진로|산토리|아사히|칭따오|청도|기린|하이네켄|에델바이스|매화수|백세주/;
 
 // 밥 단품.
 const RICE = /^공기밥|^공깃밥|^밥\s*추가/;
 
-// 단가 표기 — `마라탕 (100g) 2,000원` 은 100g 당 가격이지 1인분 가격이 아니다.
+// 단가 표기 — `마라탕 (100g) 2,000원`·`소고기 100g 3,500원` 은 100g 당 가격이지 1인분 값이 아니다.
 // 그램 표기 전부를 잡으면 `후쿠오카 숯불함바그 (320g)`·`버터규카츠 스몰(130g)` 같은
-// 본메뉴까지 걸린다. 단가 관습인 100g 기준만 본다.
-const UNIT_PRICE = /\(\s*100\s*g\s*\)|100\s*g\s*기준/i;
+// 본메뉴까지 걸린다. 단가 관습인 100g 만 본다(괄호 유무 무관).
+const UNIT_PRICE = /\b100\s*g\b/i;
 
 // 낱개 판매 — `꼬치 1개`, `새우튀김 (1P)`.
 const SINGLE = /1개$|\(\s*1\s*P\s*\)|\b1pc\b/i;
@@ -47,6 +49,6 @@ export function isSideMenu(menu) {
   if (NOTE_SIDE.test(note)) return true;
   if (!name) return false;
   if (SET.test(name)) return false;
-  return ADDON.test(name) || DRINK.test(name) || RICE.test(name)
+  return ADDON.test(name) || DRINK.test(name) || DRINK_BRAND.test(name) || RICE.test(name)
     || UNIT_PRICE.test(name) || SINGLE.test(name) || NAMED_SIDE.test(name);
 }

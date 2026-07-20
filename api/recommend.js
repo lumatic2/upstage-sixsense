@@ -5,7 +5,7 @@
  *  이유는 반드시 전달된 실데이터(메뉴·가격·거리)에만 근거하도록 프롬프트 고정 — step-3 Groundedness 가 이를 검증한다.
  */
 import { loadSheetData } from "./_lib/sheet-data.js";
-import { isSideMenu } from "./_lib/side-menu.js";
+
 
 const CHAT_URL = "https://api.upstage.ai/v1/chat/completions";
 // 이유 생성·근거 판정 타임아웃 — 2026-07-20 상향(구 2500/2000).
@@ -96,7 +96,6 @@ export default async function handler(req, res) {
   const candidates = data.restaurants.map((r) => {
     const menus = data.menus
       .filter((m) => m.restaurant_id === r.id && (!budget || m.price <= budget))
-      .map((m) => ({ ...m, isSide: isSideMenu(m) }))
       .sort((a, b) => (a.isSide === b.isSide ? a.price - b.price : a.isSide ? 1 : -1));
     const mainCount = menus.filter((m) => !m.isSide).length;
     return { kind: "restaurant", name: r.name, category: r.category, address: r.address, walkMin: walkMin(r.lat, r.lng), menus, mainCount, tags: r.tags };

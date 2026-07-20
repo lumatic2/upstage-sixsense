@@ -380,8 +380,11 @@ document.addEventListener("click", (e) => {
 function menusFor(rid) {
   return DATA.menus.filter((m) => m.restaurant_id === rid && (!state.budget || m.price <= state.budget));
 }
+/* 곁들임(공기밥·음료·토핑)만 예산에 걸리는 가게는 선택지가 아니다 — 1,000원으로 검색하면
+   `치즈추가 1,000원` 있는 집이 "1,000원으로 갈 수 있는 집"처럼 떴다. 판정은 서버가 붙여
+   보내주므로(api/_lib/side-menu.js) 여기선 플래그만 본다 — 추천과 목록이 어긋나지 않게. */
 function visibleRestaurants() {
-  return DATA.restaurants.filter((r) => !state.budget || menusFor(r.id).length > 0);
+  return DATA.restaurants.filter((r) => !state.budget || menusFor(r.id).some((m) => !m.isSide));
 }
 function render() {
   const today = DATA.cafeteria.filter((c) => !state.budget || !c.price || c.price <= state.budget);
@@ -392,7 +395,8 @@ function render() {
   const rs = visibleRestaurants();
   $("#restaurantBlock").innerHTML = rs.length
     ? rs.map((r) => {
-        const ms = menusFor(r.id).sort((a,b)=>a.price-b.price);
+        /* 카드 얼굴은 본메뉴가 맡는다 — 값싼 순으로만 자르면 음료·추가가 카드 앞을 다 차지했다. */
+        const ms = menusFor(r.id).sort((a,b)=> a.isSide===b.isSide ? a.price-b.price : (a.isSide?1:-1));
         return `<div class="card liked" data-cat="${r.category}"><div class="rowhead"><h3>${r.name}</h3><span class="small muted">${r.category}</span></div>
           <ul class="menus">${ms.slice(0,5).map((m)=>`<li><span>${m.name}</span><span class="price">${m.price.toLocaleString()}원</span></li>`).join("")}
           ${ms.length>5?`<li><span class="muted small">외 ${ms.length-5}개</span><span></span></li>`:""}</ul>
