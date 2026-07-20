@@ -285,8 +285,8 @@
       "status": "active",
       "plan_path": "plans/2026-07-20-dr4-contribute-review-loop.md",
       "changeset_path": "public",
-      "next_step": "step-3",
-      "current_step": "step-3",
+      "next_step": "step-4",
+      "current_step": "step-4",
       "steps": [
         {
           "id": "step-1",
@@ -301,7 +301,7 @@
         {
           "id": "step-3",
           "label": "step-3 `/contribute.html` 제보 페이지",
-          "status": "pending"
+          "status": "completed"
         },
         {
           "id": "step-4",
