@@ -78,6 +78,14 @@
 
 - Completed at: 2026-07-21
 - Summary: 팀 공유 패키지 — README·HANDOFF 신설 후 공개 레포 푸시, 링크 9/9 정상·시크릿 스캔 클린·origin 동기
+<!-- harness:milestone id="DR8" status="active" priority="P0" evidence="plans/2026-07-21-dr8-agent-console.md" -->
+### DR8 — 메뉴 찾기 화면을 에이전트 콘솔로 + 히어로 카드 안정화
+- DoD: 배포 URL 에서 ① 헤더 `한입지도 열기` 0건·통계 라벨 3개 정정 ② 390px 히어로 카드에서 지도 렌더·카드 높이 불변·스크롤바 0 ③ `/app.html` 대화 입력 → 실 API 왕복 → 추천 카드+근거 배지가 데스크톱·모바일 각 1회 관측 ④ `demo-smoke` PASS·콘솔 red 0
+- Evidence: `plans/2026-07-21-dr8-agent-console.md` + `verification/matrix.md`
+- Gap: 미팅에서 열어 보여줄 `/app.html` 이 랜딩 데모 카드보다 품질이 낮고, 모바일 히어로는 미디어쿼리 소스 순서 탓에 지도가 0px 로 사라지고 대화가 늘 때마다 카드가 팽창한다
+- Scale: changesets>=3; surfaces: 배포 URL(데스크톱·모바일)·Playwright·verification/; capability: 서비스 화면이 소개 페이지 목업과 같은 품질로 실제 동작한다
+- Status: [ ]
+
 ## Completed (product-horizon)
 
 <!-- harness:milestone id="M1" status="completed" priority="P0" evidence="docs/mentoring/2026-07-15-presubmit.md" -->
