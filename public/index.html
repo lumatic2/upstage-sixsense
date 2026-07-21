@@ -64,14 +64,23 @@
    끝점이 좌표를 가리키도록 아래쪽 꼭짓점 기준으로 앉힌다. */
 .dot{
   position:absolute;width:20px;height:26px;translate:-50% -100%;
-  color:var(--muted);opacity:.6;transition:all 240ms ease-out;z-index:2;
+  color:var(--marker);opacity:1;transition:all 240ms ease-out;z-index:2;
   transform-origin:50% 100%;
 }
 .dot svg{display:block;width:100%;height:100%;fill:currentColor;
-  filter:drop-shadow(0 1px 2px rgba(12,20,32,.28))}
-.dot.scan{color:var(--accent);opacity:1;scale:1.12}
-.dot.out{opacity:.28}
-.dot.best{color:var(--accent);opacity:1;scale:1.32;z-index:4}
+  filter:drop-shadow(0 1px 2px rgba(12,20,32,.28));
+  transform-origin:50% 100%;transition:transform 240ms ease-out}
+/* 확대는 바깥 .dot 의 `scale` 이 아니라 안쪽 svg 의 transform 으로 준다 —
+   .dot 은 `translate:-50% -100%` 를 이미 쓰고 있어서 `scale` 을 같이 걸면 값이 안 먹었다
+   (2026-07-21 실측: .best 를 붙여도 높이 26px 그대로). */
+.dot.best svg{transform:scale(1.25)}
+/* 이번 시나리오에 안 쓰는 마커는 아예 안 보인다 — 한 화면에 22개가 꽂혀 있으면
+   무엇을 보라는 건지 알 수 없다(사용자 지시 2026-07-21, 시나리오당 6개). */
+.dot.gone{opacity:0;pointer-events:none;scale:.6}
+.dot.scan{scale:1.1}
+.dot.out{opacity:.3}
+/* 에이전트가 고른 마커 — 살짝 커지고 정보 카드가 함께 뜬다 */
+.dot.best{color:var(--accent);z-index:4}
 /* 지도 위 이름표 — 이름만 상시 표시(카드 겹침 방지), 선택 시에만 메뉴·가격 확장 */
 .mlabel{
   position:absolute;translate:-50% calc(-100% - 30px);z-index:3;  /* 마커(26px) 위로 — 핀과 겹치지 않게 */
@@ -82,12 +91,24 @@
 .mlabel.out{opacity:0;pointer-events:none}
 .mlabel.hid{opacity:0;pointer-events:none}
 .mlabel.below{translate:-50% 6px}  /* 아래 배치는 핀 끝점 바로 밑 */
-.mlabel.scan{border-color:var(--accent);color:var(--accent)}
-.mlabel.best{
-  border-color:var(--accent);background:var(--accent);color:var(--accent-fg);
-  font-size:var(--sm);padding:6px 10px;
+.mlabel.scan{border-color:var(--marker);color:var(--marker)}
+/* 선택된 곳은 이름표 대신 정보 카드가 뜬다 — /app.html 의 마커 클릭 카드와 같은 생김새라
+   랜딩에서 본 것이 서비스에서 그대로 나온다(사용자 지시 2026-07-21). */
+.dcard{
+  position:absolute;translate:-50% calc(-100% - 32px);z-index:5;
+  width:200px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
+  padding:var(--s3) var(--s4);box-shadow:0 8px 24px rgba(12,20,32,.16);
+  font-size:var(--sm);text-align:left;
+  opacity:0;transform:translateY(6px) scale(.96);transform-origin:50% 100%;
+  transition:opacity 200ms ease-out, transform 200ms ease-out;
 }
-.mlabel.best .sub{display:block;font-weight:400}
+.dcard.in{opacity:1;transform:none}
+@media (prefers-reduced-motion: reduce){.dcard{transition:none}}
+.dcard b{display:block;font-size:var(--base)}
+.dcard .cat{color:var(--muted);font-size:12px}
+.dcard ul{margin:var(--s2) 0 0;padding:0;list-style:none}
+.dcard li{display:flex;justify-content:space-between;gap:var(--s3);padding:1px 0}
+.dcard .p{color:var(--accent);white-space:nowrap}
 /* 사이드바 */
 .demo-side{border-left:1px solid var(--border);display:flex;flex-direction:column;height:100%;min-height:0;overflow:hidden}
 .demo-side-head{
@@ -781,7 +802,33 @@ function startDemo(data) {
       chat.classList.add("fade");
       if (!(await sleep(reduced ? 0 : 220, t))) return;
       chat.innerHTML = "";
-      nodes.forEach((n) => { n.dot.className = "dot"; n.label.className = "mlabel"; n.label.textContent = n.p.name; });
+      stage.querySelectorAll(".dcard").forEach((c) => c.remove());
+
+      /* 이번 시나리오에 등장할 6곳을 고른다. 22개가 한꺼번에 꽂혀 있으면 어디를 보라는 건지
+         알 수 없다(사용자 지시 2026-07-21). 예산에 드는 곳 4 + 안 드는 곳 2 로 섞는 이유:
+         전부 통과하면 "걸러낸다"는 장면이 안 나오고, 전부 탈락하면 추천이 없다. */
+      const pick = (arr, k) => arr.slice().sort(() => Math.random() - 0.5).slice(0, k);
+      const fits = [], misses = [];
+      for (const n of nodes) {
+        const ms = data.menus.filter((m) => m.restaurant_id === n.p.id && isCleanMenu(m));
+        if (!ms.length) continue;
+        (ms.some((m) => m.price <= sc.budget) ? fits : misses).push(n);
+      }
+      const active = [...pick(fits, 4), ...pick(misses, 2)];
+      // 예산이 넉넉해 탈락이 없으면 통과분에서 6개를 채운다
+      while (active.length < 6 && fits.length > active.length) {
+        const more = fits.find((n) => !active.includes(n));
+        if (!more) break;
+        active.push(more);
+      }
+
+      nodes.forEach((n) => {
+        const on = active.includes(n);
+        n.dot.className = on ? "dot" : "dot gone";
+        n.label.className = on ? "mlabel" : "mlabel hid";
+        n.label.textContent = n.p.name;
+        n.major = on;                 // 이름표는 등장하는 6곳만
+      });
       declutter();
       chat.classList.remove("fade");
 
@@ -799,13 +846,13 @@ function startDemo(data) {
       const think = bubble("ai", '<span class="typing"><i></i><i></i><i></i></span>');
       if (!(await sleep(reduced ? 200 : 550, t))) return;
       think.textContent = "";
-      if (!(await typeText(think, `${won(sc.budget)} 이하 조건으로 ${nodes.length}곳의 메뉴판을 살펴볼게요.`, t))) return;
+      if (!(await typeText(think, `${won(sc.budget)} 이하 조건으로 ${active.length}곳의 메뉴판을 살펴볼게요.`, t))) return;
 
       // 3) 식당별 확인 — 지도 하이라이트와 사이드바 목록이 동시에 진행
       const list = bubble("ai", "");
       const results = [];
       const DRINK = /소주|맥주|맥수|생맥|병맥|하이볼|막걸리|참이슬|처음처럼|청하|사이다|콜라|음료|주스/;
-      for (const n of nodes) {
+      for (const n of active) {
         let ms = data.menus.filter((m) => m.restaurant_id === n.p.id && isCleanMenu(m));
         if (!ms.length) continue;
         // 카페가 아니면 술·음료는 대표 메뉴에서 제외 (식사가 하나도 없을 때만 폴백)
@@ -854,9 +901,22 @@ function startDemo(data) {
         r.n.dot.className = "dot out"; r.n.label.className = "mlabel out";
       });
       best.n.dot.className = "dot best";
-      best.n.label.className = "mlabel best";
-      best.n.label.classList.remove("hid");
-      best.n.label.innerHTML = `${best.n.p.name}<span class="sub">${menuLabel(best.menu.name)} ${won(best.menu.price)}</span>`;
+      best.n.label.className = "mlabel out";   // 이름표는 물러나고 카드가 대신 말한다
+
+      /* 고른 곳의 정보 카드 — /app.html 에서 마커를 눌렀을 때 뜨는 카드와 같은 생김새.
+         랜딩에서 본 장면이 서비스에서 그대로 재현되는 게 이 데모의 목적이다. */
+      const picked = data.menus
+        .filter((m) => m.restaurant_id === best.n.p.id && isCleanMenu(m) && m.price <= sc.budget)
+        .sort((a, b) => a.price - b.price).slice(0, 3);
+      const card = document.createElement("div");
+      card.className = "dcard";
+      card.style.left = best.n.dot.style.left;
+      card.style.top = best.n.dot.style.top;
+      card.innerHTML = `<b>${best.n.p.name}</b><span class="cat">${best.n.p.category ?? ""}</span>
+        <ul>${(picked.length ? picked : [best.menu]).map((m) =>
+          `<li><span>${menuLabel(m.name)}</span><span class="p">${won(m.price)}</span></li>`).join("")}</ul>`;
+      stage.appendChild(card);
+      requestAnimationFrame(() => card.classList.add("in"));
       const fin = bubble("ai final", "");
       if (!(await typeText(fin, `${best.n.p.name}의 ${menuLabel(best.menu.name)} ${won(best.menu.price)}을 추천해요. ${won(sc.budget)} 예산을 가장 알차게 쓰는 조합이에요.`, t))) return;
       // 데모 카드(지도·챗봇) 시나리오 종료 대기 — 헤드라인과 무관 (2026-07-20 분리)

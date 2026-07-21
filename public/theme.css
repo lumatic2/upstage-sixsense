@@ -11,6 +11,11 @@
   --accent-fg:#FFFFFF;
   --accent-soft:rgba(180,85,45,.10);
 
+  /* 지도 마커 — 발명한 색이 아니라 카카오맵 기본 마커의 파랑이다. /app.html 은 실제 카카오
+     마커(파랑)를 쓰므로, 랜딩 데모의 가짜 마커도 같은 색이어야 두 화면이 같은 지도로 읽힌다.
+     (사용자 지시 2026-07-21 — 회색 점은 지도 위 요소로 안 읽힌다) */
+  --marker:#3B7BF6;
+
   --font-head:'Black Han Sans',sans-serif;
   --font-body:'Noto Sans KR',system-ui,sans-serif;
   --sm:14px; --base:16px; --lg:20px; --xl:30px; --2xl:46px;
