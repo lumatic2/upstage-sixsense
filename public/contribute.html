@@ -109,9 +109,21 @@
             <table><thead><tr><th>메뉴</th><th style="text-align:right">가격</th></tr></thead>
             <tbody id="rows"></tbody></table>
           </div>
-          <div class="note">
+          <div id="manualWrap" hidden>
+            <div id="manualRows"></div>
+            <button class="btn ghost sm" id="addRow" type="button" style="margin-top:var(--s2)">행 추가</button>
+          </div>
+          <div class="note" id="noteParsed">
             <strong>고치지 않으셔도 됩니다.</strong> 읽은 내용이 조금 틀려도 그대로 접수해주세요 —
             운영진이 원본 사진과 대조해 검수한 뒤에 서비스에 반영합니다. 검수 전에는 어디에도 노출되지 않습니다.
+            <br><br>
+            <strong>AI 가 채우고 사람이 검수합니다.</strong> 자체 실측에서 메뉴판 사진 6장·72개 항목 중
+            <b>55개(76.4%)</b>를 정확히 읽었습니다. 나머지를 사람이 잡는 단계가 있어서 이 숫자로도 서비스가 됩니다.
+          </div>
+          <div class="note" id="noteManual" hidden>
+            <strong>사진에서 메뉴를 찾지 못했습니다.</strong> 흔한 일입니다 — 손글씨·조명·각도에 따라
+            읽히지 않습니다(실측 정확도 76.4%). 아는 만큼만 직접 적어주세요. 비워두셔도 사진은 함께
+            접수되니, 운영진이 원본을 보고 채웁니다.
           </div>
 
           <div class="fields">
@@ -229,22 +241,64 @@ async function handle(f) {
     ITEMS = (data.items ?? []).filter((i) => i.name && Number.isFinite(Number(i.price)));
     if (!ITEMS.length) throw new Error("사진에서 메뉴를 찾지 못했습니다. 메뉴와 가격이 함께 보이는 사진으로 다시 시도해주세요.");
 
+    exitManual();   // 앞선 사진이 수기 폴백으로 갔더라도 이번엔 읽혔다
     $("#rows").innerHTML = ITEMS.map((i) =>
       `<tr><td>${esc(i.name)}</td><td class="p">${Number(i.price).toLocaleString()}원</td></tr>`).join("");
     $("#working").hidden = true; $("#result").hidden = false;
   } catch (e) {
-    // 파싱이 실패해도 사진은 남긴다 — 다시 올리라고만 하고 화면을 비우지 않는다.
+    /* 파싱이 0행이거나 실패해도 사용자를 1단계로 돌려보내지 않는다. 여기서 돌려보내면
+       "AI 가 못 읽었으니 당신도 못 한다"가 되는데, 사실은 사람이 적으면 되는 일이다.
+       사진은 이미 서버로 보낼 준비가 끝나 있으므로(PHOTO) 수기 입력으로 흐름을 잇는다. */
     $("#working").hidden = true;
-    $("#result").hidden = true;
-    $("#err1").textContent = e.message;
-    step(1);
+    enterManual(e.message);
   }
+}
+
+/* 수기 입력 폴백 — 파싱 결과 대신 빈 행을 준다. SITEMAP §contribute 필수 상태 처리. */
+let MANUAL = false;
+function manualRow() {
+  const d = document.createElement("div");
+  d.className = "row2";
+  d.style.marginTop = "var(--s2)";
+  d.innerHTML = `<input class="m-name" placeholder="메뉴 이름" autocomplete="off">
+    <input class="m-price" placeholder="가격 (숫자만)" inputmode="numeric" autocomplete="off">`;
+  return d;
+}
+function enterManual(reason) {
+  MANUAL = true;
+  ITEMS = [];
+  $("#noteParsed").hidden = true;
+  $("#noteManual").hidden = false;
+  $("#manualWrap").hidden = false;
+  document.querySelector(".found").hidden = true;
+  $("#manualRows").innerHTML = "";
+  $("#manualRows").append(manualRow());
+  $("#result").hidden = false;
+  step(2);
+  if (reason) $("#err2").textContent = "";
+}
+function exitManual() {
+  MANUAL = false;
+  $("#noteParsed").hidden = false;
+  $("#noteManual").hidden = true;
+  $("#manualWrap").hidden = true;
+  document.querySelector(".found").hidden = false;
+}
+$("#addRow").addEventListener("click", () => $("#manualRows").append(manualRow()));
+
+/* 수기 입력을 파싱 결과와 같은 모양으로 모은다 — 서버는 둘을 구분하지 않는다(검수는 어차피 사람이 한다). */
+function collectManual() {
+  return [...document.querySelectorAll("#manualRows .row2")].map((r) => ({
+    name: r.querySelector(".m-name").value.trim(),
+    price: Number(String(r.querySelector(".m-price").value).replace(/[^\d]/g, "")),
+  })).filter((i) => i.name && Number.isFinite(i.price) && i.price > 0);
 }
 
 $("#submit").addEventListener("click", async () => {
   const name = $("#rname").value.trim();
   $("#err2").textContent = "";
   if (!name) { $("#err2").textContent = "식당 이름을 입력해주세요."; $("#rname").focus(); return; }
+  if (MANUAL) ITEMS = collectManual();   // 수기 입력은 제출 직전에 모은다
   const btn = $("#submit"); btn.disabled = true; btn.textContent = "접수 중…";
   try {
     const res = await fetch("/api/contribute", {
