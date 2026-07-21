@@ -38,7 +38,7 @@
 - 승부처: "그냥 ChatGPT에 물어보면 되지 않나?"에 답할 수 있는가 (원문·멘토링 규칙: `docs/CHALLENGE.md`).
 
 ## 기술 스택
-- 팀원 데모 **한입지도**(github.com/ljb0138/hanipmap) 기반: 바닐라 JS + Naver Maps + Supabase + Vercel serverless functions — 2026-07-15 확정 (Next.js 전환 안 함, ADR-0001·ARCHITECTURE.md)
+- **바닐라 JS + Kakao Maps + 구글 시트 + Vercel serverless functions** (빌드 스텝 없음). 팀원 데모 **한입지도**(github.com/ljb0138/hanipmap) 에서 출발했으나 지도·저장소는 갈라졌다 — 지도는 Kakao(ADR-0002, 2026-07-17), 데이터 정본은 **구글 시트 단일**이고 **Supabase 는 안 쓴다**(ADR-0005). Next.js 전환 안 함(ADR-0001·`docs/ARCHITECTURE.md`)
 - Upstage: Document Parse(메뉴판 사진), Solar(질의 구조화·추천 이유). **학식은 크롤링 — Document Parse 금지** (이미 HTML, 억지 적용은 감점 사유)
 - Upstage API 키는 **서버 함수에서만** 사용. 클라이언트 노출 금지.
 
@@ -98,6 +98,10 @@ ADR-0004 가 순서 개인화를 폐기한 다음날에도 **라이브 `/about.h
   세는 대상이 바뀌면 라벨도 같은 커밋에서 바꾼다.
 - **헤더·푸터·로그인 다이얼로그는 페이지마다 복제돼 있다.** 공통 문구를 고칠 땐 `grep -rn` 으로
   전 페이지를 확인한다.
+- **요약 문서도 같은 대상이다** (2026-07-22 ADR-0005): 스택·정본이 바뀌면 이 파일의 §기술 스택
+  줄과 `ROADMAP.md` Next Candidates 를 같은 changeset 에서 확인한다. 이 규약이 처음 만들어질 때
+  규약을 담은 파일 자신이 빠져 있어, `CLAUDE.md` 가 두 세션 동안 폐기된 스택(Naver·Supabase)을
+  가르치고 ROADMAP 이 쓰지도 않는 저장소의 점검을 후보로 들고 있었다.
 
 ## ⚠ Judge 규약
 > 코드 변경 후 lint·테스트 통과 없이는 "완료" 보고 금지. 자동 도구가 통과하면 진실로 간주.

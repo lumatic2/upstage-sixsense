@@ -8,6 +8,7 @@
 
 | # | Changeset | 날짜 | Scope | Verification | Status |
 |---|-----------|------|-------|--------------|--------|
+| 17 | 20260722-stack-record-correction | 2026-07-22 | ADR-0005 신설 — Supabase 은퇴 확정·CLAUDE.md 낡은 스택 줄 정정·OPEN-ISSUES ⑩ (코드 무변경) | 4/4 | done |
 | 16 | 20260721-page-polish-close | 2026-07-22 | DR11 step-6 — Upstage 키 목록·app 문구 정정 + 5페이지 통합 검증 | 11/11 | done |
 | 15 | 20260721-contribute-fallback | 2026-07-22 | DR11 step-5 — 파싱 0행 수기 입력 폴백 + 정확도 76.4% 정직 표기 | 5/5 | done |
 | 14 | 20260721-map-card-clip | 2026-07-22 | DR11 step-4 — 카드 잘림 진짜 원인(panBy 애니메이션) 해소, 그리기 전 자리 선택 | 4/4 | done |
