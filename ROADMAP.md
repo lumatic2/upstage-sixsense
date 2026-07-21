@@ -88,14 +88,16 @@
 
 - Completed at: 2026-07-21
 - Summary: 진짜 Solar 대화(/api/chat)·지도 마커 카드·학식 정본화 — 독립 검증 5회(4회 반증 후 확인), smoke 14/14
-<!-- harness:milestone id="DR10" status="active" priority="P0" evidence="plans/2026-07-21-dr10-quality-pass.md" -->
+<!-- harness:milestone id="DR10" status="completed" priority="P0" evidence="archive/reports/2026-07-21-dr10-quality-pass.md" -->
 ### DR10 — 품질 마감 (자동화·데모 카드·전수 감사 결함)
 - DoD: ① 조건 없는 입력에 화면과 어긋나는 문장 0건 ② cron 이 실제로 돌아 학식이 사람 손 없이 갱신 ③ 랜딩 데모 카드가 마커로 보이고 입력에 실서비스 유도로 반응 ④ 6페이지 nav 동일·모바일 잘림 0·`/test.html` 비공개 ⑤ 이슈 ⑥⑦ 닫힘 ⑥ smoke·단위 PASS·콘솔 red 0
-- Evidence: `plans/2026-07-21-dr10-quality-pass.md` + `verification/matrix.md`
+- Evidence: archive/reports/2026-07-21-dr10-quality-pass.md
 - Gap: 전수 QA 감사에서 BLOCKER 1건(대화 필터가 전부 걸러지면 원문으로 되돌아가 화면과 모순되는 답을 냄)·MAJOR 3건(모바일 nav 잘림·contribute nav 누락·미완성 test.html 공개)이 나왔고, 학식은 사람이 크롤러를 돌려야만 갱신된다
 - Scale: changesets>=5; surfaces: 배포 URL(데스크톱·모바일)·Vercel Cron·구글 시트·custom-skills; capability: 사람 손 없이 유지되고 판정단 앞에서 흠이 안 잡히는 상태
-- Status: [ ]
+- Status: [x]
 
+- Completed at: 2026-07-21
+- Summary: 품질 마감 — BLOCKER(대화-화면 모순) 해소·학식 cron 자동화(멱등)·데모 카드 마커+실서비스 유도·전수 감사 결함 8건·이슈 ⑥⑦ 닫힘 (smoke 14/14, 독립 검증 confirmed)
 ## Completed (product-horizon)
 
 <!-- harness:milestone id="M1" status="completed" priority="P0" evidence="docs/mentoring/2026-07-15-presubmit.md" -->
