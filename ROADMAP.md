@@ -137,9 +137,14 @@
 - Completed at: 2026-07-17
 - Summary: 루브릭 6/6 발표 원고 + 시연 시나리오·Q&A (리허설 완료)
 ## Next Candidates
+- cron 첫 자동 실행 관측 (내일 06:10 KST — 지금까지 수동 트리거로만 검증)
+- 이슈 ⑧ 태그 부분일치 잔여 (`docs/OPEN-ISSUES.md`, MINOR)
 - 영수증 파싱·잔여 예산 상태 관리 (리서치 C2 축 — ADR-0001에서 범위 제외로 보류)
 - 자연캠(율전) 확장 · 자연캠 학식 페이지 실사 마무리
 - Supabase RLS 점검 (pending insert 만 익명 허용)
+
+> **발표 자료(`docs/presentation/`)는 후보에서 제외** — 사용자가 필요할 때 직접 요청한다
+> (2026-07-21 확정). 화면이 바뀔 때마다 자동으로 제안하지 않는다.
 
 ## Archive Pointer
 완료 이력은 `docs/BACKLOG.md` 참조. ROADMAP.md 는 150줄 이하 current horizon 만 유지한다. milestone 완료·compact 는 `/harness` 가 처리한다.
