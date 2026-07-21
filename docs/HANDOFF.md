@@ -112,18 +112,50 @@ DB를 쓰면 팀원이 데이터를 못 본다. 시트는 **누구나 열어서 
 
 ## 2. 그대로 떼어 갈 수 있는 조각
 
-의존성이 거의 없어서 파일 단위로 복사된다. 빌드 도구 없음, 프레임워크 없음.
+빌드 도구 없음, 프레임워크 없음. 파일 단위로 복사된다 — 단 **같이 가져가야 하는 파일과
+반드시 고쳐야 하는 하드코딩이 있다.** 아래는 코드를 실제로 훑어서 확인한 목록이다.
 
-| 파일 | 뭘 해주나 | 의존 |
-|---|---|---|
-| `api/parse-menu.js` + `api/_lib/extract-menu.js` | 사진 → 메뉴·가격 배열 | `UPSTAGE_API_KEY` |
-| `api/parse-query.js` | "8천원 이하 혼밥" → `{budget, walkMax, tags}` (+ 정규식 폴백) | `UPSTAGE_API_KEY` |
-| `api/_lib/sheet-data.js` | 공개 시트 → 도메인 객체 + 검수 게이트 | 없음 (공개 읽기) |
-| `api/_lib/side-menu.js` | 곁들임 판정 (공기밥·음료·토핑) | 없음 |
-| `scripts/crawl-cafeteria.mjs` | 성대 학식 페이지 → 구조화 | 없음 |
-| `scripts/geocode-sheet.mjs` | 주소 → 좌표 일괄 채움 | `KAKAO_REST_API_KEY` |
+### 이식 난이도 순
 
-학식 크롤러는 **팝업/JS 없이 direct GET으로 됐다**(`welfare_11.do`). Playwright 안 써도 된다.
+**① `api/_lib/side-menu.js` — 그냥 복사된다**
+`isSideMenu(menu)` 순수 함수. import 없음, env 없음, I/O 없음.
+가져갈 가치는 함수가 아니라 **구조**다: 규칙 기반 판정 + 시트 `비고` 열로 개별 오버라이드(`사이드`/`한끼`).
+안에 든 정규식(한국 주류 브랜드, `^공기밥`, `세트|정식`, `100g` 단가 표기)은 도메인 어휘라 그대로 쓸 거면 그대로, 아니면 전부 갈아야 한다.
+
+**② `api/parse-menu.js` + `api/_lib/extract-menu.js` — 키만 있으면 된다**
+- 같이 가져갈 파일: 이 둘 (`parse-menu.js` → `_lib/extract-menu.js` 하나만 import)
+- env: `UPSTAGE_API_KEY`
+- 런타임: Vercel handler `(req, res)`, POST 전용, raw body를 `for await (const c of req)` 로 읽는다 → **Express/Next 라우트로 옮기면 이 부분을 그 프레임워크 방식으로 바꿔야 한다.**
+- 고칠 곳: `extract-menu.js` 의 가격 정규식이 **원화·한글 전제**다(`원`, `3.0`→3000 복원, `[가-힣]` 트리밍). 한국어 메뉴판이 아니면 오파싱한다.
+
+**③ `api/parse-query.js` — 프롬프트를 자기 도메인으로 갈아야 한다**
+- 같이 가져갈 파일: **`api/chat.js`** (`extractConditions`, `parseAmount` 를 여기서 import 한다 — 이 파일만 떼어 가면 import 에러로 바로 깨진다)
+- env: `UPSTAGE_API_KEY`, `SOLAR_TIMEOUT_MS`(기본 2500)
+- 고칠 곳: `SYSTEM_PROMPT` 전체가 "성균관대 명륜캠 주변 식당" 전제다. 태그 어휘(`혼밥,단체,회식,격식,해장,야식,24시,가성비,양많음,데이트,시험기간`)와 `80m=1분` 도보 환산도 여기 박혀 있다.
+- **함정**: 정규식 폴백에도 태그 목록이 따로 들어 있다. 프롬프트만 고치고 폴백을 안 고치면 **평소엔 맞다가 Solar 타임아웃 때만 옛 태그가 나온다.**
+
+**④ `api/_lib/sheet-data.js` — 시트 스키마가 코드에 박혀 있다**
+- 같이 가져갈 파일: `api/_lib/side-menu.js`
+- env: 없음. 공개 링크 시트를 gviz CSV로 읽어서 **키가 필요 없다** (이게 이 파일의 장점)
+- 고칠 곳: `SPREADSHEET_ID`(우리 팀 시트), 탭 이름 `식당`·`메뉴`·`학식`, 그리고 **컬럼이 위치 기반**이다(`r[0]`=id, `r[1]`=이름, `r[3]`=주소, `r[4]`/`r[5]`=위경도…). 열 순서가 다르면 `.map()` 을 다시 써야 한다.
+- 게이트 판정이 문자열 `review === "확인"` 이다. 시트의 승인 표기가 다르면 여기.
+- 캐시는 모듈 레벨 `Map`(60초) — **서버리스에서는 warm 인스턴스에서만 산다.** 캐시 히트를 전제로 설계하지 마라.
+
+**⑤ `scripts/geocode-sheet.mjs` — 좌표를 반드시 갈아라**
+- env: `KAKAO_REST_API_KEY` (없으면 exit 2)
+- **외부 의존: `gws` CLI** (구글 시트 읽기/쓰기를 shell out 한다). 이 레포에 없는 도구이고 별도 구글 인증이 필요하다. 이게 없으면 안 돌아간다.
+- 고칠 곳: `CAMPUS = { lat: 37.5877, lng: 126.9938, maxKm: 2.5 }` — 명륜캠 정문 좌표다. 키워드 검색 오탐을 반경으로 걸러내는 용도라, **안 고치면 다른 지역 가게가 조용히 전부 탈락한다.** 쓰기 범위 `식당!D:F` 도 열 배치 전제.
+
+**⑥ `scripts/crawl-cafeteria.mjs` — 크롤링 로직은 이식 대상이 아니다**
+- 같이 가져갈 파일: `scripts/_lib/gws.mjs`, `api/_lib/cafeteria-crawl.js`, `api/_lib/cafeterias.js` (전이 의존)
+- **외부 의존: `gws` CLI** (위와 동일)
+- 대상 URL(`skku.edu/…/welfare_11.do`)·캠퍼스 코드(`conspaceCd`)·HTML 파싱 정규식이 전부 성대 그 페이지 전용이다. **다른 학교면 크롤링부터 다시 짜는 게 맞다.**
+- 가져갈 만한 건 크롤러가 아니라 **중복 제거 후 append 하는 CLI 패턴** 쪽이다.
+
+> 학식 크롤러는 **팝업/JS 없이 direct GET으로 됐다**. Playwright 안 써도 된다 — 이건 확인했다.
+
+> **공통 함정**: `SPREADSHEET_ID` 가 ④⑤⑥ 세 곳에 각각 하드코딩돼 있다. 시트를 바꾸면 **세 곳 다** 고쳐야 한다.
+> (우리도 이걸 상수 하나로 못 모았다. 옮길 거면 그때 모아라.)
 
 ---
 

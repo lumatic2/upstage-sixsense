@@ -1,5 +1,9 @@
 # AGENTS.md — upstage-sixsense
 
+> **이 레포에서 개발할 때의 내부 작업 규약이다.**
+> 이 레포를 *참고하러* 왔다면(팀원이 자기 버전에 코드를 옮기려는 경우 등) 이 파일은 해당 없다.
+> → [`README.md`](README.md) 로 가고, 이식은 [`docs/HANDOFF.md`](docs/HANDOFF.md) 를 봐라.
+
 > Codex 프로젝트 스코프 규칙. 생성: init-ai-readiness.sh
 
 ## 공통 원칙
