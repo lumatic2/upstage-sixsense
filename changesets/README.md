@@ -8,6 +8,7 @@
 
 | # | Changeset | 날짜 | Scope | Verification | Status |
 |---|-----------|------|-------|--------------|--------|
+| 8 | 20260721-tag-word-boundary | 2026-07-21 | 태그를 어절 앞머리에서만 잡는다 (이슈 ⑧ — 합성어 뒤꼬리가 검색 의도로 둔갑) | 3/3 | done |
 | 7 | 20260721-personalization-in-chat | 2026-07-21 | 개인화 해명·관리를 에이전트 대화로 · 섹션 노트 중복 제거 · "전부 잊기" 거짓 보고 수정 | 8/8 | done |
 | 6 | 20260721-revisit-chip-static-qm | 2026-07-21 | 랜딩 물음표 정적화 · 재방문 조건을 대화 칩으로 · 기록 지우기 이전 | 9/9 | done |
 | 5 | 20260721-repo-share-readiness | 2026-07-21 | README·HANDOFF §2·CLAUDE/AGENTS 배너·GitHub 메타 (코드 무변경) | 6/6 | done |

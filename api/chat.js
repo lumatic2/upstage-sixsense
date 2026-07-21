@@ -91,8 +91,20 @@ export function extractConditions(message) {
   const people = (m = s.match(/(\d+)\s*명|둘이|2인/)) ? (m[1] ? Number(m[1]) : 2) : 1;
   if (budget && people > 1) budget = Math.round(budget / people);
   const walkMax = (m = s.match(/도보\s*(\d+)\s*분/)) ? Number(m[1]) : null;
+  // 태그는 **어절 앞머리**에서만 잡는다. 부분일치로 두면 합성어 뒤꼬리가 태그가 된다 —
+  // "교촌치킨"→`치킨` 은 모델의 unknownPlace 가 걸러주지만, 실재하지 않으면서 음식처럼
+  // 읽히는 조합("동해생선카레")은 모델이 가게로 안 봐서 `생선` 이 살아남았다(이슈 ⑧).
+  // 앞 글자가 한글이면 낱말 속에 묻힌 것으로 보고 버린다("생선구이"는 앞머리라 잡힌다).
   const tags = ["혼밥", "가성비", "데이트", "회식", "단체", "초밥", "김밥", "쌀국수", "치킨", "생선"]
-    .filter((t) => s.includes(t));
+    .filter((t) => {
+      let i = s.indexOf(t);
+      while (i !== -1) {
+        const prev = i > 0 ? s.charCodeAt(i - 1) : 0;
+        if (!(prev >= 0xac00 && prev <= 0xd7a3)) return true;
+        i = s.indexOf(t, i + 1);
+      }
+      return false;
+    });
   return { budget, walkMax, tags };
 }
 
