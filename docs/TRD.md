@@ -1,140 +1,168 @@
 # 한입지도 TRD (Technical Requirements Document)
 
+> 2026-07-21 전면 개정. **이전 판(2026-07-15)은 팀원 원본 데모 `hanipmap` 의 문서였다** —
+> Naver Maps · Supabase · `api/search.js` · 영업시간 판별처럼 이 레포에 없는 것을 설명하고 있었고,
+> 정작 Upstage 적용은 한 줄도 없었다. 스택이 바뀔 때마다 ADR·ARCHITECTURE 만 갱신되고 이 문서는
+> 7/15 에 멈춰 있었다. 이 판부터는 **이 레포가 실제로 돌리는 것**만 적는다.
+>
+> 결정 근거는 `docs/adr/` 가 정본이고, 이 문서는 그 결정들이 코드에서 어떤 모습인지를 적는다.
+
 ## 1. 개요
 
-**한입지도**는 성균관대학교 명륜캠퍼스 주변 맛집을, 사용자가 처한 "상황"(예산, 거리, 시험기간, 해장, 격식 있는 자리 등)에 맞춰 자연어 조건으로 추천해주는 웹 서비스다.
+**한입지도**는 성균관대 명륜캠 학생이 예산·상황을 문장으로 말하면, **오늘의 학식과 주변 식당을
+한 판에 놓고** 지금 갈 수 있는 곳을 추천하는 웹 서비스다.
 
-- **타겟 사용자**: 성균관대 명륜캠퍼스 학생
-- **핵심 가치 제안**: 단순 위치 기반 지도가 아니라, "지금 내 상황(예산·시간·목적)에 맞는 한 끼"를 구체적인 메뉴 조합으로 추천
-- **배포 도메인**: `https://hanipmap.vercel.app` (Vercel, `main` 브랜치 자동 배포)
+- 타깃: 성균관대 명륜캠 학생 (자연캠은 범위 밖 — `docs/PRD.md`)
+- 배포: `https://sixsense.askewly.com` (Vercel · 프로젝트 `upstage-sixsense-staging`)
+- 저장소: `https://github.com/lumatic2/upstage-sixsense`
+- 차별점: 가격·메뉴를 **1차 소스**로만 답한다 — 학식은 학교 페이지 크롤링, 식당은 메뉴판 사진을
+  Document Parse 로 구조화한 뒤 **사람이 사진과 대조해 검수한 것만** 노출한다.
 
 ## 2. 시스템 아키텍처
 
 ```
-[브라우저]
-  ├─ index.html / style.css / app.js (정적 파일, 프레임워크 없는 Vanilla JS)
-  ├─ Naver Maps JS SDK (지도 렌더링, 클라이언트 직접 로드)
-  └─ Supabase JS client (DB 읽기/쓰기, RLS로 접근 제어)
+[브라우저] public/*.html (Vanilla JS, 빌드 도구 없음)
+  ├─ Kakao Maps JS SDK — 지도·마커 (키는 /api/config 로 주입, ADR-0002)
+  ├─ localStorage — 대화 기억(관심어·직전 조건). 서버로 저장되지 않는다 (ADR-0004)
+  └─ fetch → /api/*
 
-[Vercel]
-  ├─ 정적 파일 호스팅 (index.html, style.css, app.js)
-  └─ 서버리스 함수 /api/search.js (네이버 지역 검색 API 프록시, Secret 보관)
+[Vercel Functions] api/*.js — Upstage 키·시트 쓰기 토큰은 전부 여기서만 읽는다
+  ├─ data        시트 3탭 로드 + 오늘 학식 보드
+  ├─ chat        Solar 대화 (조건 추출·제안 칩·기억 주입)
+  ├─ recommend   조건 → Top3 + Solar 이유 + 근거 검증 배지
+  ├─ parse-query chat 이 죽었을 때의 구조화 폴백
+  ├─ parse-menu  메뉴판 사진 → Document Parse → 메뉴·가격 후보
+  ├─ contribute  제보 → 시트 [메뉴] 검수=대기 로 append
+  ├─ review      검수 화면 전용 (REVIEW_TOKEN)
+  ├─ config      Kakao JS 키 주입 + ready 플래그
+  └─ cron/crawl-cafeteria  매일 06:10 KST 학식 자동 수집 (멱등)
 
-[Supabase]
-  └─ Postgres `restaurants` 테이블 + RLS 정책 (PostgREST로 REST API 자동 노출)
+[데이터 정본] 구글 시트 [식당]·[메뉴]·[학식]  ← 팀 공용, 유일한 정본 (ADR/ARCHITECTURE)
+  ├─ 읽기: gviz CSV export (공개 링크, 60초 캐시)
+  └─ 쓰기: Apps Script 웹훅 (SHEET_WEBHOOK_URL + TOKEN)
 
-[외부 API]
-  ├─ Naver Maps (지도 타일/마커)
-  ├─ Naver 지역 검색 API (서버리스 경유, 실제 상호명/주소/좌표 조회)
-  └─ Kakao 로컬 API (1회성 로컬 스크립트로 대량 수집, 배포 코드에는 미포함)
+[외부] Upstage Document Parse · Solar (solar-pro2 / solar-mini) · Kakao Maps · 성대 학식 페이지
 ```
 
-**설계 원칙**: 백엔드 서버를 별도로 두지 않고, 정적 호스팅(Vercel) + 서버리스 함수 + BaaS(Supabase)만으로 운영한다. Secret이 필요한 API 호출만 서버리스 함수를 거치고, 나머지는 클라이언트에서 직접 호출한다.
+**설계 원칙**: 별도 백엔드 서버 없음. 정적 호스팅 + 서버리스 함수 + 시트(정본). **비밀이 필요한
+호출은 전부 서버 함수를 거친다** — Upstage 키가 클라이언트에 나가면 대회 요건 이전에 사고다.
 
 ## 3. 기술 스택
 
-| 영역 | 기술 |
-|---|---|
-| 프론트엔드 | HTML5, CSS3, Vanilla JavaScript (ES2017+, 빌드 도구 없음) |
-| 지도 | Naver Maps JS SDK v3 (`ncpKeyId` 방식) |
-| 장소 검색 (실시간) | 네이버 지역 검색 API (`openapi.naver.com/v1/search/local.json`) |
-| 장소 대량 수집 (1회성) | 카카오 로컬 카테고리 검색 API (`dapi.kakao.com/v2/local/search/category.json`) |
-| 데이터베이스 | Supabase (Postgres + PostgREST + Row Level Security) |
-| 배포/호스팅 | Vercel (정적 파일 + 서버리스 함수) |
-| 클라이언트 상태 저장 | `localStorage` (최근 검색어, 기본 조건) |
-
-## 4. 데이터 모델
-
-### `public.restaurants`
-
-| 컬럼 | 타입 | 설명 |
+| 영역 | 기술 | 비고 |
 |---|---|---|
-| `id` | bigint (identity) | PK |
-| `name` | text, not null | 상호명 |
-| `address` | text | 도로명주소 |
-| `lat` / `lng` | double precision, not null | 좌표 (WGS84) |
-| `walk_minutes` | integer | 캠퍼스 기준 도보 시간(분). 직선거리 ÷ 80m/분으로 추정 |
-| `typical_price` | integer | 대표 가격(원), 목록 카드 표시용 |
-| `tags` | text[] | 상황별 태그: `lonely`(혼밥) / `budget10k`(1만원 이하) / `walk5`(도보5분) / `exam247`(시험기간 24시) / `hangover`(해장) / `formal`(격식) / `splurge`(비싼날) |
-| `menu` | jsonb | `{name, price}[]` — 예산 맞춤 메뉴 조합 계산에 사용 |
-| `hours` | jsonb | `{open, close, breakStart?, breakEnd?, is24h?}` |
-| `base_reason` | text | 예산 미지정 시 노출되는 기본 추천 문구 |
-| `status` | text, check (`pending`\|`approved`) | 승인 상태 |
-| `submitted_by` | text | 제보자 정보(선택) |
-| `created_at` | timestamptz | 생성 시각 |
+| 프론트엔드 | HTML5 · CSS3 · Vanilla JS (ES2022, 빌드 없음) | 팀원 데모 구조 유지 — Next.js 전환 안 함(ADR-0001) |
+| 지도 | **Kakao Maps JS SDK** | Naver 에서 교체 (ADR-0002). JS 키는 도메인 제한 클라이언트 키 |
+| 데이터 정본 | **구글 시트** [식당]·[메뉴]·[학식] | Supabase 는 2026-07-20 서비스 경로에서 제거 (검수 게이트 부재) |
+| 시트 읽기 | gviz `out:csv` + 60초 메모리 캐시 (`api/_lib/sheet-data.js`) | 공개 링크라 시크릿 불필요 |
+| 시트 쓰기 | Apps Script 웹훅 (`api/_lib/sheet-write.js`) | 행 삭제 불가 — 열 값 변경만 |
+| 문서 AI | **Upstage Document Parse** (`/v1/document-digitization`) | 메뉴판 사진 → 메뉴·가격. 학식엔 쓰지 않는다(이미 HTML — ADR-0001) |
+| 언어 모델 | **Upstage Solar** — `solar-pro2`(대화·이유 생성), `solar-mini`(근거 판정) | 생성과 검증에 **다른 모델**을 쓴다 (§5.4) |
+| 배포 | Vercel (정적 + 함수 + Cron) | REST API 로 배포 (`scripts/deploy-staging.mjs`) |
+| 클라이언트 저장 | `localStorage` — 관심어·직전 조건 | 계정 없음·서버 무상태 (ADR-0004) |
 
-### RLS 정책
+## 4. 데이터 모델 (시트 3탭)
 
-- **읽기(SELECT)**: `status = 'approved'` 인 행만 익명 사용자에게 공개
-- **쓰기(INSERT)**: 익명 사용자도 새 행을 추가할 수 있으나, `WITH CHECK (status = 'pending')`로 강제되어 항상 대기중 상태로만 생성 가능
-- **승인(UPDATE)**: 익명 역할에 UPDATE 정책을 부여하지 않음 → 승인은 프로젝트 소유자가 Supabase Table Editor 또는 SQL Editor에서 직접 수행 (전용 어드민 UI 없음)
+| 탭 | 주요 열 | 규칙 |
+|---|---|---|
+| 식당 | `id · name · category · address · lat · lng · tags · collector · shot_date · status` | `tags` 는 고정 어휘 10종(혼밥·가성비·데이트·회식·단체·초밥·김밥·쌀국수·치킨·생선) |
+| 메뉴 | `restaurant_id · name · price · source · 검수 · 비고` | **`검수=확인` 인 행만 노출** (`sheet-data.js` 에서 필터). `비고=사이드`/`한끼` 로 곁들임 판정을 사람이 뒤집는다 |
+| 학식 | `menu_date · cafeteria · corner · items · price` | 크론이 append. 날짜는 KST 자정의 UTC 표기로 돌아오므로 `normDate` 필수 |
 
-## 5. 핵심 기능 명세
+**곁들임(`isSide`) 판정은 코드가 한다** (`api/_lib/side-menu.js`) — 공기밥·음료가 "예산 안에 드는
+한 끼"로 둔갑하던 문제. 사람이 시트 `비고` 열(`사이드`/`한끼`)로 규칙을 이길 수 있다.
 
-### 5.1 자연어 조건 파싱
-- `parseBudget(text)`: "8천원 이하" → 8000, "1만원" → 10000 등 정규식 기반 파싱
-- `parseWalkMax(text)`: "도보 5분", "300m 이내"(→ 도보 시간으로 환산, 80m/분 가정) 파싱
+## 5. 기능 상세
 
-### 5.2 상황별 태그 필터링
-7개 태그 칩 클릭 시 단일 선택(재클릭 시 해제)으로 `activeTag` state를 설정하고, 검색어 텍스트도 함께 채워 필터링에 반영
+### 5.1 자연어 대화 (`api/chat.js`)
+`solar-pro2` 구조화 출력으로 **답변 문장·조건·제안 칩**을 한 번의 왕복으로 받는다(대기 시간 절반).
+프롬프트에 실제 보유 데이터 요약을 넣고 "여기 없는 건 모른다고 답하라"로 고정한다.
 
-### 5.3 예산 맞춤 메뉴 추천 (`bestCombo`)
-메뉴 항목 부분집합(브루트포스, 항목 수가 적어 O(2ⁿ)으로 충분)을 순회하며 예산 이하에서 총액이 최대인 조합을 계산, 자연어 문장으로 조립 (예: "'순대국밥 특'에 '공기밥' 추가하면 8,000원으로 예산에 딱 맞아요")
+**결정론적 값은 코드가 뽑는다** — 예산·거리·태그(`extractConditions`). 프롬프트로 시켰더니
+"만원 이하로 추천해줘"에서 6/6 실패했다. 모델은 사람 말로 답하는 일만 한다.
+태그는 **어절 앞머리**에서만 잡는다(합성어 뒤꼬리가 검색 의도로 둔갑하는 것을 막는다).
 
-### 5.4 영업시간/브레이크타임 판별 (`hoursStatus`)
-브라우저의 실제 현재 시각(`new Date()`) 기준으로 영업중/브레이크타임/영업종료/정보없음 상태를 계산. 영업중이 아닌 곳(닫힘/브레이크타임)은 검색 결과에서 자동 제외되나, "정보없음"은 제외하지 않음(데이터가 없을 뿐 실제로 닫혀있다고 단정할 수 없으므로)
+### 5.2 제안 칩 (`api/_lib/chips.js`)
+Solar 가 다음 질문 후보를 5개까지 내면 **서버가 실데이터로 돌려보고 살아남은 3개만** 내려보낸다.
+예산은 그 금액에 본메뉴가 있는지, 도보는 상한 안에 실제로 있는지, 태그는 데이터 어휘인지를 센다.
+라벨과 조건이 어긋나거나(“한식만 보기”+생선 태그) 예산을 몰래 올리는 칩은 버린다.
 
-### 5.5 지도 마커 인터랙션
-- 목록 카드 hover → 해당 마커 확대 강조 (`hover-focus`, 선택 상태와 무관)
-- 카드/마커 클릭 → 선택 상태(`active`) 전환 + 지도 `panTo`로 포커싱
-- 마커는 Naver Maps의 HTML 콘텐츠 마커 기능으로 구현, 상태 변경 시 `setIcon`으로 재렌더
+### 5.3 추천 (`api/recommend.js`)
+검수 통과분만 후보로 삼고 `태그 일치 > 예산 내 본메뉴 수 > 도보 시간` 으로 정렬한다.
+도보 상한에 아무것도 없으면 상한을 버리고 가까운 순으로 완화하되 `walkRelaxed` 로 화면에 밝힌다.
+**개인화는 순서에 개입하지 않는다** — 프로필을 받지도 읽지도 않는다 (ADR-0004).
 
-### 5.6 랜덤 추천 (셔플)
-현재 필터링된 목록(`currentList`) 내에서 무작위 선택을 짧게 순환한 뒤 최종 선택으로 착지
+### 5.4 근거 검증 (환각 차단 게이트)
+추천 이유는 `solar-pro2` 가 쓰고, **분리된 판정자 `solar-mini`** 가 그 문장이 전달된 실데이터에만
+근거하는지 판정한다. `notGrounded` 면 데이터 템플릿 문장으로 **교체**하고 배지에 그 사실을 적는다.
+판정 실패는 추천을 막지 않는다(배지만 생략).
 
-### 5.7 개인화 (localStorage)
-- 최근 검색어 최대 5개 저장/재사용
-- "기본 조건 저장" 후 원클릭으로 재검색
+### 5.5 학식 자동 수집 (`api/cron/crawl-cafeteria.js`)
+매일 **21:10 UTC = 06:10 KST** 1회(Vercel Hobby 한도). 주간 뷰가 5일치를 주므로 1회로 충분하다.
+`CRON_SECRET` 검증 · GET 만 허용 · 기존 행과 대조해 **멱등**(중복 append 0). 실패해도 500 을 내지
+않는다 — 알림보다 "무슨 일이 있었는지"가 남는 게 낫다.
 
-### 5.8 제보(크라우드소싱)
-1. 사용자가 상호명 입력 → "주소 찾기" 클릭 → `/api/search`(네이버 지역 검색)로 실제 주소·좌표 자동 조회
-2. 메뉴(`메뉴명:가격` 줄바꿈 입력), 태그, 영업시간, 한줄평, 제보자 정보 입력
-3. 제출 시 Supabase에 `status='pending'`으로 insert (anon key, RLS로 pending 강제)
-4. 운영자가 Table Editor에서 `status`를 `approved`로 변경하면 즉시 서비스에 노출
+### 5.6 제보 → 검수 파이프라인
+사진 → `parse-menu`(Document Parse) → 후보 프리필 → 사용자 수정 → `contribute` → 시트 `검수=대기`
+→ `/review.html` 에서 **운영진이 사진과 대조** → `확인` → 서비스 노출.
+M2 실측 정확도 76.4% 로, 자동 저장하지 않고 사람 검수를 전제로 설계했다.
 
-## 6. 외부 API 연동 상세
+### 5.7 대화 기억 (`api/_lib/memory.js`)
+지난 방문에 물었던 관심어를 이어받아 답한다. **데이터 대조를 통과한 낱말만** 저장하고
+(“마라탕버거”는 기억하지 않는다), 꺼낼 때마다 현재 데이터로 재검증한다.
+없는 기억을 말하는 문장은 코드가 지운다(`stripFabricatedMemory`). 정의·경계는 **ADR-0004**.
 
-| API | 용도 | 키 종류 | 호출 위치 | 비고 |
-|---|---|---|---|---|
-| Naver Maps JS SDK | 지도 렌더링 | Client ID (공개, 도메인 화이트리스트로 보호) | 클라이언트 직접 | NCP 콘솔에 서비스 도메인 등록 필요 |
-| Naver 지역 검색 API | 실시간 상호명/주소/좌표 조회 | Client ID + **Secret** | 서버리스 함수(`api/search.js`)만 | Secret은 Vercel 환경변수로만 보관 |
-| Supabase | 식당 데이터 CRUD | anon/publishable key (공개, RLS로 보호) | 클라이언트 직접 | `service_role` 키는 코드/리포에 존재하지 않음 |
-| Kakao 로컬 API | 반경 기반 대량 장소 수집 (1회성) | REST API 키 | 로컬 1회성 스크립트 (배포 코드 미포함) | 카테고리당 최대 45건 제한 (페이지네이션 한계) |
+### 5.8 길찾기
+추천·마커 카드에서 카카오맵으로 좌표를 넘긴다(`map.kakao.com/link/to/이름,lat,lng`).
+추가 데이터도 키도 필요 없다. **그 클릭은 기록하지 않는다** (ADR-0004 §2).
+
+## 6. 외부 API
+
+| API | 용도 | 키 | 호출 위치 |
+|---|---|---|---|
+| Upstage Document Parse | 메뉴판 사진 구조화 | `UPSTAGE_API_KEY` | 서버 함수만 |
+| Upstage Solar | 대화·이유 생성·근거 판정 | `UPSTAGE_API_KEY` | 서버 함수만 |
+| Kakao Maps JS SDK | 지도·마커 | `KAKAO_JS_KEY` (도메인 제한) | 클라이언트 (`/api/config` 주입) |
+| Kakao 로컬 | [식당] 탭 지오코딩 (`scripts/geocode-sheet.mjs`, 배포 코드 미포함) | `KAKAO_REST_API_KEY` | 로컬 스크립트 |
+| 구글 시트 gviz | 데이터 읽기 | 없음(공개 링크) | 서버 함수 |
+| Apps Script 웹훅 | 데이터 쓰기 | `SHEET_WEBHOOK_TOKEN` | 서버 함수만 |
+| 성대 학식 페이지 | 학식 크롤 | 없음 | 서버 함수(크론) |
 
 ## 7. 보안 설계
 
-- **Secret 분리**: 브라우저에 노출돼도 되는 키(Naver Maps Client ID, Supabase anon key)와, 반드시 서버 측에만 있어야 하는 키(Naver 검색 Secret)를 명확히 구분
-- **`.gitignore`**: `.env`, `.env.local`을 커밋 대상에서 제외
-- **RLS를 이용한 최소 권한 원칙**: 익명 사용자는 승인된 데이터만 읽고, 신규 제보만 (항상 대기 상태로) 쓸 수 있음. 승인·삭제 권한은 부여하지 않음
-- **카카오 REST 키**: 실시간 서비스에 포함되지 않고 1회성 수집에만 사용되었으므로 배포 환경변수에도 등록하지 않음
+- **키 분리**: 노출돼도 되는 키(Kakao JS 키 — 도메인 제한)와 절대 안 되는 키(Upstage·시트 쓰기·검수·크론)를
+  가른다. 후자는 Vercel env 로만 보관하고 서버 함수에서만 읽는다.
+- **검수 게이트**: 익명 제보는 항상 `검수=대기` 로만 들어간다. 노출 승격은 `/review.html`(운영진 토큰)에서만.
+- **크론 보호**: 공개 URL 이므로 `Bearer $CRON_SECRET` 검증 + GET 만 허용.
+- **개인정보 없음**: 계정·식별자를 만들지 않는다. 대화 기억은 브라우저에만 있고 서버는 무상태다.
+- `.env` 는 커밋 대상에서 제외. 토큰은 로그·출력에 남기지 않는다.
 
-## 8. 배포 환경 (Vercel)
+## 8. 배포
 
-**필요 환경변수**
-| 변수명 | 용도 |
-|---|---|
-| `NAVER_SEARCH_CLIENT_ID` | 네이버 지역 검색 API 인증 |
-| `NAVER_SEARCH_CLIENT_SECRET` | 네이버 지역 검색 API 인증 (서버리스 함수 전용) |
+```bash
+node scripts/deploy-staging.mjs        # VERCEL_TOKEN 필요. FILES 자동 수집(제외는 DEPLOY_EXCLUDE)
+node scripts/with-vercel-env.mjs <스크립트>   # 시트 쓰기 자격이 필요한 로컬 스크립트
+```
 
-환경변수 변경 후에는 반드시 재배포(Redeploy)해야 반영된다.
+필요한 Vercel 환경변수: `UPSTAGE_API_KEY` · `KAKAO_JS_KEY` · `KAKAO_REST_API_KEY` ·
+`SHEET_WEBHOOK_URL` · `SHEET_WEBHOOK_TOKEN` · `REVIEW_TOKEN` · `CRON_SECRET`.
+env 변경 후에는 재배포해야 반영된다.
 
-**외부 콘솔 설정**
-- 네이버 클라우드 플랫폼 콘솔: Naver Maps Client ID의 "Web 서비스 URL"에 `https://hanipmap.vercel.app` 등록 필요 (Vercel의 브랜치별 임시 미리보기 URL은 등록 대상에서 제외하고, 고정된 프로덕션 도메인만 등록)
+## 9. 검증
 
-## 9. 알려진 제약사항 및 향후 과제
+```bash
+node scripts/test-chat-extract.mjs      # 조건 추출 문형 고정
+node scripts/test-chips.mjs             # 제안 칩 검증 규칙
+node scripts/test-personalization.mjs   # ADR-0004 경계 (순서 미개입·기억 판정)
+node scripts/test-side-menu.mjs         # 곁들임 판정
+node scripts/demo-smoke.mjs --url https://sixsense.askewly.com   # 시연 시나리오 E2E
+```
 
-- **메뉴/가격 데이터의 구조적 한계**: 어떤 공개 API도 메뉴·정확한 가격 데이터를 제공하지 않음(배달앱들이 비공개로 보유). 현재는 (1) 소수 수동 큐레이션 + (2) 사용자 제보로만 채워지며, 자동 수집된 96곳 중 대다수는 메뉴 정보가 비어 있는 상태
-- **도보 시간 추정치의 부정확성**: 실제 도보 경로가 아닌 직선거리 기반 추정(÷80m/분)이라 실제와 오차가 있을 수 있음
-- **Kakao 로컬 API의 수집 한도**: 카테고리+반경 조합당 최대 45건까지만 조회 가능. 더 넓은 커버리지가 필요하면 반경을 여러 구역으로 나누어(subdivide) 추가 수집 필요
-- **승인 프로세스 미자동화**: 현재 승인은 Supabase Table Editor에서 수동으로 처리. 제보량이 늘어나면 별도 관리자 화면이 필요할 수 있음
-- **네이버 지역 검색 API의 정확도**: 키워드 매칭 기반이라, 검색어가 모호하면 의도한 것과 다른 업체가 매칭될 수 있음
+## 10. 알려진 제약
+
+- **메뉴·가격 데이터는 공개 API 가 없다.** 수동 큐레이션 + 사진 제보로만 채워진다 — 그래서
+  "사진 한 장으로 제보 비용을 낮춘다"가 이 서비스의 승부수다.
+- **도보 시간은 직선거리 추정**(÷80m/분)이라 실제 경로와 오차가 있다 (`api/_lib/geo.js`).
+- **영업시간 데이터가 없다.** 그래서 "지금 열린 곳"·시간대 개인화를 하지 않는다 (ADR-0004 §5).
+- **검수는 수동**이다. 제보량이 늘면 별도 관리 화면이 필요하다.
+- Vercel Hobby 크론은 하루 1회 — 학식 주간 뷰라 지금은 충분하지만 일 단위 갱신원이 늘면 걸린다.
