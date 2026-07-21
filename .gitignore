@@ -12,3 +12,10 @@ tests/__screenshots__/*-diff.png
 CLAUDE.local.md
 
 .vercel
+
+# 하네스 런타임 상태 — checkout-local (상류 규약 2026-07-20)
+# git 으로 추적하면 기기 사이를 오가며 서로의 상태를 덮어쓴다. 실제로 DR4 기록이
+# 머신 로컬 장부와 정본으로 갈라진 원인이었다(docs/OPEN-ISSUES ⑥).
+# 영속 이력은 .harness/execution-ledger.jsonl 과 ROADMAP.md 에 남는다.
+.harness/work.json
+.harness/machines/

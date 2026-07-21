@@ -66,6 +66,17 @@
 - Claude 와 Codex 둘 다 지켜야 할 규칙이면 이 `CLAUDE.md` 와 `AGENTS.md` 양쪽에 추가한다(문구는 달라도 되나 내용은 일치).
 - 정기적으로(주 1회 또는 감이 안 잡힐 때) `context-manager` 를 "전체 점검"으로 돌려 배치 오류·drift 를 확인한다.
 
+## milestone 완료 처리 — 셋 다 건드려야 끝난다 (2026-07-21 실측)
+
+`ledger`(evidence) · `ROADMAP.md`(상태판) · `.harness/work.json`(step 실시간 상태) **세 곳**을
+모두 갱신해야 완료다. 한 곳을 빠뜨리면 장부가 "미착수" 로 남아 다음 세션이 이미 끝난 일을
+다시 시작한다 — DR7 에서 실제로 Stop hook 이 "3/3 미착수" 로 잡았다.
+
+- `.harness/work.json` 은 **checkout-local(gitignore)** 이다. git 으로 추적하면 기기 사이를
+  오가며 서로의 상태를 덮어쓴다(DR4 가 머신 로컬 장부와 정본으로 갈라진 원인).
+  영속 이력은 `.harness/execution-ledger.jsonl` 과 `ROADMAP.md` 에 남는다.
+- step 은 끝낼 때마다 `work.json` 에 반영한다. 마지막에 몰아서 하면 위 사고가 재발한다.
+
 ## ⚠ Judge 규약
 > 코드 변경 후 lint·테스트 통과 없이는 "완료" 보고 금지. 자동 도구가 통과하면 진실로 간주.
 

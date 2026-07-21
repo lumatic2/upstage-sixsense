@@ -41,3 +41,14 @@
 - gate: 완료 주장과 evidence를 최종 대조한다.
 
 role lane은 자동 subagent/team 실행을 뜻하지 않는다. 도구가 가능하고 위험도가 맞을 때만 위임하고, 기본은 같은 세션에서 lane별로 분리 검토한다.
+
+## milestone 완료 처리 — 셋 다 건드려야 끝난다 (2026-07-21 실측)
+
+`ledger`(evidence) · `ROADMAP.md`(상태판) · `.harness/work.json`(step 실시간 상태) **세 곳**을
+모두 갱신해야 완료다. 한 곳을 빠뜨리면 장부가 "미착수" 로 남아 다음 세션이 이미 끝난 일을
+다시 시작한다 — DR7 에서 실제로 Stop hook 이 "3/3 미착수" 로 잡았다.
+
+- `.harness/work.json` 은 **checkout-local(gitignore)** 이다. git 으로 추적하면 기기 사이를
+  오가며 서로의 상태를 덮어쓴다(DR4 가 머신 로컬 장부와 정본으로 갈라진 원인).
+  영속 이력은 `.harness/execution-ledger.jsonl` 과 `ROADMAP.md` 에 남는다.
+- step 은 끝낼 때마다 `work.json` 에 반영한다. 마지막에 몰아서 하면 위 사고가 재발한다.
