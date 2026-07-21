@@ -308,6 +308,56 @@ function noteConditions(s) {
   p.last = { budget: s.budget, walkMax: s.walkMax, tags: s.tags };
   saveProfile(p);
 }
+
+/* ── 개인화 관리 ──
+   분류 가점(cats)은 사용자가 직접 준 신호가 아니라 카드 클릭에서 추론한 것이다.
+   준 적 없는 신호로 순서를 바꿨으면 그 사실을 밝히고 되돌릴 수단을 같이 줘야
+   "개인화는 필터가 아니라 가점" 이라는 이 서비스의 주장이 성립한다.
+   자리는 대화창 — 순서를 바꾼 주체가 에이전트이므로 해명도 에이전트가 한다
+   (사용자 확정 2026-07-21). 카드의 배지는 "왜 이 카드인지"를 계속 설명한다. */
+function catSummary() {
+  const cats = loadProfile()?.cats ?? {};
+  return Object.entries(cats)
+    .filter(([, v]) => Number(v) > 0)
+    .sort((a, b) => b[1] - a[1])
+    .map(([k, v]) => `${k} ×${v}`);
+}
+/** 분류 가점만 지운다 — 마지막 검색 조건(last)은 남긴다. 둘은 성격이 다른 신호다. */
+function clearCats() {
+  const p = loadProfile();
+  if (!p) return;
+  p.cats = {};
+  saveProfile(p);
+}
+let profileTurnShown = false;
+/** 순서가 실제로 바뀐 경우에만 부른다(서버 personalized 플래그). */
+function profileTurn() {
+  if (profileTurnShown) return;
+  const bits = catSummary();
+  if (!bits.length) return;
+  profileTurnShown = true;
+  const el = bubble("ai", `순서를 조금 바꿨어요. 지금은 이렇게 알고 있어요`
+    + `<div class="cb-cond">${bits.map((b, i) => `<span class="nb">${i ? "· " : ""}${esc(b)}</span>`).join(" ")}</div>`
+    + `<div class="cb-act">`
+    + `<button class="chip" type="button" data-act="off">반영 끄기</button>`
+    + `<button class="chip" type="button" data-act="forget">전부 잊기</button></div>`
+    + `<div class="cb-cond">순서에만 쓰고 서버로 보내지 않습니다.</div>`);
+  el.querySelector('[data-act="off"]').onclick = () => {
+    clearCats();
+    done(el, `분류 가점을 껐습니다. 조건은 그대로 두고 순서만 되돌립니다.`);
+    loadPicks();   // 되돌아간 순서를 실제로 보여준다 — 말만 하고 화면이 그대로면 믿을 수 없다
+  };
+  el.querySelector('[data-act="forget"]').onclick = () => {
+    try { localStorage.removeItem(PROFILE_KEY); } catch {}
+    // 지운 걸 이번 렌더가 도로 쓰지 않게 한다. 다음 검색부터는 다시 쌓인다 — 그렇게 말한다.
+    done(el, `전부 지웠습니다. 다음 검색부터 다시 쌓입니다.`);
+    loadPicks(null, { record: false });
+  };
+  function done(box, msg) {
+    box.querySelector(".cb-act").remove();   // 이미 쓴 컨트롤은 남기지 않는다
+    bubble("ai muted", esc(msg));
+  }
+}
 let DATA = { restaurants: [], menus: [], cafeteria: [] };
 let MAP = null, MARKERS = [];
 let state = { budget: null, walkMax: null, tags: [] };
@@ -572,7 +622,9 @@ function syncChips() {
   });
 }
 
-async function loadPicks(wait = null) {
+/* record=false: 이번 렌더는 조건을 기록하지 않는다. "전부 잊기" 직후에 필요하다 —
+   기록하면 지운 프로필이 그 자리에서 되살아나 "잊었습니다" 가 거짓말이 된다(2026-07-21 실측). */
+async function loadPicks(wait = null, { record = true } = {}) {
   const wrap = $("#picksWrap"), block = $("#picksBlock");
   if (!state.budget && !state.tags.length) {
     wrap.hidden = true;
@@ -589,7 +641,7 @@ async function loadPicks(wait = null) {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ budget: state.budget, walkMax: state.walkMax, tags: state.tags, profile: loadProfile() }),
     })).json();
-    noteConditions(state);
+    if (record) noteConditions(state);
     const cards = [];
     if (d.cafeteria) {
       cards.push(`<div class="card pick"><div class="rowhead"><h3>학식 · ${d.cafeteria.cafeteria}</h3><span class="small muted">${d.cafeteria.menu_date}</span></div>
@@ -606,8 +658,9 @@ async function loadPicks(wait = null) {
         <div class="reason"><p>${p.reason}</p><span class="badge${b.ok?" ok":""}" title="추천 이유를 solar-mini 가 데이터와 대조해 판정한 결과입니다">
           ${b.i}${b.t}</span>${like}</div></div>`);
     }
-    $("#picksNote").textContent = d.walkRelaxed ? "도보 조건에 맞는 곳이 없어 가까운 순으로 보여드립니다"
-      : d.personalized ? "이 브라우저에 남은 취향으로 순서를 바꿨습니다" : "";
+    // 개인화 사실은 대화(profileTurn)가 말한다 — 여기에도 쓰면 같은 말을 두 번 하는 셈이다.
+    $("#picksNote").textContent = d.walkRelaxed ? "도보 조건에 맞는 곳이 없어 가까운 순으로 보여드립니다" : "";
+    if (d.personalized) profileTurn();
     block.innerHTML = cards.join("") || emptyState();
     if (wait) { try { chatSummary(wait, d); } catch { wait.className = "cb ai"; wait.textContent = "결과는 아래 카드에서 확인하세요."; } }
   } catch {

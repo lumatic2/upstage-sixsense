@@ -8,6 +8,7 @@
 
 | # | Changeset | 날짜 | Scope | Verification | Status |
 |---|-----------|------|-------|--------------|--------|
+| 7 | 20260721-personalization-in-chat | 2026-07-21 | 개인화 해명·관리를 에이전트 대화로 · 섹션 노트 중복 제거 · "전부 잊기" 거짓 보고 수정 | 8/8 | done |
 | 6 | 20260721-revisit-chip-static-qm | 2026-07-21 | 랜딩 물음표 정적화 · 재방문 조건을 대화 칩으로 · 기록 지우기 이전 | 9/9 | done |
 | 5 | 20260721-repo-share-readiness | 2026-07-21 | README·HANDOFF §2·CLAUDE/AGENTS 배너·GitHub 메타 (코드 무변경) | 6/6 | done |
 | 4 | 20260717-staging-e2e | 2026-07-17 | test.html·vercel.json·deploy-staging.mjs·E2E 증거 | 3/3 | done |
