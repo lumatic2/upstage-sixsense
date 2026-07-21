@@ -37,13 +37,9 @@
 .amt{display:inline-block;min-width:2.6em;margin-left:.08em;text-align:right;color:var(--accent)}
 /* 캐럿이 라인박스를 키우지 않게 — 캡하이트보다 낮게, 베이스라인 정렬 (흔들림 방지) */
 .amt .caret{width:.06em;height:.74em;vertical-align:0;background:var(--accent)}
-/* 물음표 — "먹지"와 살짝 띄우고, 상시 가벼운 플로팅 + 타이핑 직후 위글 */
-.qm-float{display:inline-block;margin-left:.09em;animation:qfloat 3.2s ease-in-out infinite}
-@keyframes qfloat{0%,100%{transform:translateY(0)}50%{transform:translateY(-.06em)}}
-.qm{display:inline-block;transform-origin:60% 80%}
-.qm.wiggle{animation:wig 520ms ease-in-out}
-@keyframes wig{25%{transform:rotate(-10deg)}70%{transform:rotate(9deg)}100%{transform:none}}
-@media (prefers-reduced-motion: reduce){.qm.wiggle{animation:none}.qm-float{animation:none}}
+/* 물음표 — "먹지"와 살짝 띄우기만 한다. 모션 없음(사용자 지시 2026-07-21):
+   금액 타이핑이 이미 이 줄의 초점이라, 물음표까지 움직이면 초점이 둘로 갈린다. */
+.qm-float{display:inline-block;margin-left:.09em}
 .lead-brand{display:flex;align-items:center;justify-content:center;gap:.4em;flex-wrap:wrap}
 .uplogo{height:1.5em;display:block;transform:translateY(1px)}
 
@@ -291,7 +287,7 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 <main>
   <section class="hero">
     <div class="container inner">
-      <h1><span class="nowrap">오늘<span class="amt"><span id="budgetText">1만원</span><span class="caret" aria-hidden="true"></span></span>으로</span><br>뭐 먹지<span class="qm-float"><span class="qm" id="qMark">?</span></span></h1>
+      <h1><span class="nowrap">오늘<span class="amt"><span id="budgetText">1만원</span><span class="caret" aria-hidden="true"></span></span>으로</span><br>뭐 먹지<span class="qm-float">?</span></h1>
       <p class="lead lead-brand"><img class="uplogo" src="/img/upstage-logo.png" alt="Upstage"> <span>AI와 함께 최적의 한 끼를 선택해보세요.</span></p>
       <div class="cta-row">
         <a class="btn" href="/app.html">
@@ -798,7 +794,6 @@ function startDemo(data) {
   // 헤드라인 금액 타이핑 — 데모 카드(지도·챗봇)와 독립된 별도 루프 (사용자 지시 2026-07-20)
   const HEADLINE_AMOUNTS = ["8천원", "1만원", "5천원"];
   (async function headlineLoop() {
-    const qm = document.getElementById("qMark");
     let hi = 0;
     while (true) {
       const pill = HEADLINE_AMOUNTS[hi % HEADLINE_AMOUNTS.length];
@@ -807,8 +802,6 @@ function startDemo(data) {
         await new Promise((ok) => setTimeout(ok, reduced ? 0 : 120));
         amtEl.textContent += ch;
       }
-      qm.classList.remove("wiggle"); void qm.offsetWidth; // 재생 리셋
-      qm.classList.add("wiggle");
       await new Promise((ok) => setTimeout(ok, reduced ? 3000 : 4000));
       hi++;
     }

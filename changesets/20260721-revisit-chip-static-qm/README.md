@@ -1,0 +1,26 @@
+# 20260721-revisit-chip-static-qm
+
+- Target: 사용자 지시 2026-07-21 — ① 랜딩 헤드라인 물음표 모션 제거 ② 재방문 조건 복원을 에이전트 대화 안의 칩으로 이전
+- Scope: `public/index.html`(물음표 정적화) · `public/app.html`(재방문 턴·기록 지우기 이전·CSS) · `public/about.html`(기록 지우기 위치 안내 갱신). **API·데이터·디렉터리 구조 무변경.**
+- Contract:
+  - 예산 칩 줄(`.chips`)은 단일 선택 그룹 계약을 유지한다 — 재방문 칩을 그 줄에 섞지 않는다. 대신 적용 시 `syncChips()` 로 같은 렌더에서 동기화해 상태가 두 곳으로 갈라지지 않게 한다.
+  - "기록 지우기"는 되돌릴 수 없다 → 기본 동작과 같은 무게·같은 줄에 두지 않는다(구분선 아래 보조 링크).
+  - 색·치수는 기존 토큰에서만 파생한다(신규 토큰 추가 금지).
+- 설계 근거:
+  - 재방문 안내가 콘솔 **바깥** 별도 띠(`#revisit`)로 있어서 "에이전트가 기억한다"가 아니라 "사이트가 배너를 띄웠다"로 읽혔다. 인사말 다음 턴으로 옮겨 대화의 일부로 만들었다.
+  - 물음표 모션은 같은 줄의 금액 타이핑과 초점을 다퉜다("뷰포트당 초점 1개").
+- 검증 중 적발해 고친 결함:
+  - **줄 끝 매달린 구분점** — 조건을 한 문장에 이어 붙이니 `예산 8,000원 이하 ·` 에서 줄이 끊겨 점만 남았다. 조건을 별도 줄로 내리고 구분점을 뒤 항목에 붙여 `nowrap` 으로 묶었다.
+  - **브라우저 기본 버튼 크롬 노출** — `.linklike` 가 `theme.css` 에서 `.site-head` 하위로만 정의돼 있었고 리셋은 삭제한 `.revisit .linklike` 에 있었다. 헤더 밖에서 쓰자 `border: 2px outset black` 이 드러났다. 리셋·hover·focus-visible 을 새 규칙에 포함.
+- Verification (로컬 `public/` + `/api` 라이브 프록시, 실브라우저):
+  - [x] 물음표 정적: 계산된 스타일 `animationName=none` · `transform=none` · `wiggle`/`qfloat` 규칙 잔존 0
+  - [x] 첫 방문: 재방문 턴이 뜨지 않음 (`verification/screenshots/` 없음 — 대화창 인사 2줄만)
+  - [x] 재방문: 칩 노출 → `verification/screenshots/revisit-chip-desktop.png`
+  - [x] 칩 클릭: 칩 제거 · 사용자 말풍선 echo · **예산 칩 `8천원 aria-pressed=true` 동기화** · `#parsed` 갱신 (DOM 실측)
+  - [x] 기록 지우기: `localStorage` 제거 확인 + 결과 문구 치환 → `verification/screenshots/revisit-clear-dialog.png`
+  - [x] 모바일 390px: 가로 오버플로 없음(scrollWidth 390 = innerWidth), 조건 1줄 → `verification/screenshots/revisit-chip-mobile-390.png`
+  - [x] 콘솔 에러 0
+  - [x] `node scripts/test-side-menu.mjs` 41/41 PASS
+  - [x] askewly 시그니처 자가 판정: 5원칙 통과 / hard-fail 0
+  - [x] 사용자 실물 확인 (2026-07-21)
+- Status: done (2026-07-21)

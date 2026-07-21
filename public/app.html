@@ -74,12 +74,24 @@
 .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
 .parsed{color:var(--muted);font-size:var(--sm);margin-top:var(--s3);min-height:1.5em}
-.revisit{
-  display:flex;gap:var(--s3);align-items:center;flex-wrap:wrap;margin-top:var(--s3);
-  background:var(--accent-soft);border-radius:var(--r);padding:var(--s3) var(--s4);font-size:var(--sm);
+/* 대화 안에서 에이전트가 내미는 실행 칩 — 예산 칩 줄(.chips)과 계약이 다르다.
+   .chips 는 "예산 하나를 고르는" 단일 선택 그룹이고, 이건 한 번 누르면 끝나는 동작이다.
+   그래서 aria-pressed 를 쓰지 않고, 누른 뒤에는 사라진다(2026-07-21). */
+.cb-cond{color:var(--muted);margin-top:var(--s1)}
+.cb-cond .nb{white-space:nowrap}
+.cb-act{display:flex;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s2)}
+.cb-act .chip{height:32px;padding:0 var(--s3)}
+/* 되돌릴 수 없는 동작 — 기본 동작(알겠습니다)과 같은 줄에 같은 무게로 두지 않는다.
+   구분선 아래로 내리고 비중을 낮춰, 실수로 누르는 경로를 만들지 않는다. */
+.dlg-foot{margin-top:var(--s4);padding-top:var(--s3);border-top:1px solid var(--border)}
+/* theme.css 의 .linklike 는 .site-head 안에서만 정의돼 있다 — 헤더 밖에서 쓰면
+   브라우저 기본 버튼 테두리가 드러난다(2026-07-21 실측). 여기서 리셋까지 진다. */
+.linklike.danger{
+  background:none;border:0;padding:0;font:inherit;font-size:var(--sm);cursor:pointer;
+  color:var(--muted);text-decoration:underline;
 }
-.revisit[hidden]{display:none}
-.revisit .linklike{background:none;border:0;color:var(--muted);font:inherit;font-size:var(--sm);text-decoration:underline;cursor:pointer;padding:0}
+.linklike.danger:hover{color:var(--fg)}
+.linklike.danger:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .card.liked{cursor:pointer}
 .card.liked:hover{outline:1px solid var(--border)}
 
@@ -159,6 +171,7 @@
   <h3>로그인은 아직 없습니다</h3>
   <p>한입지도는 로그인 없이 전부 쓸 수 있습니다. 재방문 시 순서를 바꾸는 <b>이력은 이 브라우저에만 저장됩니다</b> — 서버로 보내 쌓지 않습니다. 기기나 브라우저를 바꾸면 기록은 사라집니다.</p>
   <button class="btn" id="loginClose" autofocus>알겠습니다</button>
+  <p class="dlg-foot"><button class="linklike danger" type="button" id="profileClear">이 브라우저에 저장된 기록 지우기</button></p>
 </dialog>
 <script>
 document.getElementById("loginBtn").addEventListener("click", () => document.getElementById("loginDlg").showModal());
@@ -199,11 +212,6 @@ document.getElementById("loginClose").addEventListener("click", () => document.g
     </div>
 
     <p class="parsed" id="parsed" aria-live="polite"></p>
-    <div class="revisit" id="revisit" hidden>
-      <span id="revisitText"></span>
-      <button class="btn sm" type="button" id="revisitGo">그 조건으로 보기</button>
-      <button class="linklike" type="button" id="revisitClear">기록 지우기</button>
-    </div>
   </div>
 </section>
 
@@ -278,6 +286,15 @@ function loadProfile() {
 function saveProfile(p) {
   try { localStorage.setItem(PROFILE_KEY, JSON.stringify(p)); } catch {}
 }
+/* 기록 지우기 — 로컬 저장을 설명하는 이 다이얼로그가 제자리다. 되돌릴 수 없으니
+   결과를 반드시 말해준다(눌렀는데 아무 일도 없어 보이면 또 누른다). */
+$("#profileClear").onclick = (e) => {
+  try { localStorage.removeItem(PROFILE_KEY); } catch {}
+  $("#picksNote").textContent = "";
+  e.target.replaceWith(Object.assign(document.createElement("span"), {
+    className: "small muted", textContent: "지웠습니다. 다음 방문부터는 처음 오신 것과 같습니다.",
+  }));
+};
 /** 관심을 보인 가게의 분류를 한 칸 올린다(카드 클릭 = 선택 신호). */
 function noteCategory(cat) {
   if (!cat) return;
@@ -311,6 +328,36 @@ function greet() {
   if (chatEl().children.length) return;
   bubble("ai", `오늘은 뭘 먹어 볼까요?`);
   bubble("ai muted", `예산만 말해도 되고, "8천원 이하 도보 5분 혼밥" 처럼 붙여도 됩니다.`);
+  greetRevisit();
+}
+
+/* 재방문 — 지난번 조건이 남아 있으면 에이전트가 먼저 꺼낸다.
+   예전에는 콘솔 바깥 아래에 별도 띠로 붙어 있었는데, 그러면 "에이전트가 나를 기억한다" 가
+   아니라 "사이트가 배너를 띄웠다" 로 읽힌다 — 대화 안으로 넣었다(사용자 지시 2026-07-21).
+   기록은 이 브라우저 localStorage 에만 있다. 첫 방문에는 이 턴 자체가 없다. */
+function greetRevisit() {
+  const last = loadProfile()?.last;
+  if (!last || (!last.budget && !last.tags?.length)) return;
+  const bits = [];
+  if (last.budget) bits.push(`예산 ${won(Number(last.budget))} 이하`);
+  if (last.walkMax) bits.push(`도보 ${last.walkMax}분`);
+  if (last.tags?.length) bits.push(last.tags.join("·"));
+  // 조건 문자열 끝 글자가 매번 달라 "로/으로" 를 붙이면 틀린다("혼밥로 보셨습니다") — 조사를 뺀다.
+  const cond = bits.join(" · ");
+  // 구분점을 뒤 항목에 붙여 한 덩어리로 묶는다 — " · " 로 이으면 줄 끝에 점만 남는다(2026-07-21 실측).
+  const condHtml = bits.map((b, i) => `<span class="nb">${i ? "· " : ""}${esc(b)}</span>`).join(" ");
+  const el = bubble("ai", `지난번에는 이렇게 보셨어요`
+    + `<div class="cb-cond">${condHtml}</div>`
+    + `<div class="cb-act"><button class="chip" type="button">그 조건으로 이어보기</button></div>`);
+  el.querySelector("button").onclick = () => {
+    // 누른 뒤에는 칩을 지운다 — 남겨두면 이미 적용된 조건을 또 권하는 셈이 된다.
+    el.querySelector(".cb-act").remove();
+    bubble("user", esc(cond));
+    state = { budget: last.budget ?? null, walkMax: last.walkMax ?? null, tags: last.tags ?? [] };
+    $("#parsed").textContent = `조건: ${cond}`;
+    // 예산 칩 줄도 같은 렌더에서 맞춘다 — 상태를 두 곳에서 따로 들면 반드시 어긋난다.
+    syncChips(); render(); renderMarkers(); loadPicks();
+  };
 }
 
 /* 랜딩에서 넘어온 조건 이어받기 — /app.html?q=...&budget=8000 */
@@ -659,34 +706,8 @@ document.addEventListener("click", (e) => {
   if (card && !e.target.closest("a,button")) noteCategory(card.dataset.cat);
 });
 
-/* 재방문 안내 — 지난번 조건이 남아 있을 때만 뜬다. 첫 방문에는 아무것도 보이지 않는다. */
-function showRevisit() {
-  const p = loadProfile();
-  const last = p?.last;
-  if (!last || (!last.budget && !last.tags?.length)) return;
-  const bits = [];
-  if (last.budget) bits.push(`예산 ${Number(last.budget).toLocaleString()}원 이하`);
-  if (last.walkMax) bits.push(`도보 ${last.walkMax}분`);
-  if (last.tags?.length) bits.push(last.tags.join("·"));
-  // 조건 문자열 끝 글자가 매번 달라 "로/으로" 를 붙이면 틀린다("혼밥로 보셨습니다") — 조사를 뺀다.
-  $("#revisitText").textContent = `지난번 조건 — ${bits.join(" / ")}`;
-  $("#revisit").hidden = false;
-  $("#revisitGo").onclick = () => {
-    state = { budget: last.budget ?? null, walkMax: last.walkMax ?? null, tags: last.tags ?? [] };
-    $("#parsed").textContent = `조건: ${bits.join(" / ")}`;
-    $("#revisit").hidden = true;
-    syncChips(); render(); renderMarkers(); loadPicks();
-  };
-}
-$("#revisitClear").onclick = () => {
-  try { localStorage.removeItem(PROFILE_KEY); } catch {}
-  $("#revisit").hidden = true;
-  $("#picksNote").textContent = "";
-};
-
 loadData();
 loadMap();
-showRevisit();
 </script>
 <script src="/nav.js" defer></script>
 </body>
