@@ -27,3 +27,9 @@
   - Completed: 2026-07-21
   - Result: 개인 버전 웹서비스 완성 — 배포 URL 시연 시나리오 smoke 11/11, 근거 검증 배지 실동작(판정 5% 실패 수정)
   - Evidence: plans/2026-07-19-dr2-personal-service.md
+
+### 2026-07
+- DR4 - DR4 — 제보→검수→승인 루프 (사진 제보 페이지 + 운영진 검수 화면 + 승인 게이트)
+  - Completed: 2026-07-22
+  - Result: 배포 URL 에서 새 메뉴판 사진 1장이 제보 → Document Parse → 시트 `대기` → `/review.html` 검수 → 서비스 추천 노출까지 한 번의 E2E 로 관측되고, 미검수 데이터가 노출되지 않는 것이 역방향 확인
+  - Evidence: `plans/2026-07-20-dr4-contribute-review-loop.md` + `verification/matrix.md`

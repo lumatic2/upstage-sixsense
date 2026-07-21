@@ -1,6 +1,6 @@
 # ROADMAP
 
-> 마지막 업데이트: 2026-07-21
+> 마지막 업데이트: 2026-07-22
 > 상태: demoday-run horizon
 > 북극성: 정해진 예산 안에서 오늘 뭘 먹을지 — 학식과 주변 식당을 한 판에 놓고 정해주는 서비스
 > line budget: <=150
@@ -15,15 +15,6 @@
 
 ## Active Milestones
 
-<!-- harness:milestone id="DR4" status="completed" priority="P0" evidence="plans/2026-07-20-dr4-contribute-review-loop.md" -->
-### DR4 — 제보→검수→승인 루프 (사진 제보 페이지 + 운영진 검수 화면 + 승인 게이트)
-- DoD: 배포 URL 에서 새 메뉴판 사진 1장이 제보 → Document Parse → 시트 `대기` → `/review.html` 검수 → 서비스 추천 노출까지 한 번의 E2E 로 관측되고, 미검수 데이터가 노출되지 않는 것이 역방향 확인
-- Evidence: `plans/2026-07-20-dr4-contribute-review-loop.md` + `verification/matrix.md`
-- Gap: Document Parse(대회 하드 요건 제품)가 실서비스 화면 어디에도 노출되지 않고, `loadSheetData` 가 시트 검수 값을 필터링하지 않아 미검수 행이 그대로 추천에 나감(실측: [메뉴] 189행 중 대기 189·확인 1)
-- Scale: changesets>=4; surfaces: 배포 URL·구글 시트·verification/; capability: 데이터 생산과 품질 게이트가 제품 안에서 닫힌다
-- Status: [x]
-
-- Completed at: 2026-07-20
 <!-- harness:milestone id="DR5" status="completed" priority="P0" evidence="plans/2026-07-20-dr5-site-completion.md" -->
 ### DR5 — 페이지 구조 완성 + 재방문 개인화
 - DoD: 배포 URL 에서 `docs/SITEMAP.md` 공개 5페이지가 전부 살아 있고 nav·푸터에 죽은 링크 0, 재방문 시 추천이 실제로 달라지는 것 관측 + smoke PASS
@@ -88,14 +79,16 @@
 
 - Completed at: 2026-07-21
 - Summary: 품질 마감 — BLOCKER(대화-화면 모순) 해소·학식 cron 자동화(멱등)·데모 카드 마커+실서비스 유도·전수 감사 결함 8건·이슈 ⑥⑦ 닫힘 (smoke 14/14, 독립 검증 confirmed)
-<!-- harness:milestone id="DR11" status="active" priority="P0" evidence="plans/2026-07-21-dr11-design-truth.md" -->
+<!-- harness:milestone id="DR11" status="completed" priority="P0" evidence="archive/reports/2026-07-22-dr11-design-truth.md" -->
 ### DR11 — 설계도와 화면을 사실로 되돌린다
 - DoD: 공개 5페이지에 코드·ADR 과 어긋나는 주장 0건 · `docs/SITEMAP.md` 주장이 실구현과 1:1 대조돼 불일치 0 + 문구·라벨 규약 신설 · 랜딩 데모 네 모서리 마커에서 카드 잘림 0 · contribute 가 파싱 0행에서 폴백 제공 · 배포 URL 에서 smoke·단위 4종 전항 PASS + 콘솔 red 0
-- Evidence: `plans/2026-07-21-dr11-design-truth.md` · `research/2026-07-21-dr11-design-doc-audit.md`
+- Evidence: archive/reports/2026-07-22-dr11-design-truth.md
 - Gap: 코드를 6번 고치는 동안 설계 문서를 한 번도 안 고쳐, `about.html:157-159` 가 ADR-0004 로 폐기된 순서 개인화를 라이브에서 광고하고 `SITEMAP.md` 는 6곳에서 어긋나며 랜딩 카운터 "학식"은 cron 이 돌수록 불어나는 누적 행 수다
 - Scale: changesets>=6; surfaces: 배포 URL(데스크톱·390px)·docs 설계도·Playwright; capability: 설계도와 화면과 코드가 같은 사실을 말한다
-- Status: [ ]
+- Status: [x]
 
+- Completed at: 2026-07-22
+- Summary: 설계도와 화면을 사실로 되돌렸다 — 폐기 기능 광고 제거(4페이지 복제본), SITEMAP 7건 대조 불일치 0, 규약 2종 신설, 학식 카운터 정정, 카드 잘림 270px→0, 제보 0행 폴백 (smoke 14/14, changeset 6)
 ## Completed (product-horizon)
 
 <!-- harness:milestone id="M1" status="completed" priority="P0" evidence="docs/mentoring/2026-07-15-presubmit.md" -->
@@ -135,8 +128,8 @@
 - Completed at: 2026-07-17
 - Summary: 루브릭 6/6 발표 원고 + 시연 시나리오·Q&A (리허설 완료)
 ## Next Candidates
-- cron 첫 자동 실행 관측 (내일 06:10 KST — 지금까지 수동 트리거로만 검증)
-- 이슈 ⑧ 태그 부분일치 잔여 (`docs/OPEN-ISSUES.md`, MINOR)
+- 학식당 0곳인 날 카운터 "휴무" 표시 실측 (주말·방학 — DR11 에서 코드 분기만 확인)
+- 발표 자료 실물 정합 (7/23 미팅·7/25 데모데이 — 사용자 요청 시에만)
 - 영수증 파싱·잔여 예산 상태 관리 (리서치 C2 축 — ADR-0001에서 범위 제외로 보류)
 - 자연캠(율전) 확장 · 자연캠 학식 페이지 실사 마무리
 - Supabase RLS 점검 (pending insert 만 익명 허용)
