@@ -60,10 +60,14 @@
     var(--bg);
 }
 #demoMap{position:absolute;inset:0}
+/* 마커 묶음 — 좌표점 하나에 핀·이름표·정보카드가 함께 매달린다.
+   지도가 붙으면 이 요소가 통째로 CustomOverlay 로 들어가 지도가 위치를 책임진다
+   (우리가 계산하면 드래그·줌 중에 마커가 뒤늦게 따라온다 — 2026-07-21 사용자 지적). */
+.mwrap{position:absolute;width:0;height:0;z-index:2}
 /* 지도 위 표시는 마커여야 한다 — 회색 원은 지도 위 요소로 읽히지 않는다(사용자 지시 2026-07-21).
    끝점이 좌표를 가리키도록 아래쪽 꼭짓점 기준으로 앉힌다. */
 .dot{
-  position:absolute;width:20px;height:26px;translate:-50% -100%;
+  position:absolute;left:0;top:0;width:20px;height:26px;translate:-50% -100%;
   color:var(--marker);opacity:1;transition:all 240ms ease-out;z-index:2;
   transform-origin:50% 100%;
 }
@@ -83,7 +87,7 @@
 .dot.best{color:var(--accent);z-index:4}
 /* 지도 위 이름표 — 이름만 상시 표시(카드 겹침 방지), 선택 시에만 메뉴·가격 확장 */
 .mlabel{
-  position:absolute;translate:-50% calc(-100% - 30px);z-index:3;  /* 마커(26px) 위로 — 핀과 겹치지 않게 */
+  position:absolute;left:0;top:0;translate:-50% calc(-100% - 30px);z-index:3;  /* 마커(26px) 위로 */
   background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
   padding:3px 8px;font-size:12px;line-height:1.35;white-space:nowrap;color:var(--fg);
   transition:all 240ms ease-out;
@@ -95,7 +99,7 @@
 /* 선택된 곳은 이름표 대신 정보 카드가 뜬다 — /app.html 의 마커 클릭 카드와 같은 생김새라
    랜딩에서 본 것이 서비스에서 그대로 나온다(사용자 지시 2026-07-21). */
 .dcard{
-  position:absolute;translate:-50% calc(-100% - 32px);z-index:5;
+  position:absolute;left:0;top:0;translate:-50% calc(-100% - 32px);z-index:5;
   width:200px;background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
   padding:var(--s3) var(--s4);box-shadow:0 8px 24px rgba(12,20,32,.16);
   font-size:var(--sm);text-align:left;
@@ -645,21 +649,23 @@ function startDemo(data) {
 
   // 지도 위 요소: 점 + 이름표(이름만 — 카드 겹침 방지)
   const PIN = `<svg viewBox="0 0 20 26" aria-hidden="true"><path d="M10 0C4.9 0 .8 4.1.8 9.2c0 6.9 9.2 16.8 9.2 16.8s9.2-9.9 9.2-16.8C19.2 4.1 15.1 0 10 0z"/><circle cx="10" cy="9" r="3.4" fill="#fff"/></svg>`;
+  /* 마커·이름표를 좌표점 하나에 묶어 둔다. 지도가 붙으면 이 wrap 을 통째로 카카오
+     CustomOverlay 에 넘겨 지도가 직접 붙들게 한다 — 우리가 좌표를 다시 계산하면
+     드래그·줌 중에는 갱신이 안 돼 마커가 뒤늦게 따라온다(사용자 지시 2026-07-21). */
   const nodes = pts.map((p) => {
+    const wrap = document.createElement("div");
+    wrap.className = "mwrap";
     const dot = document.createElement("i");
     dot.className = "dot";
     dot.innerHTML = PIN;
-    stage.appendChild(dot);
     const label = document.createElement("div");
     label.className = "mlabel";
     label.textContent = p.name;
-    stage.appendChild(label);
-    return { p, dot, label };
+    wrap.append(dot, label);
+    stage.appendChild(wrap);          // 지도 로드 전에는 stage 위에 근사 배치
+    return { p, wrap, dot, label };
   });
-  const place = (n, x, y) => {
-    n.dot.style.left = x; n.dot.style.top = y;
-    n.label.style.left = x; n.label.style.top = y;
-  };
+  const place = (n, x, y) => { n.wrap.style.left = x; n.wrap.style.top = y; };
   nodes.forEach((n, i) => { const c = pct(n.p); n.px = c.x * 8; n.py = c.y * 3; place(n, c.x + "%", c.y + "%"); });
 
   // 주요 식당 5곳만 이름 카드 상시 표시 — 나머지는 포인터(dot)만 (사용자 지시 2026-07-20).
@@ -719,12 +725,22 @@ function startDemo(data) {
       pts.forEach((p) => bounds.extend(new kakao.maps.LatLng(p.lat, p.lng)));
       map.relayout();
       map.setBounds(bounds, 56, 40, 44, 40);
+      /* 마커를 지도에 붙인다 — 좌표 계산을 우리가 하면 드래그·줌 *중에는* 갱신이 안 돼
+         마커가 뒤늦게 따라온다. CustomOverlay 로 넘기면 지도가 매 프레임 직접 붙든다. */
+      nodes.forEach((n) => {
+        n.wrap.style.left = ""; n.wrap.style.top = "";   // 근사 배치 해제 — 이제 지도가 위치를 준다
+        n.overlay = new kakao.maps.CustomOverlay({
+          map, position: new kakao.maps.LatLng(n.p.lat, n.p.lng),
+          content: n.wrap, xAnchor: 0.5, yAnchor: 0.5, zIndex: 2,
+        });
+      });
+
+      // 화면 좌표는 이름표 겹침 판정에만 쓴다 — 위치 자체는 지도가 책임진다.
       const project = () => {
         const proj = map.getProjection();
         nodes.forEach((n) => {
           const pt = proj.containerPointFromCoords(new kakao.maps.LatLng(n.p.lat, n.p.lng));
           n.px = pt.x; n.py = pt.y;
-          place(n, pt.x + "px", pt.y + "px");
         });
         declutter();
       };
@@ -910,12 +926,10 @@ function startDemo(data) {
         .sort((a, b) => a.price - b.price).slice(0, 3);
       const card = document.createElement("div");
       card.className = "dcard";
-      card.style.left = best.n.dot.style.left;
-      card.style.top = best.n.dot.style.top;
       card.innerHTML = `<b>${best.n.p.name}</b><span class="cat">${best.n.p.category ?? ""}</span>
         <ul>${(picked.length ? picked : [best.menu]).map((m) =>
           `<li><span>${menuLabel(m.name)}</span><span class="p">${won(m.price)}</span></li>`).join("")}</ul>`;
-      stage.appendChild(card);
+      best.n.wrap.appendChild(card);   // wrap 안에 넣어야 지도와 함께 움직인다
       requestAnimationFrame(() => card.classList.add("in"));
       const fin = bubble("ai final", "");
       if (!(await typeText(fin, `${best.n.p.name}의 ${menuLabel(best.menu.name)} ${won(best.menu.price)}을 추천해요. ${won(sc.budget)} 예산을 가장 알차게 쓰는 조합이에요.`, t))) return;
