@@ -466,12 +466,16 @@ fetch("/api/data").then((r) => r.json()).then((d) => {
   document.getElementById("nMenu").textContent = d.menus.length;
   // 학식 카운터는 `cafeteria`(전 날짜 누적 행)가 아니라 오늘 판(`cafeteriaBoard`)을 센다.
   // 누적 행을 세면 cron 이 매일 돌 때마다 숫자가 불어나고, 그건 학식당 수도 메뉴 수도 아니다.
-  // 방학·주말엔 전부 닫히므로 0곳일 때는 숫자 대신 휴무를 말한다 — 0 은 사실이지만 오해를 준다.
+  // 0곳일 때 숫자 대신 말로 답하되, **휴무와 적재 지연을 구분한다**(OPEN-ISSUES ⑩).
+  // 오늘자 적재가 없으면 우리는 문을 열었는지 모르는 것이다 — 모르는 것을 휴무라 말하지 않는다.
   const board = Array.isArray(d.cafeteriaBoard) ? d.cafeteriaBoard : [];
+  const feed = d.cafeteriaFeed ?? {};
   const openCafs = board.filter((c) => c.open).length;
   if (board.length && openCafs === 0) {
-    document.getElementById("nCaf").textContent = "휴무";
-    document.getElementById("kCaf").textContent = "오늘의 학식";
+    document.getElementById("nCaf").textContent = feed.fresh ? "휴무" : "정보 없음";
+    document.getElementById("kCaf").textContent = feed.fresh
+      ? "오늘의 학식"
+      : `학식 정보 (적재 ${feed.lastDate ?? "없음"}까지)`;
   } else {
     document.getElementById("nCaf").textContent = openCafs;
   }

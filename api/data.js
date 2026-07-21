@@ -19,7 +19,15 @@ export default async function handler(req, res) {
     // 4곳 전부를 같은 순서로 내려주고, 데이터가 없는 곳은 open:false(휴무) 다 — 방학엔 대부분 닫는다.
     const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
     const cafeteriaBoard = todayBoard(data.cafeteria.filter((c) => c.menu_date === today));
-    res.status(200).json({ source: "sheet", today, cafeteriaBoard, ...data });
+    // 오늘 행이 0이어도 그게 휴무인지 크롤 정지인지 화면은 알 수 없었다(OPEN-ISSUES ⑩).
+    // 실제로 2026-07-21 에 적재가 5일 밀린 채 "4곳 전부 휴무" 가 떴다 — 파이프라인이 죽었는데
+    // 서비스는 정상으로 보였다. 마지막 적재 날짜를 함께 내려 화면이 둘을 구분해 말하게 한다.
+    // 판정은 "오늘 행이 있나"가 아니라 **"적재가 오늘까지 닿았나"** 다. 크롤러는 며칠치를 앞서
+    // 넣으므로(실측 2026-07-22 에 lastDate=2026-07-24) 같음 비교는 정상 상태를 지연으로 오판한다.
+    // lastDate >= today 면 오늘까지 훑은 것이니 0곳은 진짜 휴무고, 뒤처졌으면 우리가 모르는 것이다.
+    const lastDate = data.cafeteria.reduce((m, c) => (c.menu_date > m ? c.menu_date : m), "");
+    const cafeteriaFeed = { lastDate: lastDate || null, fresh: Boolean(lastDate) && lastDate >= today };
+    res.status(200).json({ source: "sheet", today, cafeteriaBoard, cafeteriaFeed, ...data });
   } catch {
     res.status(200).json({ source: "none", restaurants: [], menus: [], cafeteria: [], error: "data unavailable" });
   }

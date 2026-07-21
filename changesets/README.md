@@ -8,6 +8,7 @@
 
 | # | Changeset | 날짜 | Scope | Verification | Status |
 |---|-----------|------|-------|--------------|--------|
+| 18 | 20260722-cafeteria-feed-freshness | 2026-07-22 | OPEN-ISSUES ⑩ — 적재 신선도(`cafeteriaFeed`)로 휴무/크롤 정지 구분 · 3화면 | 4/4 | done |
 | 17 | 20260722-stack-record-correction | 2026-07-22 | ADR-0005 신설 — Supabase 은퇴 확정·CLAUDE.md 낡은 스택 줄 정정·OPEN-ISSUES ⑩ (코드 무변경) | 4/4 | done |
 | 16 | 20260721-page-polish-close | 2026-07-22 | DR11 step-6 — Upstage 키 목록·app 문구 정정 + 5페이지 통합 검증 | 11/11 | done |
 | 15 | 20260721-contribute-fallback | 2026-07-22 | DR11 step-5 — 파싱 0행 수기 입력 폴백 + 정확도 76.4% 정직 표기 | 5/5 | done |

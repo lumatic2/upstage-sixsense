@@ -219,13 +219,18 @@ $("queryBtn").onclick = async () => {
 let DATA = { restaurants: [], menus: [], cafeteria: [], source: "none" };
 fetch("/api/data").then((r) => r.json()).then((d) => {
   DATA = d;
-  $("dataSource").textContent = `source=${d.source} · 식당 ${d.restaurants.length} · 메뉴 ${d.menus.length} · 학식 ${d.cafeteria.length}`;
+  // 학식 적재 신선도는 운영자가 가장 먼저 봐야 할 값이다 — cron 이 멈춰도 서비스 화면은
+  // 조용히 "휴무" 로 보이기 때문(OPEN-ISSUES ⑩). 여기서는 지연을 상태색으로 드러낸다.
+  const feed = d.cafeteriaFeed ?? {};
+  const feedTxt = feed.lastDate ? ` · 학식 적재 ${feed.fresh ? "최신" : `지연(${feed.lastDate}까지)`}` : " · 학식 적재 없음";
+  $("dataSource").className = "stat" + (feed.lastDate && !feed.fresh ? " bad" : "");
+  $("dataSource").textContent = `source=${d.source} · 식당 ${d.restaurants.length} · 메뉴 ${d.menus.length} · 학식 ${d.cafeteria.length}${feedTxt}`;
   // 서버가 만든 오늘자 보드(정식 명칭·휴무 포함)를 쓴다. raw `cafeteria` 를 그대로 그리면
   // 시트의 빈 코너값이 그대로 나와 `패컬티 · 코너` 라는 실재하지 않는 이름이 뜬다(2026-07-21 적발).
   $("cafeteria").innerHTML = (d.cafeteriaBoard ?? [])
     .map((c) => c.open
       ? `<li><b>${esc(c.name)}</b> <span class="muted">(${esc(d.today ?? "")})</span> — ${esc(c.items.slice(0, 4).join(", "))}${c.items.length > 4 ? " 외" : ""} · <b>${c.price ? c.price.toLocaleString() + "원" : "가격 미상"}</b></li>`
-      : `<li><b>${esc(c.name)}</b> <span class="muted">${esc(c.place)}</span> — 휴무</li>`)
+      : `<li><b>${esc(c.name)}</b> <span class="muted">${esc(c.place)}</span> — ${d.cafeteriaFeed?.fresh === false ? "정보 없음(적재 지연)" : "휴무"}</li>`)
     .join("") || `<li class="muted">실데이터 없음</li>`;
   renderRealResults(null);
 }).catch((e) => {

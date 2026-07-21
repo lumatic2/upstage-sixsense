@@ -802,14 +802,20 @@ function visibleRestaurants() {
 }
 /* 학식은 명륜캠 4곳을 항상 같은 순서로, 오늘 것만 보여준다.
    지난 날짜가 섞여 나오던 것과 `패컬티 · 코너` 라는 실재하지 않는 이름을 함께 없앴다.
-   방학엔 대부분 닫으므로 휴무도 정보다 — 빈 화면보다 "닫혔다"가 낫다. (사용자 지시 2026-07-21) */
+   방학엔 대부분 닫으므로 휴무도 정보다 — 빈 화면보다 "닫혔다"가 낫다. (사용자 지시 2026-07-21)
+   단 **오늘자 적재가 없으면 "휴무" 라고 말하지 않는다**(OPEN-ISSUES ⑩) — 문을 닫은 것과
+   우리가 못 받아온 것은 다른 사실이고, 섞으면 크롤러가 멈춰도 화면이 정상으로 보인다. */
 function render() {
   const board = DATA.cafeteriaBoard ?? [];
-  $("#cafDate").textContent = DATA.today ?? "";
+  const feed = DATA.cafeteriaFeed ?? {};
+  const stale = board.length > 0 && feed.fresh === false;
+  $("#cafDate").textContent = stale
+    ? `${DATA.today ?? ""} · 오늘 정보 없음 (적재 ${feed.lastDate ?? "없음"}까지)`
+    : DATA.today ?? "";
   $("#cafeteriaBlock").innerHTML = board.map((c) => {
     const overBudget = c.open && state.budget && c.price && c.price > state.budget;
     if (!c.open) {
-      return `<div class="card"><div class="rowhead"><h3>${esc(c.name)}</h3><span class="small muted">휴무</span></div>
+      return `<div class="card"><div class="rowhead"><h3>${esc(c.name)}</h3><span class="small muted">${stale ? "정보 없음" : "휴무"}</span></div>
         <p class="muted small" style="margin-top:var(--s3)">${esc(c.place)}</p></div>`;
     }
     return `<div class="card">
