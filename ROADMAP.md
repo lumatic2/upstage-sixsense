@@ -15,16 +15,6 @@
 
 ## Active Milestones
 
-<!-- harness:milestone id="DR2" status="completed" priority="P0" evidence="plans/2026-07-19-dr2-personal-service.md" -->
-### DR2 — 개인 버전 웹서비스 빌드 (Upstage 심화 + 인터랙티브 데모)
-- DoD: 배포 URL 심사 시연 시나리오(예산→실데이터 추천+이유+Groundedness 배지) Playwright smoke PASS + `verification/matrix.md` 가시화
-- Evidence: plans/2026-07-19-dr2-personal-service.md
-- Gap: "각자 서비스" 전환 후 개인 버전 미착수 — 루브릭 20점(Upstage)·차별화 축 실현체
-- Scale: changesets>=4; surfaces: 배포 URL·Playwright·verification/; capability: 심사 가능한 완결 데모 서비스
-- Status: [x]
-
-- Completed at: 2026-07-20
-- Summary: 개인 버전 웹서비스 완성 — 배포 URL 시연 시나리오 smoke 11/11, 근거 검증 배지 실동작(판정 5% 실패 수정)
 <!-- harness:milestone id="DR4" status="completed" priority="P0" evidence="plans/2026-07-20-dr4-contribute-review-loop.md" -->
 ### DR4 — 제보→검수→승인 루프 (사진 제보 페이지 + 운영진 검수 화면 + 승인 게이트)
 - DoD: 배포 URL 에서 새 메뉴판 사진 1장이 제보 → Document Parse → 시트 `대기` → `/review.html` 검수 → 서비스 추천 노출까지 한 번의 E2E 로 관측되고, 미검수 데이터가 노출되지 않는 것이 역방향 확인

@@ -21,3 +21,9 @@
   - Completed: 2026-07-21
   - Result: 실데이터 파이프라인 가동 — 식당5·메뉴76·학식4·좌표5/5, 스테이징 E2E 실측
   - Evidence: plans/2026-07-19-dr1-data-pipeline.md
+
+### 2026-07
+- DR2 - DR2 — 개인 버전 웹서비스 빌드 (Upstage 심화 + 인터랙티브 데모)
+  - Completed: 2026-07-21
+  - Result: 개인 버전 웹서비스 완성 — 배포 URL 시연 시나리오 smoke 11/11, 근거 검증 배지 실동작(판정 5% 실패 수정)
+  - Evidence: plans/2026-07-19-dr2-personal-service.md
