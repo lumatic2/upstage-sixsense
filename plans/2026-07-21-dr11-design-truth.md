@@ -79,7 +79,7 @@ Status: approved (2026-07-22 사용자 승인)
 
 ## Step 트리
 
-- [ ] **step-1 — 폐기된 개인화 축의 잔재를 걷어낸다**
+- [x] **step-1 — 폐기된 개인화 축의 잔재를 걷어낸다**
   - Artifact: `changesets/20260721-personalization-copy-truth/`
   - Files: (w) `public/about.html` · `docs/PRD.md` · (r) `docs/adr/0004-personalization.md`
   - Dependencies: 없음
@@ -92,7 +92,7 @@ Status: approved (2026-07-22 사용자 승인)
     문구만 고치고 코드가 다르면 방향만 뒤집힌 같은 거짓말이 된다
   - Commit: `fix(copy): 폐기된 순서 개인화 설명을 about·PRD 에서 걷어낸다 (ADR-0004 정합)`
 
-- [ ] **step-2 — 설계도를 현행화하고 문구 규약을 신설한다**
+- [x] **step-2 — 설계도를 현행화하고 문구 규약을 신설한다**
   - Artifact: `changesets/20260721-sitemap-current/`
   - Files: (w) `docs/SITEMAP.md` · `docs/ARCHITECTURE.md` · `CLAUDE.md` · `AGENTS.md` ·
     (r) `research/2026-07-21-dr11-design-doc-audit.md`
@@ -105,7 +105,7 @@ Status: approved (2026-07-22 사용자 승인)
   - Failure probe: SITEMAP 을 고친 직후 감사 문서 B 표를 역방향으로 다시 훑어 남은 항목이 없는지 확인
   - Commit: `docs(sitemap): 설계도를 실구현으로 현행화 + 문구·라벨 규약 신설`
 
-- [ ] **step-3 — 랜딩 카운터를 정직하게, 아랫부분 문구를 손본다**
+- [x] **step-3 — 랜딩 카운터를 정직하게, 아랫부분 문구를 손본다**
   - Artifact: `changesets/20260721-landing-copy/`
   - Files: (w) `public/index.html` · (r) `api/data.js` · `api/_lib/cafeterias.js`
   - Dependencies: step-2
@@ -117,7 +117,7 @@ Status: approved (2026-07-22 사용자 승인)
     `cafeteriaBoard` 는 항상 4곳을 내려주고 `open:false` 가 붙으므로 "0곳"과 "휴무"를 구분해 표시한다
   - Commit: `fix(landing): 학식 카운터를 학식당 개수로 + 아랫부분 문구 정리`
 
-- [ ] **step-4 — 지도 마커 카드가 잘리지 않게 한다**
+- [x] **step-4 — 지도 마커 카드가 잘리지 않게 한다**
   - Artifact: `changesets/20260721-map-card-clip/`
   - Files: (w) `public/index.html` · (r) `public/app.html`
   - Dependencies: step-3
@@ -129,7 +129,7 @@ Status: approved (2026-07-22 사용자 승인)
     재측정해 보정이 타이머에만 의존하다 실패하는지 확인한다
   - Commit: `fix(landing): 데모 지도 마커 카드가 가장자리에서 잘리지 않게 보정 이식`
 
-- [ ] **step-5 — 사진 제보가 실패해도 사용자를 버리지 않는다**
+- [x] **step-5 — 사진 제보가 실패해도 사용자를 버리지 않는다**
   - Artifact: `changesets/20260721-contribute-fallback/`
   - Files: (w) `public/contribute.html` · (r) `docs/SITEMAP.md`
   - Dependencies: step-2
@@ -140,7 +140,7 @@ Status: approved (2026-07-22 사용자 승인)
   - Failure probe: 파일 크기·형식 거부 경로가 폴백 신설로 깨지지 않았는지 재확인한다
   - Commit: `feat(contribute): 파싱 0행·실패 시 수기 입력 폴백 + 정확도 정직 표기`
 
-- [ ] **step-6 — 5페이지를 나란히 놓고 닫는다**
+- [x] **step-6 — 5페이지를 나란히 놓고 닫는다**
   - Artifact: `changesets/20260721-page-polish-close/` + `archive/reports/2026-07-22-dr11-design-truth.md`
   - Files: (w) `public/app.html` · `public/about.html` · `verification/matrix.md` · `docs/OPEN-ISSUES.md`
   - Dependencies: step-1 step-2 step-3 step-4 step-5

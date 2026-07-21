@@ -132,7 +132,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
         </tr>
         <tr>
           <td>Solar <code>solar-pro2</code></td>
-          <td>자연어 질의 구조화 + 추천 이유 생성</td>
+          <td>대화 응답 + 조건 구조화 + 추천 이유 생성<br><span class="small muted">한 번의 왕복으로 답과 조건을 함께 받습니다(구조화 출력)</span></td>
           <td>"둘이서 2만원"에서 인원·예산을 뽑는 나눗셈을 <code>solar-mini</code>는 틀렸습니다. 구조화 출력 실측 0.7~1.3초로 충분히 빠릅니다.</td>
         </tr>
         <tr>
@@ -148,7 +148,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
       </table>
       <div class="card">
         <b>키는 서버에만 있습니다</b>
-        <p class="small">Upstage 호출은 전부 서버 함수(<code>/api/parse-menu</code>·<code>/api/parse-query</code>·<code>/api/recommend</code>)에서 일어납니다. 브라우저는 API 키를 볼 수 없습니다.</p>
+        <p class="small">Upstage 호출은 전부 서버 함수(<code>/api/chat</code>·<code>/api/recommend</code>·<code>/api/parse-menu</code>·<code>/api/parse-query</code>)에서 일어납니다. 브라우저는 API 키를 볼 수 없습니다.</p>
       </div>
 
       <h2 id="s4">데이터가 틀리면</h2>
