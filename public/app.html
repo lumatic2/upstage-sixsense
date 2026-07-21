@@ -64,7 +64,6 @@
 .typing i:nth-child(2){animation-delay:.16s}.typing i:nth-child(3){animation-delay:.32s}
 @keyframes tdot{0%,100%{opacity:.3;transform:none}50%{opacity:1;transform:translateY(-3px)}}
 
-.chips{display:flex;gap:var(--s2);padding:0 var(--s4) var(--s3);flex-wrap:wrap}
 .chip{
   height:36px;padding:0 var(--s4);border:1px solid var(--border);border-radius:var(--r);
   background:transparent;color:var(--muted);font:inherit;font-size:var(--sm);cursor:pointer;
@@ -72,11 +71,11 @@
 }
 .chip:hover{border-color:var(--fg);color:var(--fg)}
 .chip:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.chip[aria-pressed="true"]{background:var(--accent);border-color:var(--accent);color:var(--accent-fg)}
 .parsed{color:var(--muted);font-size:var(--sm);margin-top:var(--s3);min-height:1.5em}
-/* 대화 안에서 에이전트가 내미는 실행 칩 — 예산 칩 줄(.chips)과 계약이 다르다.
-   .chips 는 "예산 하나를 고르는" 단일 선택 그룹이고, 이건 한 번 누르면 끝나는 동작이다.
-   그래서 aria-pressed 를 쓰지 않고, 누른 뒤에는 사라진다(2026-07-21). */
+/* 칩은 전부 대화 안에 있다 — 에이전트가 내미는 다음 질문(.cb-sug)이거나 실행 버튼(.cb-act)이다.
+   입력창 위에 고정돼 있던 예산 칩 줄(.chips)은 없앴다: 한 번 답한 질문이 화면에 계속 붙어 있었고,
+   맥락과 무관한 고정 선택지라 "대화를 쉽게 한다"는 칩의 존재 이유와도 맞지 않았다(사용자 지시 2026-07-21).
+   누르면 사라진다 — 지나간 질문을 다시 권하지 않는다. 단일 선택 그룹이 아니라 aria-pressed 도 쓰지 않는다. */
 .cb-cond{color:var(--muted);margin-top:var(--s1)}
 .cb-cond .nb{white-space:nowrap}
 .cb-act{display:flex;gap:var(--s2);flex-wrap:wrap;margin-top:var(--s2)}
@@ -195,12 +194,6 @@ document.getElementById("loginClose").addEventListener("click", () => document.g
             <span>Upstage AI 에이전트</span>
           </div>
           <div class="console-chat" id="chat" aria-live="polite"></div>
-          <div class="chips" role="group" aria-label="예산 바로 선택">
-            <button class="chip" type="button" data-budget="6000" aria-pressed="false">6천원</button>
-            <button class="chip" type="button" data-budget="8000" aria-pressed="false">8천원</button>
-            <button class="chip" type="button" data-budget="10000" aria-pressed="false">1만원</button>
-            <button class="chip" type="button" data-budget="" aria-pressed="false">전체</button>
-          </div>
           <form class="console-ask" id="searchForm" role="search" aria-label="예산·조건 검색">
             <input type="text" id="q" placeholder="예: 8천원 이하 도보 5분 혼밥" autocomplete="off" aria-label="자연어로 조건 입력">
             <button class="btn sm" type="submit" id="goBtn" aria-label="찾기">
@@ -377,7 +370,8 @@ async function loadData() {
 function greet() {
   if (chatEl().children.length) return;
   bubble("ai", `오늘은 뭘 먹어 볼까요?`);
-  bubble("ai muted", `예산만 말해도 되고, "8천원 이하 도보 5분 혼밥" 처럼 붙여도 됩니다.`);
+  const hint = bubble("ai muted", `눌러서 골라도 되고, "8천원 이하 도보 5분 혼밥" 처럼 말해도 됩니다.`);
+  sugChips(entryChips(), hint);
   greetRevisit();
 }
 
@@ -405,8 +399,7 @@ function greetRevisit() {
     bubble("user", esc(cond));
     state = { budget: last.budget ?? null, walkMax: last.walkMax ?? null, tags: last.tags ?? [] };
     $("#parsed").textContent = `조건: ${cond}`;
-    // 예산 칩 줄도 같은 렌더에서 맞춘다 — 상태를 두 곳에서 따로 들면 반드시 어긋난다.
-    syncChips(); render(); renderMarkers(); loadPicks();
+    render(); renderMarkers(); loadPicks();
   };
 }
 
@@ -418,7 +411,7 @@ function applyUrlQuery() {
   if (b > 0) {
     state = { budget: b, walkMax: null, tags: [] };
     $("#parsed").textContent = `조건: 예산 ${b.toLocaleString()}원 이하`;
-    syncChips(); render(); renderMarkers(); loadPicks();
+    render(); renderMarkers(); loadPicks();
   } else if (q) {
     $("#searchForm").requestSubmit();
   }
@@ -549,8 +542,10 @@ function condText(s) {
 /* 대화 이력 — 서버로 보내되 저장하지는 않는다(무상태). 새로고침하면 사라진다. */
 const history = [];
 
-async function ask({ q = null, budget = null }) {
+async function ask({ q = null, budget = null, conditions = null }) {
   $("#goBtn").disabled = true;
+  // 앞 턴의 칩은 지운다 — 남겨두면 이미 지나간 질문을 계속 권하는 꼴이 된다.
+  document.querySelectorAll(".cb-sug").forEach((el) => el.remove());
   const label = q ?? (budget ? `${won(budget)} 이하` : "전체 보기");
   bubble("user", esc(label));
   history.push({ role: "user", text: label });
@@ -563,7 +558,7 @@ async function ask({ q = null, budget = null }) {
     try {
       r = await (await fetch("/api/chat", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ message: q, history: history.slice(0, -1).slice(-6) }),
+        body: JSON.stringify({ message: q, history: history.slice(0, -1).slice(-6), conditions }),
       })).json();
     } catch { r = null; }
     if (r) {
@@ -574,6 +569,12 @@ async function ask({ q = null, budget = null }) {
         ? { budget: r.conditions.budget ?? null, walkMax: r.conditions.walkMax ?? null, tags: r.conditions.tags ?? [] }
         : { budget: null, walkMax: null, tags: [] };
       searched = Boolean(r.search);
+      sugChips(r.chips, wait);
+    } else if (conditions) {
+      // 칩으로 들어온 턴은 조건이 이미 검증돼 있다 — Solar 가 죽어도 그 조건으로 그냥 간다.
+      wait.className = "cb ai";
+      state = { budget: conditions.budget ?? null, walkMax: conditions.walkMax ?? null, tags: conditions.tags ?? [] };
+      wait.textContent = condText(state) ? `${condText(state)} 조건으로 찾아볼게요.` : "찾아볼게요.";
     } else {
       // /api/chat 자체가 죽어도 검색은 되게 — 기존 구조화 경로로 떨어진다.
       wait.className = "cb ai";
@@ -594,7 +595,6 @@ async function ask({ q = null, budget = null }) {
   }
 
   $("#parsed").textContent = condText(state) ? `조건: ${condText(state)}` : "";
-  syncChips();
   render(); renderMarkers();
   if (searched) {
     const wait = bubble("ai muted", `고르는 중입니다 ${TYPING}`);
@@ -612,14 +612,55 @@ $("#searchForm").addEventListener("submit", (e) => {
   if (!q) return;
   ask({ q });
 });
-document.querySelectorAll(".chip").forEach((c) => c.addEventListener("click", () => {
-  ask({ budget: c.dataset.budget ? Number(c.dataset.budget) : null });
-}));
-function syncChips() {
-  document.querySelectorAll(".chip").forEach((c) => {
-    const b = c.dataset.budget ? Number(c.dataset.budget) : null;
-    c.setAttribute("aria-pressed", String(b === state.budget));
-  });
+/* 제안 칩 — 클릭만으로 대화를 이어가는 길.
+   서버(`/api/chat`)가 Solar 후보를 실데이터로 검증해 최대 3개만 내려준다. 여기서는 그리기만 한다:
+   화면이 후보를 고르기 시작하면 검증을 두 곳에서 하게 되고, 곧 서로 다른 답을 낸다. */
+function sugChips(chips, host) {
+  if (!Array.isArray(chips) || !chips.length || !host) return;
+  const row = document.createElement("div");
+  row.className = "cb-act cb-sug";
+  for (const c of chips) {
+    const b = document.createElement("button");
+    b.className = "chip"; b.type = "button"; b.textContent = c.label;
+    b.onclick = () => ask({ q: c.label, conditions: mergeCond(state, c) });
+    row.appendChild(b);
+  }
+  host.appendChild(row);
+  chatEl().scrollTop = chatEl().scrollHeight;
+}
+
+/* 칩은 **덧붙이는 조건**이다 — "도보 5분 안으로" 를 눌렀다고 예산이 풀리면 안 된다.
+   서버 `_lib/chips.js` 의 mergeConditions 와 같은 규칙이다(누른 값이 화면과 서버에서 같아야 한다). */
+function mergeCond(s, c) {
+  return {
+    budget: c.budget ?? s.budget ?? null,
+    walkMax: c.walkMax ?? s.walkMax ?? null,
+    tags: [...new Set([...(s.tags ?? []), ...(c.tags ?? [])])],
+  };
+}
+
+/* 진입 칩 — 아직 대화가 없으니 맥락이 없다. 대신 **오늘 데이터**에서 뽑는다:
+   실제로 결과가 나오는 예산, 오늘 문 연 학식. 후보를 여기서 지어내지 않고 셈으로 거른다. */
+function entryChips() {
+  const mains = DATA.menus.filter((m) => !m.isSide);
+  const affordable = (b) => new Set(mains.filter((m) => m.price <= b).map((m) => m.restaurant_id)).size;
+  const hasTag = (t) => DATA.restaurants.some((r) => (r.tags ?? []).includes(t));
+  const cafOpen = (DATA.cafeteriaBoard ?? []).some((c) => c.open);
+  const budgets = [8000, 6000, 10000].filter((b) => affordable(b) >= 3);
+  // 서로 다른 갈래를 하나씩 — 예산 칩만 두 개 늘어놓으면 "예산으로만 묻는 서비스" 처럼 읽힌다
+  // (사용자 지시 2026-07-21). 학식 / 예산 / 상황 세 갈래를 보여주고, 모자라면 다른 예산으로 채운다.
+  const out = [];
+  if (cafOpen) out.push({ label: "오늘 학식은?", budget: null, walkMax: null, tags: [] });
+  if (budgets[0]) out.push({ label: `${won(budgets[0])} 이하`, budget: budgets[0], walkMax: null, tags: [] });
+  for (const [tag, label] of [["혼밥", "혼밥하기 좋은 곳"], ["가성비", "가성비 좋은 곳"], ["단체", "여럿이 갈 곳"]]) {
+    if (out.length >= 3) break;
+    if (hasTag(tag)) out.push({ label, budget: null, walkMax: null, tags: [tag] });
+  }
+  for (const b of budgets.slice(1)) {
+    if (out.length >= 3) break;
+    out.push({ label: `${won(b)} 이하`, budget: b, walkMax: null, tags: [] });
+  }
+  return out.slice(0, 3);
 }
 
 /* record=false: 이번 렌더는 조건을 기록하지 않는다. "전부 잊기" 직후에 필요하다 —
@@ -721,7 +762,7 @@ document.addEventListener("click", (e) => {
   if (!btn) return;
   state = { budget: btn.dataset.raise ? Number(btn.dataset.raise) : null, walkMax: null, tags: [] };
   $("#parsed").textContent = state.budget ? `조건: 예산 ${state.budget.toLocaleString()}원 이하` : "";
-  syncChips(); render(); renderMarkers(); loadPicks();
+  render(); renderMarkers(); loadPicks();
 });
 
 function menusFor(rid) {

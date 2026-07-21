@@ -5,7 +5,7 @@
  *  이유는 반드시 전달된 실데이터(메뉴·가격·거리)에만 근거하도록 프롬프트 고정 — step-3 Groundedness 가 이를 검증한다.
  */
 import { loadSheetData } from "./_lib/sheet-data.js";
-
+import { walkMin } from "./_lib/geo.js";
 
 const CHAT_URL = "https://api.upstage.ai/v1/chat/completions";
 // 이유 생성·근거 판정 타임아웃 — 2026-07-20 상향(구 2500/2000).
@@ -14,14 +14,7 @@ const CHAT_URL = "https://api.upstage.ai/v1/chat/completions";
 // 실측 왕복이 2.3~3.5s(콜드 포함) 이므로 상한을 늘려도 최악 합계가 Vercel 함수 한도 안에 들어온다.
 const REASON_TIMEOUT_MS = Number(process.env.SOLAR_TIMEOUT_MS || 5000);
 const JUDGE_TIMEOUT_MS = Number(process.env.SOLAR_JUDGE_TIMEOUT_MS || 3500);
-const CAMPUS = { lat: 37.5877, lng: 126.9938 }; // 명륜캠 정문 부근 (parse-query 80m=1분 환산과 동일 기준)
-
-function walkMin(lat, lng) {
-  if (!lat || !lng) return null;
-  const R = 6371000, dLat = ((lat - CAMPUS.lat) * Math.PI) / 180, dLng = ((lng - CAMPUS.lng) * Math.PI) / 180;
-  const s = Math.sin(dLat / 2) ** 2 + Math.cos((CAMPUS.lat * Math.PI) / 180) * Math.cos((lat * Math.PI) / 180) * Math.sin(dLng / 2) ** 2;
-  return Math.max(1, Math.round((2 * R * Math.asin(Math.sqrt(s))) / 80));
-}
+// 도보 분 환산은 `_lib/geo.js` 로 옮겼다 — 칩 검증("도보 3분 안" 이 실제로 있는가)이 같은 값을 써야 한다.
 
 function templateReason(p, budget) {
   const bits = [];
