@@ -88,6 +88,14 @@
 
 - Completed at: 2026-07-21
 - Summary: 품질 마감 — BLOCKER(대화-화면 모순) 해소·학식 cron 자동화(멱등)·데모 카드 마커+실서비스 유도·전수 감사 결함 8건·이슈 ⑥⑦ 닫힘 (smoke 14/14, 독립 검증 confirmed)
+<!-- harness:milestone id="DR11" status="active" priority="P0" evidence="plans/2026-07-21-dr11-design-truth.md" -->
+### DR11 — 설계도와 화면을 사실로 되돌린다
+- DoD: 공개 5페이지에 코드·ADR 과 어긋나는 주장 0건 · `docs/SITEMAP.md` 주장이 실구현과 1:1 대조돼 불일치 0 + 문구·라벨 규약 신설 · 랜딩 데모 네 모서리 마커에서 카드 잘림 0 · contribute 가 파싱 0행에서 폴백 제공 · 배포 URL 에서 smoke·단위 4종 전항 PASS + 콘솔 red 0
+- Evidence: `plans/2026-07-21-dr11-design-truth.md` · `research/2026-07-21-dr11-design-doc-audit.md`
+- Gap: 코드를 6번 고치는 동안 설계 문서를 한 번도 안 고쳐, `about.html:157-159` 가 ADR-0004 로 폐기된 순서 개인화를 라이브에서 광고하고 `SITEMAP.md` 는 6곳에서 어긋나며 랜딩 카운터 "학식"은 cron 이 돌수록 불어나는 누적 행 수다
+- Scale: changesets>=6; surfaces: 배포 URL(데스크톱·390px)·docs 설계도·Playwright; capability: 설계도와 화면과 코드가 같은 사실을 말한다
+- Status: [ ]
+
 ## Completed (product-horizon)
 
 <!-- harness:milestone id="M1" status="completed" priority="P0" evidence="docs/mentoring/2026-07-15-presubmit.md" -->
