@@ -392,7 +392,9 @@ function openMarkerCard(r, pos) {
   el.className = "mcard-wrap";
   el.innerHTML = markerCardHtml(r);
   el.addEventListener("click", (e) => e.stopPropagation());
-  const ov = new kakao.maps.CustomOverlay({ position: pos, content: el, yAnchor: 1.28, zIndex: 5 });
+  // zIndex 를 크게 잡는다 — 마커는 오버레이와 다른 pane 이라 낮게 두면 카드가 옆 마커에 가린다
+  // (2026-07-21 사용자 지적: "마커 표시가 설명카드보다 상위 레이어").
+  const ov = new kakao.maps.CustomOverlay({ position: pos, content: el, yAnchor: 1.28, zIndex: 10000 });
   ov.setMap(MAP);
   OPEN_OVERLAY = ov; OPEN_ID = r.id;
   requestAnimationFrame(() => el.classList.add("in"));

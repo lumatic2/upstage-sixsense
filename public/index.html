@@ -64,6 +64,9 @@
    지도가 붙으면 이 요소가 통째로 CustomOverlay 로 들어가 지도가 위치를 책임진다
    (우리가 계산하면 드래그·줌 중에 마커가 뒤늦게 따라온다 — 2026-07-21 사용자 지적). */
 .mwrap{position:absolute;width:0;height:0;z-index:2}
+/* 카드가 열린 묶음은 다른 마커보다 위로 — .mwrap 마다 쌓임 맥락이 생기므로 카드의 z-index 만
+   올려도 옆 마커에 가린다. 묶음 자체를 올려야 한다(2026-07-21 사용자 지적). */
+.mwrap.on{z-index:9}
 /* 지도 위 표시는 마커여야 한다 — 회색 원은 지도 위 요소로 읽히지 않는다(사용자 지시 2026-07-21).
    끝점이 좌표를 가리키도록 아래쪽 꼭짓점 기준으로 앉힌다. */
 .dot{
@@ -85,17 +88,6 @@
 .dot.out{opacity:.3}
 /* 에이전트가 고른 마커 — 살짝 커지고 정보 카드가 함께 뜬다 */
 .dot.best{color:var(--accent);z-index:4}
-/* 지도 위 이름표 — 이름만 상시 표시(카드 겹침 방지), 선택 시에만 메뉴·가격 확장 */
-.mlabel{
-  position:absolute;left:0;top:0;translate:-50% calc(-100% - 30px);z-index:3;  /* 마커(26px) 위로 */
-  background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
-  padding:3px 8px;font-size:12px;line-height:1.35;white-space:nowrap;color:var(--fg);
-  transition:all 240ms ease-out;
-}
-.mlabel.out{opacity:0;pointer-events:none}
-.mlabel.hid{opacity:0;pointer-events:none}
-.mlabel.below{translate:-50% 6px}  /* 아래 배치는 핀 끝점 바로 밑 */
-.mlabel.scan{border-color:var(--marker);color:var(--marker)}
 /* 선택된 곳은 이름표 대신 정보 카드가 뜬다 — /app.html 의 마커 클릭 카드와 같은 생김새라
    랜딩에서 본 것이 서비스에서 그대로 나온다(사용자 지시 2026-07-21). */
 .dcard{
@@ -658,45 +650,48 @@ function startDemo(data) {
     const dot = document.createElement("i");
     dot.className = "dot";
     dot.innerHTML = PIN;
-    const label = document.createElement("div");
-    label.className = "mlabel";
-    label.textContent = p.name;
-    wrap.append(dot, label);
+    wrap.appendChild(dot);
     stage.appendChild(wrap);          // 지도 로드 전에는 stage 위에 근사 배치
-    return { p, wrap, dot, label };
+    const n = { p, wrap, dot };
+    dot.addEventListener("click", (e) => { e.stopPropagation(); openCard(n); });
+    return n;
   });
   const place = (n, x, y) => { n.wrap.style.left = x; n.wrap.style.top = y; };
   nodes.forEach((n, i) => { const c = pct(n.p); n.px = c.x * 8; n.py = c.y * 3; place(n, c.x + "%", c.y + "%"); });
 
-  // 주요 식당 5곳만 이름 카드 상시 표시 — 나머지는 포인터(dot)만 (사용자 지시 2026-07-20).
-  // "주요" = 깨끗한 메뉴 행이 많은 순 (데이터가 풍부한 곳이 데모에서 보여줄 게 많다)
-  const menuCount = (id) => data.menus.filter((m) => m.restaurant_id === id && isCleanMenu(m)).length;
-  [...nodes].sort((a, b) => menuCount(b.p.id) - menuCount(a.p.id))
-    .forEach((n, rank) => { n.major = rank < 5; });
+  /* 이름표를 상시 띄우지 않는다 — 마커마다 이름이 붙어 있으면 지도가 글자로 덮인다.
+     이름과 상세는 마커를 눌렀을 때만 카드로 보여준다(사용자 지시 2026-07-21).
+     그래서 겹침 해소(declutter)도 함께 사라졌다 — 겹칠 이름표 자체가 없다. */
 
-  // 라벨 겹침 해소: 주요 5곳만 표시, 실제 렌더 크기(offsetWidth/Height)로 최종 사각형을 계산해
-  // 교차하면 반대 밴드(위↔아래)로 뒤집고, 그래도 교차하면 숨김. (근사 폭·세로 밴드 판정은 실폭과 어긋나 겹침 재발했었음)
-  function declutter() {
-    const placed = [];
-    const hit = (a, b) => !(a.right + 6 < b.left || b.right + 6 < a.left || a.bottom + 3 < b.top || b.bottom + 3 < a.top);
-    nodes.forEach((n, i) => {
-      if (!n.major) { n.label.classList.add("hid"); return; }
-      n.label.classList.remove("below", "hid");
-      const w = n.label.offsetWidth, h = n.label.offsetHeight;
-      // CSS translate 와 동일한 최종 위치: 위 = (-100% - 12px), 아래 = +14px
-      const rect = (below) => below
-        ? { left: n.px - w / 2, right: n.px + w / 2, top: n.py + 14, bottom: n.py + 14 + h }
-        : { left: n.px - w / 2, right: n.px + w / 2, top: n.py - 12 - h, bottom: n.py - 12 };
-      let below = i % 2 === 1;
-      if (placed.some((o) => hit(rect(below), o))) {
-        below = !below;
-        if (placed.some((o) => hit(rect(below), o))) { n.label.classList.add("hid"); return; }
-      }
-      if (below) n.label.classList.add("below");
-      placed.push(rect(below));
-    });
+  /* 카드 열기 — 대본(에이전트 선택)과 사용자 클릭이 같은 코드를 쓴다.
+     따로 만들면 둘이 갈라진다(이 프로젝트에서 네 번 겪은 실패). */
+  let openNode = null;
+  function closeCard() {
+    if (!openNode) return;
+    const c = openNode.wrap.querySelector(".dcard");
+    openNode.wrap.classList.remove("on");
+    openNode = null;
+    if (!c) return;
+    c.classList.remove("in");
+    setTimeout(() => c.remove(), 200);
   }
-  declutter();
+  function openCard(n, budget = null) {
+    if (openNode === n) { closeCard(); return; }
+    closeCard();
+    const ms = data.menus
+      .filter((m) => m.restaurant_id === n.p.id && isCleanMenu(m) && (!budget || m.price <= budget))
+      .sort((a, b) => a.price - b.price).slice(0, 3);
+    const card = document.createElement("div");
+    card.className = "dcard";
+    card.innerHTML = `<b>${n.p.name}</b><span class="cat">${n.p.category ?? ""}</span>
+      <ul>${ms.map((m) => `<li><span>${menuLabel(m.name)}</span><span class="p">${won(m.price)}</span></li>`).join("")
+        || '<li><span class="cat">표시할 메뉴가 없습니다</span></li>'}</ul>`;
+    card.addEventListener("click", (e) => e.stopPropagation());
+    n.wrap.appendChild(card);          // wrap 안에 넣어야 지도와 함께 움직인다
+    n.wrap.classList.add("on");        // 이 묶음을 다른 마커 위로 — 안 그러면 옆 마커가 카드를 덮는다
+    openNode = n;
+    requestAnimationFrame(() => card.classList.add("in"));
+  }
 
   // 실제 카카오 지도 배경 (읽기 전용) — 로드되면 투영 좌표로 교체
   (async () => {
@@ -742,7 +737,6 @@ function startDemo(data) {
           const pt = proj.containerPointFromCoords(new kakao.maps.LatLng(n.p.lat, n.p.lng));
           n.px = pt.x; n.py = pt.y;
         });
-        declutter();
       };
       kakao.maps.event.addListener(map, "idle", project);
       project();
@@ -818,7 +812,7 @@ function startDemo(data) {
       chat.classList.add("fade");
       if (!(await sleep(reduced ? 0 : 220, t))) return;
       chat.innerHTML = "";
-      stage.querySelectorAll(".dcard").forEach((c) => c.remove());
+      closeCard();
 
       /* 이번 시나리오에 등장할 6곳을 고른다. 22개가 한꺼번에 꽂혀 있으면 어디를 보라는 건지
          알 수 없다(사용자 지시 2026-07-21). 예산에 드는 곳 4 + 안 드는 곳 2 로 섞는 이유:
@@ -841,11 +835,7 @@ function startDemo(data) {
       nodes.forEach((n) => {
         const on = active.includes(n);
         n.dot.className = on ? "dot" : "dot gone";
-        n.label.className = on ? "mlabel" : "mlabel hid";
-        n.label.textContent = n.p.name;
-        n.major = on;                 // 이름표는 등장하는 6곳만
       });
-      declutter();
       chat.classList.remove("fade");
 
       // 1) 사용자 질문 타이핑
@@ -883,7 +873,6 @@ function startDemo(data) {
         const ok = inBudget.length > 0;
         const shown = results.length < 4;
         n.dot.className = "dot scan";
-        if (n.major) n.label.className = "mlabel scan " + (n.label.classList.contains("below") ? "below" : "");
         if (shown) {
           const row = document.createElement("div");
           row.className = "cbrow" + (ok ? "" : " off");
@@ -897,8 +886,6 @@ function startDemo(data) {
         chat.scrollTop = chat.scrollHeight;
         if (!(await sleep(reduced ? 0 : shown ? 430 : 150, t))) return;
         n.dot.className = ok ? "dot" : "dot out";
-        n.label.className = "mlabel " + (n.major ? "" : "hid ") + (ok ? "" : "out ") + (n.label.classList.contains("below") ? "below" : "");
-        declutter(); // 복원 직후 겹침 재평가 (hid 재적용)
         results.push({ n, menu, ok });
       }
 
@@ -914,23 +901,11 @@ function startDemo(data) {
       const best = cands.reduce((a, b) => (b.menu.price > a.menu.price ? b : a));
       results.forEach((r) => {
         if (r === best) return;
-        r.n.dot.className = "dot out"; r.n.label.className = "mlabel out";
+        r.n.dot.className = "dot out";
       });
       best.n.dot.className = "dot best";
-      best.n.label.className = "mlabel out";   // 이름표는 물러나고 카드가 대신 말한다
 
-      /* 고른 곳의 정보 카드 — /app.html 에서 마커를 눌렀을 때 뜨는 카드와 같은 생김새.
-         랜딩에서 본 장면이 서비스에서 그대로 재현되는 게 이 데모의 목적이다. */
-      const picked = data.menus
-        .filter((m) => m.restaurant_id === best.n.p.id && isCleanMenu(m) && m.price <= sc.budget)
-        .sort((a, b) => a.price - b.price).slice(0, 3);
-      const card = document.createElement("div");
-      card.className = "dcard";
-      card.innerHTML = `<b>${best.n.p.name}</b><span class="cat">${best.n.p.category ?? ""}</span>
-        <ul>${(picked.length ? picked : [best.menu]).map((m) =>
-          `<li><span>${menuLabel(m.name)}</span><span class="p">${won(m.price)}</span></li>`).join("")}</ul>`;
-      best.n.wrap.appendChild(card);   // wrap 안에 넣어야 지도와 함께 움직인다
-      requestAnimationFrame(() => card.classList.add("in"));
+      openCard(best.n, sc.budget);   // 사용자 클릭과 같은 경로
       const fin = bubble("ai final", "");
       if (!(await typeText(fin, `${best.n.p.name}의 ${menuLabel(best.menu.name)} ${won(best.menu.price)}을 추천해요. ${won(sc.budget)} 예산을 가장 알차게 쓰는 조합이에요.`, t))) return;
       // 데모 카드(지도·챗봇) 시나리오 종료 대기 — 헤드라인과 무관 (2026-07-20 분리)
