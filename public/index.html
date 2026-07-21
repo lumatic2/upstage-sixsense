@@ -317,10 +317,11 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
       </div>
 
       <div class="proof" id="proof" aria-live="polite">
-        <div><span class="n" id="nRest">–</span><span class="k">식당</span></div>
-        <div><span class="n" id="nMenu">–</span><span class="k">메뉴</span></div>
-        <div><span class="n" id="nCaf">–</span><span class="k">학식</span></div>
+        <div><span class="n" id="nRest">–</span><span class="k">수집한 식당</span></div>
+        <div><span class="n" id="nMenu">–</span><span class="k">검수 통과 메뉴</span></div>
+        <div><span class="n" id="nCaf">–</span><span class="k" id="kCaf">오늘 문 연 학식당</span></div>
       </div>
+      <p class="proof-note">가격은 메뉴판 사진에서 뽑아 사람이 검수한 것만 셉니다. 학식은 매일 아침 6시에 자동으로 받아옵니다.</p>
       <div class="wavewrap" aria-hidden="true">
         <div class="waverow" id="wave1"></div>
         <div class="waverow" id="wave2"></div>
@@ -366,6 +367,8 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
   <section class="band-ink">
     <div class="container">
       <h2 class="big feature-head">사진 한 장이<br>가격 데이터가 되기까지.</h2>
+      <p class="lead">학식은 이 길을 지나지 않습니다. 이미 표로 정리된 HTML이라 매일 아침 크롤링하면 됩니다.
+        같은 도구를 억지로 쓰지 않는 것도 설계입니다.</p>
       <div class="stepper">
         <ol class="step-tabs" id="stepTabs" role="tablist">
           <li><button class="step-tab" role="tab" data-step="0" aria-selected="true">
@@ -376,7 +379,7 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
             <span class="d">Upstage Document Parse가 읽고, 사람이 검수해 확정합니다.</span></button></li>
           <li><button class="step-tab" role="tab" data-step="2" aria-selected="false">
             <span class="n">3</span><span class="t">고르고, 검증합니다</span>
-            <span class="d">예산에 맞춰 고른 뒤 추천 이유가 데이터에 근거했는지 판정합니다.</span></button></li>
+            <span class="d">예산에 맞춰 고른 뒤, 추천 이유가 데이터에 근거했는지 <b>다른 모델</b>이 판정합니다.</span></button></li>
         </ol>
         <div class="card step-panel" id="stepPanel" role="tabpanel" aria-live="polite"></div>
       </div>
@@ -461,7 +464,17 @@ const menuLabel = (name) => {
 fetch("/api/data").then((r) => r.json()).then((d) => {
   document.getElementById("nRest").textContent = d.restaurants.length;
   document.getElementById("nMenu").textContent = d.menus.length;
-  document.getElementById("nCaf").textContent = d.cafeteria.length;
+  // 학식 카운터는 `cafeteria`(전 날짜 누적 행)가 아니라 오늘 판(`cafeteriaBoard`)을 센다.
+  // 누적 행을 세면 cron 이 매일 돌 때마다 숫자가 불어나고, 그건 학식당 수도 메뉴 수도 아니다.
+  // 방학·주말엔 전부 닫히므로 0곳일 때는 숫자 대신 휴무를 말한다 — 0 은 사실이지만 오해를 준다.
+  const board = Array.isArray(d.cafeteriaBoard) ? d.cafeteriaBoard : [];
+  const openCafs = board.filter((c) => c.open).length;
+  if (board.length && openCafs === 0) {
+    document.getElementById("nCaf").textContent = "휴무";
+    document.getElementById("kCaf").textContent = "오늘의 학식";
+  } else {
+    document.getElementById("nCaf").textContent = openCafs;
+  }
   buildMarquee(d.menus);
   startDemo(d);
   startAsk(d);
@@ -664,8 +677,24 @@ function startDemo(data) {
 
   /* 카드 열기 — 대본(에이전트 선택)과 사용자 클릭이 같은 코드를 쓴다.
      따로 만들면 둘이 갈라진다(이 프로젝트에서 네 번 겪은 실패). */
-  let openNode = null;
+  let openNode = null, DMAP = null;
   const Z_BASE = 2, Z_OPEN = 9999;
+
+  /* 카드는 마커 위쪽(-100% - 32px)에 서므로 가장자리 마커에서는 `.demo-body` 의 overflow:hidden 에
+     그대로 잘린다. `/app.html` 의 fitCardIntoView 와 같은 방식 — 그려진 뒤 실제 사각형을 재서
+     넘친 만큼만 지도를 민다. 추정 높이로 계산하면 메뉴 수(0~3줄)에 따라 또 어긋난다. */
+  function fitDemoCard(card) {
+    const mapEl = document.getElementById("demoMap");
+    if (!mapEl || !DMAP) return;
+    const m = mapEl.getBoundingClientRect(), b = card.getBoundingClientRect();
+    const pad = 12;
+    let dx = 0, dy = 0;
+    if (b.top < m.top + pad) dy = b.top - (m.top + pad);
+    else if (b.bottom > m.bottom - pad) dy = b.bottom - (m.bottom - pad);
+    if (b.left < m.left + pad) dx = b.left - (m.left + pad);
+    else if (b.right > m.right - pad) dx = b.right - (m.right - pad);
+    if (dx || dy) DMAP.panBy(dx, dy);
+  }
   function closeCard() {
     if (!openNode) return;
     const c = openNode.wrap.querySelector(".dcard");
@@ -696,6 +725,11 @@ function startDemo(data) {
     n.overlay?.setZIndex(Z_OPEN);
     openNode = n;
     requestAnimationFrame(() => card.classList.add("in"));
+    /* 전환이 끝난 뒤에 잰다 — 같은 rAF 안에서 재면 아직 translateY(6px)·scale(.96) 중인
+       사각형을 재게 된다. prefers-reduced-motion 이면 transition 이 없어 transitionend 가
+       안 오므로 타이머로도 받는다. 두 번 불려도 두 번째는 넘침이 0이라 no-op. */
+    card.addEventListener("transitionend", () => fitDemoCard(card), { once: true });
+    setTimeout(() => fitDemoCard(card), 220);
   }
 
   // 실제 카카오 지도 배경 (읽기 전용) — 로드되면 투영 좌표로 교체
@@ -721,6 +755,7 @@ function startDemo(data) {
           if (/kakao\.com/.test(a.href)) a.style.display = "none";
         });
       }, 800);
+      DMAP = map;   // 카드 잘림 보정(fitDemoCard)이 지도를 밀 수 있게 넘긴다
       const bounds = new kakao.maps.LatLngBounds();
       pts.forEach((p) => bounds.extend(new kakao.maps.LatLng(p.lat, p.lng)));
       map.relayout();

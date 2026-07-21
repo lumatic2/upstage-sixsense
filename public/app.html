@@ -479,6 +479,30 @@ function fitCardIntoView(el) {
   if (dx || dy) MAP.panBy(dx, dy);
 }
 
+/* 그리기 *전에* 자리를 고른다. panBy 보정은 결국 카드를 넣어주지만 카카오의 pan 이
+   애니메이션이라, 그 사이 카드가 잘린 채로 보인다 — 2026-07-22 실측으로 상단 270px 넘침이
+   1초 가까이 유지됐고, 그게 사용자가 본 "카드가 잘려서 나온다"의 정체였다.
+   위에 자리가 없고 아래에는 있으면 마커 아래로 뒤집는다. 지도를 안 움직이니 처음부터 안 잘린다.
+   양쪽 다 부족하면 뒤집지 않고 기존 보정에 맡긴다(뒤집어봐야 반대쪽이 잘린다).
+
+   위치는 CSS transform 이 아니라 **카카오가 오버레이 컨테이너에 박는 inline margin** 으로 잡는다.
+   yAnchor 는 생성 시점에 고정이라 높이를 알기 전에는 못 정하고, wrap 쪽 transform 은
+   `.in` 전환과 충돌해 먹지 않았다(실측). 컨테이너 margin-top 이 유일하게 확실한 손잡이다. */
+function flipIfNoRoomAbove(el) {
+  const mapEl = document.getElementById("map");
+  const box = el.parentElement;   // 카카오가 만든 오버레이 컨테이너
+  if (!mapEl || !box) return;
+  const map = mapEl.getBoundingClientRect(), b = box.getBoundingClientRect();
+  const pad = 12, gap = 10;
+  const deficit = (map.top + pad) - b.top;
+  if (deficit <= 0) return;                                 // 위에 자리가 있다
+  const cur = parseFloat(getComputedStyle(box).marginTop) || 0;
+  // 조금 모자란 정도면 뒤집지 않고 그만큼만 내린다 — 뒤집으면 마커와 멀어져 어느 가게인지 흐려진다.
+  if (deficit <= 60) { box.style.marginTop = `${cur + deficit}px`; return; }
+  if (b.bottom + gap + b.height > map.bottom - pad) return;  // 아래도 부족하다 — 기존 보정에 맡긴다
+  box.style.marginTop = `${cur + b.height + gap}px`;
+}
+
 function openMarkerCard(r, pos) {
   if (OPEN_ID === r.id) { closeMarkerCard(); return; }   // 같은 마커 재클릭 = 닫기
   closeMarkerCard();
@@ -491,6 +515,7 @@ function openMarkerCard(r, pos) {
   const ov = new kakao.maps.CustomOverlay({ position: pos, content: el, yAnchor: 1.28, zIndex: 10000 });
   ov.setMap(MAP);
   OPEN_OVERLAY = ov; OPEN_ID = r.id;
+  flipIfNoRoomAbove(el);
   requestAnimationFrame(() => el.classList.add("in"));
   // 전환이 끝난 뒤에 잰다. 같은 rAF 안에서 재면 아직 translateY(6px)·scale(.96) 중인 사각형을
   // 재게 되어 보정이 3px 모자랐다(2026-07-21 독립 검증 적발). 애니메이션이 꺼진 환경도 있으므로
