@@ -17,6 +17,8 @@ import { crawlCafeteria, toSheetRows, dedupeAgainst, todayKST } from "../_lib/ca
 import { listRows, appendRows, sheetWriteReady } from "../_lib/sheet-write.js";
 
 export default async function handler(req, res) {
+  // Vercel Cron 은 GET 만 보낸다. 시크릿만 보고 통과시키면 시크릿이 새는 날 POST 로도 돌릴 수 있다.
+  if (req.method !== "GET") return res.status(405).json({ error: "GET only", code: "method_not_allowed" });
   const secret = process.env.CRON_SECRET;
   if (secret) {
     const auth = req.headers?.authorization ?? "";
