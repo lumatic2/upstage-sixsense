@@ -58,27 +58,22 @@ async function solarReasons(picks, conditions, key) {
   return new Map((parsed.reasons ?? []).map((r) => [r.name, r.reason]));
 }
 
-/** 브라우저가 보낸 취향 프로필을 읽는다 — 서버는 이걸 저장하지 않는다(무상태).
- *  프로필은 순서를 바꾸는 가점 신호일 뿐 필터가 아니다. 그래서 값이 깨져 있어도
- *  "가점 없음"으로 떨어지기만 하고 후보를 지우지 않는다 — 손상된 프로필이 추천을
- *  0건으로 만드는 게 가장 나쁜 실패다. */
-function readProfile(profile) {
-  const cat = new Map();
-  const cats = profile && typeof profile === "object" ? profile.cats : null;
-  if (cats && typeof cats === "object") {
-    for (const [k, v] of Object.entries(cats)) {
-      const n = Number(v);
-      if (typeof k === "string" && k && Number.isFinite(n) && n > 0) cat.set(k, Math.min(n, 5));
-    }
-  }
-  return { cat, used: cat.size > 0 };
-}
+/** 추천 순서는 개인화하지 않는다 (ADR-0004 §1).
+ *
+ *  DR5 에서 넣었던 분류 관심 가점(카드 클릭 → category 카운터 → CAT_BONUS)을 2026-07-21 에
+ *  제거했다. 값(60)이 근거를 못 댄 게 아니라 **축이 허수**였다 — 이 서비스에는 "선택"이라는
+ *  사용자 행동이 없다. 추천 카드는 눌러도 아무 일도 일어나지 않았고(반응 없는 클릭),
+ *  우리는 일어나지 않은 선택을 근거로 순서를 바꾸고 배지까지 달고 있었다.
+ *
+ *  그래서 이 엔드포인트는 프로필을 **받지도 읽지도 않는다**. 순서는 사용자가 명시한
+ *  조건(태그·예산·도보)만으로 결정된다 — "왜 이 집이 위인가"에 항상 답할 수 있다.
+ *  개인화는 대화(`/api/chat`)의 말에만 있다.
+ */
 
 export default async function handler(req, res) {
   res.setHeader("access-control-allow-origin", "*");
   if (req.method !== "POST") return res.status(405).json({ error: "POST only", code: "method_not_allowed" });
-  const { budget = null, walkMax = null, tags = [], profile = null } = req.body ?? {};
-  const aff = readProfile(profile);
+  const { budget = null, walkMax = null, tags = [] } = req.body ?? {};
   let data;
   try { data = await loadSheetData(); }
   catch { return res.status(200).json({ picks: [], cafeteria: null, error: "data unavailable" }); }
@@ -91,7 +86,8 @@ export default async function handler(req, res) {
       .filter((m) => m.restaurant_id === r.id && (!budget || m.price <= budget))
       .sort((a, b) => (a.isSide === b.isSide ? a.price - b.price : a.isSide ? 1 : -1));
     const mainCount = menus.filter((m) => !m.isSide).length;
-    return { kind: "restaurant", name: r.name, category: r.category, address: r.address, walkMin: walkMin(r.lat, r.lng), menus, mainCount, tags: r.tags };
+    // lat/lng 를 실어 보내는 이유는 길찾기 링크 하나다 — 카드에서 카카오맵으로 넘길 좌표.
+    return { kind: "restaurant", name: r.name, category: r.category, address: r.address, lat: r.lat, lng: r.lng, walkMin: walkMin(r.lat, r.lng), menus, mainCount, tags: r.tags };
   }).filter((p) => p.mainCount > 0);
 
   // 도보 상한: 전부 걸러지면 상한을 버리고 가까운 순으로 완화 (relaxed 플래그로 정직하게 표시)
@@ -102,22 +98,14 @@ export default async function handler(req, res) {
     else { walkRelaxed = true; candidates.sort((a, b) => (a.walkMin ?? 99) - (b.walkMin ?? 99)); }
   }
 
-  // 랭킹: 태그 일치 > 예산 내 메뉴 수 > 도보 시간, 그 위에 재방문 취향 가점.
-  // 점수식으로 바꾼 이유: 취향을 기존 우선순위 사이에 "끼워넣을" 자리가 필요한데
-  // 사전식 비교로는 가중치를 조절할 수 없다. 계수는 기존 순서를 보존하도록 잡았다
-  // (메뉴 수 1개 = 10점, 도보 1분 = 1점 → 도보(최대 99)가 메뉴 수를 못 뒤집는다).
+  // 랭킹: 태그 일치 > 예산 내 메뉴 수 > 도보 시간. 이 셋이 전부다 —
+  // 사용자가 말한 조건만으로 순서가 정해지므로 "왜 이 집이 위인가"에 항상 답할 수 있다.
+  // (계수: 메뉴 수 1개 = 10점, 도보 1분 = 1점 → 도보(최대 99)가 메뉴 수를 못 뒤집는다.)
   const tagSet = new Set(tags);
-  const CAT_BONUS = 60; // 메뉴 수 6개어치 — 취향이 순서를 바꾸되 지배하지는 않는 크기
   // 메뉴 수는 본메뉴만 센다 — 음료 목록이 긴 집이 선택지 많은 집으로 둔갑하지 않도록.
-  const base = (p) => p.tags.filter((t) => tagSet.has(t)).length * 1000 + Math.min(p.mainCount, 30) * 10 - (p.walkMin ?? 99);
-  const score = (p) => base(p) + (aff.cat.get(p.category) ?? 0) * CAT_BONUS;
-  const baseline = candidates.slice().sort((a, b) => base(b) - base(a));
+  const score = (p) => p.tags.filter((t) => tagSet.has(t)).length * 1000 + Math.min(p.mainCount, 30) * 10 - (p.walkMin ?? 99);
   candidates.sort((a, b) => score(b) - score(a));
   const picks = candidates.slice(0, 3);
-  // 취향 때문에 순서가 실제로 바뀐 경우에만 개인화됐다고 말한다 — 안 바뀌었는데
-  // "개인화됨"이라고 붙이면 그것도 거짓말이다.
-  const personalized = aff.used && picks.some((p, i) => p.name !== baseline[i]?.name);
-  for (const p of picks) p.affinity = (aff.cat.get(p.category) ?? 0) > 0;
 
   // 학식: 최신 날짜 1건 (예산 내면)
   const caf = data.cafeteria.slice().sort((a, b) => a.menu_date < b.menu_date ? 1 : -1)
@@ -178,5 +166,5 @@ export default async function handler(req, res) {
     }));
   }
 
-  res.status(200).json({ picks, cafeteria: caf, conditions, walkRelaxed, personalized });
+  res.status(200).json({ picks, cafeteria: caf, conditions, walkRelaxed });
 }

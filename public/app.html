@@ -91,8 +91,6 @@
 }
 .linklike.danger:hover{color:var(--fg)}
 .linklike.danger:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
-.card.liked{cursor:pointer}
-.card.liked:hover{outline:1px solid var(--border)}
 
 /* 마커 클릭 카드 — 열고 닫히는 게 보여야 누른 게 먹혔는지 안다 */
 .mcard-wrap{
@@ -143,6 +141,11 @@
   padding:2px 10px;border-radius:var(--r);
 }
 .badge.ok{color:var(--accent);background:var(--accent-soft)}
+/* 길찾기는 판정 배지가 아니라 **동작**이다 — 같은 크기를 쓰되 링크임이 만져져야 한다. */
+.badge.route{text-decoration:none;cursor:pointer;transition:color 180ms ease-out,background 180ms ease-out}
+.badge.route:hover{color:var(--fg);background:rgba(12,20,32,.09)}
+.badge.route:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.mcard .badge.route{margin-top:var(--s2)}
 .empty{background:var(--surface);border-radius:var(--r);padding:var(--s12) var(--s6);text-align:center;color:var(--muted)}
 .empty h3{color:var(--fg);margin-bottom:var(--s3)}
 .empty .alts{display:flex;gap:var(--s2);justify-content:center;flex-wrap:wrap;margin-top:var(--s6)}
@@ -262,6 +265,7 @@ const ico = (d) => `<svg class="icon" viewBox="0 0 24 24" aria-hidden="true">${d
 const CHECK = ico(`<path d="M20 6 9 17l-5-5"/>`);
 const SWAP  = ico(`<path d="M4 8h13l-3-3M20 16H7l3 3"/>`);
 const SPARK = ico(`<path d="M12 4v16M4 12h16"/>`);
+const PIN   = ico(`<path d="M12 21s7-5.5 7-11a7 7 0 1 0-14 0c0 5.5 7 11 7 11Z"/><circle cx="12" cy="10" r="2.5"/>`);
 
 /* ── 재방문 개인화 ──
    프로필은 이 브라우저 안에만 있다. 서버로는 요청할 때 함께 보내기만 하고 저장하지 않는다.
@@ -272,7 +276,7 @@ function loadProfile() {
   try {
     const p = JSON.parse(localStorage.getItem(PROFILE_KEY) ?? "null");
     if (!p || typeof p !== "object" || p.v !== 1) return null;
-    if (!p.cats || typeof p.cats !== "object") return null;
+    if (!Array.isArray(p.foods)) return null;
     return p;
   } catch { return null; }
 }
@@ -288,69 +292,37 @@ $("#profileClear").onclick = (e) => {
     className: "small muted", textContent: "지웠습니다. 다음 방문부터는 처음 오신 것과 같습니다.",
   }));
 };
-/** 관심을 보인 가게의 분류를 한 칸 올린다(카드 클릭 = 선택 신호). */
-function noteCategory(cat) {
-  if (!cat) return;
-  const p = loadProfile() ?? { v: 1, cats: {}, last: null, n: 0 };
-  p.cats[cat] = Math.min((Number(p.cats[cat]) || 0) + 1, 5);
-  p.n = (Number(p.n) || 0) + 1;
-  saveProfile(p);
-}
+const blankProfile = () => ({ v: 1, foods: [], last: null, n: 0 });
 function noteConditions(s) {
-  const p = loadProfile() ?? { v: 1, cats: {}, last: null, n: 0 };
+  const p = loadProfile() ?? blankProfile();
   p.last = { budget: s.budget, walkMax: s.walkMax, tags: s.tags };
   saveProfile(p);
 }
 
-/* ── 개인화 관리 ──
-   분류 가점(cats)은 사용자가 직접 준 신호가 아니라 카드 클릭에서 추론한 것이다.
-   준 적 없는 신호로 순서를 바꿨으면 그 사실을 밝히고 되돌릴 수단을 같이 줘야
-   "개인화는 필터가 아니라 가점" 이라는 이 서비스의 주장이 성립한다.
-   자리는 대화창 — 순서를 바꾼 주체가 에이전트이므로 해명도 에이전트가 한다
-   (사용자 확정 2026-07-21). 카드의 배지는 "왜 이 카드인지"를 계속 설명한다. */
-function catSummary() {
-  const cats = loadProfile()?.cats ?? {};
-  return Object.entries(cats)
-    .filter(([, v]) => Number(v) > 0)
-    .sort((a, b) => b[1] - a[1])
-    .map(([k, v]) => `${k} ×${v}`);
+/* 대화 기억 (ADR-0004 §3) — 저장하는 것은 **데이터 대조를 통과한 관심어**뿐이다.
+   무엇을 넣을지는 서버가 정한다(같은 데이터를 두 곳에서 판정하면 곧 서로 달라진다).
+   여기서는 최근 5개·30일만 지키고, 꺼낼 때 서버가 현재 데이터로 한 번 더 거른다. */
+const FOOD_TTL = 30 * 864e5;
+function recallFoods() {
+  const fresh = (loadProfile()?.foods ?? []).filter((f) => f?.w && Date.now() - (f.at ?? 0) < FOOD_TTL);
+  return fresh.map((f) => f.w);
 }
-/** 분류 가점만 지운다 — 마지막 검색 조건(last)은 남긴다. 둘은 성격이 다른 신호다. */
-function clearCats() {
-  const p = loadProfile();
-  if (!p) return;
-  p.cats = {};
+function noteFoods(words) {
+  if (!Array.isArray(words) || !words.length) return;
+  const p = loadProfile() ?? blankProfile();
+  const now = Date.now();
+  const keep = (p.foods ?? []).filter((f) => f?.w && !words.includes(f.w) && now - (f.at ?? 0) < FOOD_TTL);
+  // 새 관심어가 앞이다 — 오래된 것부터 밀려난다.
+  p.foods = [...words.map((w) => ({ w, at: now })), ...keep].slice(0, 5);
+  p.n = (Number(p.n) || 0) + 1;
   saveProfile(p);
 }
-let profileTurnShown = false;
-/** 순서가 실제로 바뀐 경우에만 부른다(서버 personalized 플래그). */
-function profileTurn() {
-  if (profileTurnShown) return;
-  const bits = catSummary();
-  if (!bits.length) return;
-  profileTurnShown = true;
-  const el = bubble("ai", `순서를 조금 바꿨어요. 지금은 이렇게 알고 있어요`
-    + `<div class="cb-cond">${bits.map((b, i) => `<span class="nb">${i ? "· " : ""}${esc(b)}</span>`).join(" ")}</div>`
-    + `<div class="cb-act">`
-    + `<button class="chip" type="button" data-act="off">반영 끄기</button>`
-    + `<button class="chip" type="button" data-act="forget">전부 잊기</button></div>`
-    + `<div class="cb-cond">순서에만 쓰고 서버로 보내지 않습니다.</div>`);
-  el.querySelector('[data-act="off"]').onclick = () => {
-    clearCats();
-    done(el, `분류 가점을 껐습니다. 조건은 그대로 두고 순서만 되돌립니다.`);
-    loadPicks();   // 되돌아간 순서를 실제로 보여준다 — 말만 하고 화면이 그대로면 믿을 수 없다
-  };
-  el.querySelector('[data-act="forget"]').onclick = () => {
-    try { localStorage.removeItem(PROFILE_KEY); } catch {}
-    // 지운 걸 이번 렌더가 도로 쓰지 않게 한다. 다음 검색부터는 다시 쌓인다 — 그렇게 말한다.
-    done(el, `전부 지웠습니다. 다음 검색부터 다시 쌓입니다.`);
-    loadPicks(null, { record: false });
-  };
-  function done(box, msg) {
-    box.querySelector(".cb-act").remove();   // 이미 쓴 컨트롤은 남기지 않는다
-    bubble("ai muted", esc(msg));
-  }
+/** 기억 지우기 — 관심어와 조건을 함께 지운다. 화면에 한 덩어리로 보여줬으면
+    지우기도 그 덩어리 단위여야 한다("돈까스만 지웠는데 조건은 남았다"는 설명할 수 없다). */
+function forgetProfile() {
+  try { localStorage.removeItem(PROFILE_KEY); } catch {}
 }
+
 let DATA = { restaurants: [], menus: [], cafeteria: [] };
 let MAP = null, MARKERS = [];
 let state = { budget: null, walkMax: null, tags: [] };
@@ -375,32 +347,54 @@ function greet() {
   greetRevisit();
 }
 
-/* 재방문 — 지난번 조건이 남아 있으면 에이전트가 먼저 꺼낸다.
+/* 재방문 — 지난 방문에 **물었던 것**과 **보던 조건**을 에이전트가 먼저 꺼낸다 (ADR-0004 §3).
    예전에는 콘솔 바깥 아래에 별도 띠로 붙어 있었는데, 그러면 "에이전트가 나를 기억한다" 가
    아니라 "사이트가 배너를 띄웠다" 로 읽힌다 — 대화 안으로 넣었다(사용자 지시 2026-07-21).
+   둘을 한 턴에 묶는 이유: 따로 띄우면 "지난번엔 …" 문구가 두 번 반복돼 중복으로 읽힌다(실측).
+   무엇을 기억하는지 **그대로 보여주고** 그 자리에서 지울 수 있어야 한다 — 계약 ①②.
    기록은 이 브라우저 localStorage 에만 있다. 첫 방문에는 이 턴 자체가 없다. */
 function greetRevisit() {
-  const last = loadProfile()?.last;
-  if (!last || (!last.budget && !last.tags?.length)) return;
-  const bits = [];
-  if (last.budget) bits.push(`예산 ${won(Number(last.budget))} 이하`);
-  if (last.walkMax) bits.push(`도보 ${last.walkMax}분`);
-  if (last.tags?.length) bits.push(last.tags.join("·"));
+  const p = loadProfile();
+  const foods = recallFoods();
+  const last = p?.last;
+  const hasCond = last && (last.budget || last.tags?.length);
+  if (!foods.length && !hasCond) return;
+
+  const condBits = [
+    last?.budget ? `예산 ${won(Number(last.budget))} 이하` : null,
+    last?.walkMax ? `도보 ${last.walkMax}분` : null,
+    last?.tags?.length ? last.tags.join("·") : null,
+  ].filter(Boolean);
   // 조건 문자열 끝 글자가 매번 달라 "로/으로" 를 붙이면 틀린다("혼밥로 보셨습니다") — 조사를 뺀다.
-  const cond = bits.join(" · ");
+  const cond = condBits.join(" · ");
+  const bits = [...foods, ...condBits];
   // 구분점을 뒤 항목에 붙여 한 덩어리로 묶는다 — " · " 로 이으면 줄 끝에 점만 남는다(2026-07-21 실측).
   const condHtml = bits.map((b, i) => `<span class="nb">${i ? "· " : ""}${esc(b)}</span>`).join(" ");
-  const el = bubble("ai", `지난번에는 이렇게 보셨어요`
+  const acts = [];
+  if (foods.length) acts.push(`<button class="chip" type="button" data-act="food">${esc(foods[0])} 다시 보기</button>`);
+  if (hasCond) acts.push(`<button class="chip" type="button" data-act="cond">그 조건으로 이어보기</button>`);
+  acts.push(`<button class="chip" type="button" data-act="drop">기억 지우기</button>`);
+
+  const el = bubble("ai", `지난번엔 이런 걸 보셨어요`
     + `<div class="cb-cond">${condHtml}</div>`
-    + `<div class="cb-act"><button class="chip" type="button">그 조건으로 이어보기</button></div>`);
-  el.querySelector("button").onclick = () => {
-    // 누른 뒤에는 칩을 지운다 — 남겨두면 이미 적용된 조건을 또 권하는 셈이 된다.
+    + `<div class="cb-act">${acts.join("")}</div>`);
+
+  el.querySelector('[data-act="food"]')?.addEventListener("click", () => {
+    el.querySelector(".cb-act").remove();   // 누른 뒤에는 칩을 지운다 — 지나간 질문을 또 권하지 않는다
+    ask({ q: `${foods[0]} 있는 곳 알려줘` });
+  });
+  el.querySelector('[data-act="cond"]')?.addEventListener("click", () => {
     el.querySelector(".cb-act").remove();
     bubble("user", esc(cond));
     state = { budget: last.budget ?? null, walkMax: last.walkMax ?? null, tags: last.tags ?? [] };
     $("#parsed").textContent = `조건: ${cond}`;
     render(); renderMarkers(); loadPicks();
-  };
+  });
+  el.querySelector('[data-act="drop"]').addEventListener("click", () => {
+    forgetProfile();
+    el.remove();                            // 지웠으면 화면에서도 사라져야 한다
+    bubble("ai muted", `기억을 지웠습니다. 지금부터 물어보시는 것만 다시 쌓입니다.`);
+  });
 }
 
 /* 랜딩에서 넘어온 조건 이어받기 — /app.html?q=...&budget=8000 */
@@ -457,7 +451,17 @@ function markerCardHtml(r) {
     <div class="mcard-head"><b>${esc(r.name)}</b><span class="muted">${esc(r.category)}</span></div>
     <ul class="menus">${rows}${total > 4 ? `<li><span class="muted">외 ${total - 4}개</span><span></span></li>` : ""}</ul>
     ${r.address ? `<p class="muted mcard-addr">${esc(r.address)}</p>` : ""}
+    ${routeLink(r)}
   </div>`;
+}
+
+/* 길찾기 — 찾았으면 갈 수 있어야 한다. 좌표를 카카오맵에 넘기는 링크 하나이고, 새 데이터도
+   API 키도 필요 없다(우리는 이미 lat/lng 를 갖고 있다). 모바일에서는 앱으로 열린다.
+   **이 클릭은 기록하지 않는다** (ADR-0004 §2) — 근거가 생겼다고 바로 재는 것이 그 사고의 재발 경로다. */
+function routeLink(p) {
+  if (!p?.lat || !p?.lng) return "";
+  const url = `https://map.kakao.com/link/to/${encodeURIComponent(p.name)},${p.lat},${p.lng}`;
+  return `<a class="badge route" href="${url}" target="_blank" rel="noopener noreferrer">${PIN}카카오맵 길찾기</a>`;
 }
 
 /* 카드는 마커 위쪽에 서므로 마커를 화면 중앙에 두는 것만으로는 위가 잘린다(실측: 70px 초과).
@@ -493,7 +497,6 @@ function openMarkerCard(r, pos) {
   // transitionend 만 믿지 않고 타이머로도 받는다 — 두 번 불려도 두 번째는 넘침이 0이라 no-op.
   el.addEventListener("transitionend", () => fitCardIntoView(el), { once: true });
   setTimeout(() => fitCardIntoView(el), 200);
-  noteCategory(r.category);                              // 눌러본 분류는 다음 방문 순서에 반영(DR5)
 }
 
 function renderMarkers() {
@@ -558,7 +561,7 @@ async function ask({ q = null, budget = null, conditions = null }) {
     try {
       r = await (await fetch("/api/chat", {
         method: "POST", headers: { "content-type": "application/json" },
-        body: JSON.stringify({ message: q, history: history.slice(0, -1).slice(-6), conditions }),
+        body: JSON.stringify({ message: q, history: history.slice(0, -1).slice(-6), conditions, memory: recallFoods() }),
       })).json();
     } catch { r = null; }
     if (r) {
@@ -569,6 +572,7 @@ async function ask({ q = null, budget = null, conditions = null }) {
         ? { budget: r.conditions.budget ?? null, walkMax: r.conditions.walkMax ?? null, tags: r.conditions.tags ?? [] }
         : { budget: null, walkMax: null, tags: [] };
       searched = Boolean(r.search);
+      noteFoods(r.foods);   // 서버가 데이터로 검증한 것만 들어온다
       sugChips(r.chips, wait);
     } else if (conditions) {
       // 칩으로 들어온 턴은 조건이 이미 검증돼 있다 — Solar 가 죽어도 그 조건으로 그냥 간다.
@@ -680,7 +684,7 @@ async function loadPicks(wait = null, { record = true } = {}) {
   try {
     const d = await (await fetch("/api/recommend", {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ budget: state.budget, walkMax: state.walkMax, tags: state.tags, profile: loadProfile() }),
+      body: JSON.stringify({ budget: state.budget, walkMax: state.walkMax, tags: state.tags }),
     })).json();
     if (record) noteConditions(state);
     const cards = [];
@@ -693,15 +697,12 @@ async function loadPicks(wait = null, { record = true } = {}) {
       const b = p.grounded === "grounded" ? { t: "Solar 생성 · 근거 검증됨", ok: true, i: CHECK }
         : p.grounded === "replaced" ? { t: "근거 미달 판정 → 데이터 팩트로 교체", ok: false, i: SWAP }
         : p.reasonSource === "solar" ? { t: "Solar 생성", ok: false, i: SPARK } : { t: "데이터 기반", ok: false, i: SPARK };
-      const like = p.affinity ? `<span class="badge">${SPARK}전에 본 곳과 같은 분류</span>` : "";
-      cards.push(`<div class="card pick liked" data-cat="${p.category}"><div class="rowhead"><h3>${p.name}</h3><span class="small muted">${p.category}${p.walkMin?` · 도보 ${p.walkMin}분`:""}</span></div>
+      cards.push(`<div class="card pick"><div class="rowhead"><h3>${p.name}</h3><span class="small muted">${p.category}${p.walkMin?` · 도보 ${p.walkMin}분`:""}</span></div>
         <ul class="menus">${p.menus.map((m)=>`<li><span>${m.name}</span><span class="price">${m.price.toLocaleString()}원</span></li>`).join("")}</ul>
         <div class="reason"><p>${p.reason}</p><span class="badge${b.ok?" ok":""}" title="추천 이유를 solar-mini 가 데이터와 대조해 판정한 결과입니다">
-          ${b.i}${b.t}</span>${like}</div></div>`);
+          ${b.i}${b.t}</span>${routeLink(p)}</div></div>`);
     }
-    // 개인화 사실은 대화(profileTurn)가 말한다 — 여기에도 쓰면 같은 말을 두 번 하는 셈이다.
     $("#picksNote").textContent = d.walkRelaxed ? "도보 조건에 맞는 곳이 없어 가까운 순으로 보여드립니다" : "";
-    if (d.personalized) profileTurn();
     block.innerHTML = cards.join("") || emptyState();
     if (wait) { try { chatSummary(wait, d); } catch { wait.className = "cb ai"; wait.textContent = "결과는 아래 카드에서 확인하세요."; } }
   } catch {
@@ -786,7 +787,7 @@ function render() {
       return `<div class="card"><div class="rowhead"><h3>${esc(c.name)}</h3><span class="small muted">휴무</span></div>
         <p class="muted small" style="margin-top:var(--s3)">${esc(c.place)}</p></div>`;
     }
-    return `<div class="card${overBudget ? "" : " liked"}" data-cat="학식">
+    return `<div class="card">
       <div class="rowhead"><h3>${esc(c.name)}</h3><span class="small muted">${c.price ? won(c.price) : ""}</span></div>
       <ul class="menus"><li><span>${esc(c.items.slice(0, 6).join(", "))}${c.items.length > 6 ? " 외" : ""}</span></li></ul>
       <p class="muted small" style="margin-top:var(--s3)">${esc(c.place)}${overBudget ? " · 예산 초과" : ""}</p></div>`;
@@ -795,10 +796,6 @@ function render() {
 
 /* 카드를 누르면 그 분류에 관심이 있다고 기록한다 — 다음 방문의 순서에만 쓰인다.
    위임으로 받는 이유는 카드가 렌더될 때마다 새로 만들어지기 때문. */
-document.addEventListener("click", (e) => {
-  const card = e.target.closest(".card.liked");
-  if (card && !e.target.closest("a,button")) noteCategory(card.dataset.cat);
-});
 
 loadData();
 loadMap();
