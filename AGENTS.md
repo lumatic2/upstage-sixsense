@@ -46,6 +46,19 @@
 
 role lane은 자동 subagent/team 실행을 뜻하지 않는다. 도구가 가능하고 위험도가 맞을 때만 위임하고, 기본은 같은 세션에서 lane별로 분리 검토한다.
 
+## 문서 동기화 — 결정을 뒤집으면 설명도 같이 고친다 (2026-07-22 DR11 실측)
+
+코드에서 기능을 빼거나 ADR 로 결정을 뒤집었으면, **그 기능을 설명하던 문서와 화면 문구를 같은
+changeset 안에서** 고친다. 나중으로 미루면 안 한다 — 실제로 ADR-0004 가 순서 개인화를 폐기한
+다음날에도 라이브 `/about.html` 이 그 기능을 광고하고 있었고, 같은 문장이 로그인 다이얼로그를 통해
+4개 페이지에 복제돼 있었다. 감사 기록 → `research/2026-07-21-dr11-design-doc-audit.md`.
+
+- 같은 커밋에서 확인할 곳: `docs/SITEMAP.md` · `docs/PRD.md` · `docs/ARCHITECTURE.md` ·
+  그 기능을 설명하던 `public/*.html`.
+- **정의는 한 곳에만.** 나머지는 포인터를 쓴다(개인화 정본 = `docs/adr/0004-personalization.md`).
+- **공통 조각(헤더·푸터·로그인 다이얼로그)은 페이지마다 복제돼 있다** — 문구 수정 시 `grep -rn` 으로 전수 확인.
+- 화면 문구·라벨 규약 정본 = `docs/SITEMAP.md` §5.
+
 ## milestone 완료 처리 — 셋 다 건드려야 끝난다 (2026-07-21 실측)
 
 `ledger`(evidence) · `ROADMAP.md`(상태판) · `.harness/work.json`(step 실시간 상태) **세 곳**을

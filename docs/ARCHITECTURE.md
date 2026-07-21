@@ -2,7 +2,8 @@
 
 > 2026-07-15 1차 스캐폴딩. 팀원 데모(hanipmap: 바닐라 JS + Vercel functions)를 기반으로 Upstage 파이프라인을 얹는다.
 > **2026-07-20 갱신(DR6 step-2)**: 데이터 정본이 Supabase → **구글 시트 단일**로 확정됐다(아래 §데이터 정본).
-> 지도 제공자는 Kakao 다(ADR-0002) — 아래 본문의 Naver 표기는 7/15 시점 기록.
+> **2026-07-22 갱신(DR11 step-2)**: 본문의 Naver 잔재를 실제 스택(Kakao)으로 정정했다.
+> 화면 구조는 `docs/SITEMAP.md`, 스택 상세는 `docs/TRD.md` 가 정본이다.
 
 ## 데이터 흐름
 
@@ -29,15 +30,17 @@
 
 ## 구성
 
-- **프론트**: hanipmap 데모 유지 (바닐라 JS + Naver Maps). Next.js 전환은 하지 않는다 — 데모가 이미 동작하고, 남은 9일은 파이프라인(35점 구간)에 쓴다.
-- **서버**: Vercel serverless functions (`api/`). 기존 `api/search.js`(네이버 지역검색 프록시) 패턴을 따라 `api/parse-menu.js`, `api/parse-query.js` 추가.
+- **프론트**: 바닐라 JS + **Kakao Maps JS SDK** (ADR-0002 — Naver 에서 교체). 빌드 단계 없음.
+  Next.js 전환은 하지 않는다 — 데모가 이미 동작하고, 남은 일정은 파이프라인(35점 구간)에 쓴다.
+- **서버**: Vercel serverless functions — `api/` 8개 + `api/cron/` 1개. 상세는 `docs/TRD.md`.
 - **데이터**: 구글 시트 [식당]·[메뉴]·[학식] 탭 (위 §데이터 정본). Supabase 는 미사용.
-- **크롤러**: 학식 페이지가 JS 팝업/쿼리 기반이라 단순 GET 불충분할 수 있음 — 쿼리 파라미터 direct GET 먼저 시도, 안 되면 Playwright (실사 리서치 4/4 참조).
+- **크롤러**: 학식 페이지는 쿼리 파라미터 direct GET 으로 충분했다(Playwright 불요).
+  Vercel Cron 이 매일 06:10 KST 에 돌린다 — `api/cron/crawl-cafeteria.js`, 멱등 append.
 
 ## 외부 의존성
 
-- Upstage Document Parse ($0.01/p, $10 무료 크레딧) / Solar — 선택 근거 ADR-0001
-- Naver Maps JS + Local Search API (기존 데모)
+- Upstage Document Parse ($0.01/p, $10 무료 크레딧) / Solar `solar-pro2`·`solar-mini` — 근거 ADR-0001
+- Kakao Maps JS SDK (지도 렌더·마커) + Kakao Local REST (주소→좌표, `scripts/geocode-sheet.mjs`) — ADR-0002
 - 구글 시트 + Apps Script 웹훅 (팀 정본 — Supabase 는 2026-07-20 서비스 경로에서 제외)
 
 ## 보안 주의 (데모에서 관측된 것)
