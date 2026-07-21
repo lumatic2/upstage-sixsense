@@ -78,23 +78,31 @@ check(
   badgeText.includes("근거") ? "판정 결과 반영됨" : `판정 미실행 — 폴백 배지("${badgeText.trim()}")`,
 );
 
-// 4. 예산 칩 필터 (6천원) — 표시된 전 메뉴 가격이 상한 이내인지
+// 4. 예산 필터 (6천원) — 표시된 전 메뉴 가격이 상한 이내인지
 //    검사 대상을 추천 카드로 옮겼다. 구 셀렉터(#restaurantBlock)는 DR9 에서 사라져 요소가 0개였고,
 //    그러면 "초과 0건"으로 **그냥 통과**한다 — 아무것도 검사하지 않으면서 PASS 를 찍는 허수였다.
-await page.click('button[data-budget="6000"]');
+//    입력으로 거는 이유: 고정 예산 칩 줄은 2026-07-21 에 없어졌고, 지금 칩은 매 턴 모델이
+//    만들고 서버가 검증해 내려주므로 **라벨이 고정이 아니다** — 셀렉터로 붙잡으면 곧 깨진다.
+await page.fill("#q", "6천원 이하");
+await page.click("#goBtn");
 // 고정 대기는 안 된다 — 추천은 Solar 이유 생성 + 근거 판정까지 도느라 5~9초가 걸린다.
 // 짧게 재면 "검사할 가격 0개"가 되어 필터 검사가 허수로 통과한다.
+// "가격이 하나라도 있으면 통과"도 안 된다 — **앞 검색(8천원)의 카드가 아직 그대로**라 조건이
+// 즉시 참이 되고, 8천원짜리 메뉴를 6천원 필터의 결과로 세게 된다(2026-07-21 실측 FAIL).
+// 화면이 새 조건으로 바뀐 것(#parsed)과 카드가 다시 그려진 것을 함께 기다린다.
 await page.waitForFunction(
-  () => document.querySelectorAll("#picksBlock .menus .price").length > 0,
+  () => (document.querySelector("#parsed")?.textContent ?? "").includes("6,000")
+    && !document.querySelector("#picksBlock .skeleton")
+    && document.querySelectorAll("#picksBlock .menus .price").length > 0,
   null, { timeout: 25000 },
 ).catch(() => {});
 const priced = await page.evaluate(() =>
   [...document.querySelectorAll("#picksBlock .menus .price")]
     .map((e) => Number((e.textContent || "").replace(/[^\d]/g, "")))
     .filter((n) => n > 0));
-check("예산 칩: 검사할 가격이 실제로 있음", priced.length > 0, `${priced.length}개`);
+check("예산 6천원: 검사할 가격이 실제로 있음", priced.length > 0, `${priced.length}개`);
 const over = priced.filter((p) => p > 6000).length;
-check("예산 칩 필터: 6천원 초과 노출 0", over === 0, `초과 ${over}건 / 검사 ${priced.length}개`);
+check("예산 필터: 6천원 초과 노출 0", over === 0, `초과 ${over}건 / 검사 ${priced.length}개`);
 
 // 5. 콘솔·스크린샷
 check("콘솔 red error 0", consoleErrors.length === 0, consoleErrors.slice(0, 2).join(" | "));
