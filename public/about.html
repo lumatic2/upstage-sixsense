@@ -100,6 +100,13 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
       <div class="stage"><span class="dot">3</span><span><b>검수</b><span class="muted">파싱 결과는 바로 쓰지 않습니다. 운영진이 원본 사진과 나란히 놓고 행마다 확인·제외를 찍고, 틀린 값은 그 자리에서 고칩니다. <b>확인이 찍힌 행만 서비스로 나갑니다.</b></span></span></div>
       <div class="stage"><span class="dot">4</span><span><b>보강</b><span class="muted">주소는 지오코딩으로 좌표를 자동으로 채우고, 학식은 매일 크롤링해 당일 식단을 넣습니다.</span></span></div>
 
+      <div class="card" style="margin-top:var(--s6)">
+        <b>얼마나 정확한가</b>
+        <p class="small">자체 실측에서 메뉴판 사진 6장·72개 항목 중 <b>55개(76.4%)</b>를 정확히 읽었습니다.
+          100%인 척하지 않습니다 — 나머지를 사람이 잡는 <b>검수 단계</b>가 있어서 이 숫자로도 서비스가 됩니다.
+          손글씨·저해상·반사에서 특히 떨어지고, 그때는 제보 화면이 직접 입력으로 흐름을 잇습니다.</p>
+      </div>
+
       <figure class="figure">
         <img src="/img/about-1.jpg" alt="한국 길거리 음식 노점의 밥상">
         <figcaption>학식은 이미 구조화된 HTML이라 크롤링하고, 메뉴판은 비구조 사진이라 파싱합니다 — 같은 도구를 억지로 쓰지 않습니다.</figcaption>
