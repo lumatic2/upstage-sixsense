@@ -252,7 +252,7 @@ document.getElementById("loginClose").addEventListener("click", () => document.g
       <p class="k">이야기</p>
       <a href="/about.html">데이터 파이프라인</a>
       <a href="/about.html#upstage">Upstage AI</a>
-      <a href="/verify.html">파이프라인 검증</a>
+      <a href="/about.html#s6">파싱 정확도</a>
     </nav>
   </div>
 </footer>
@@ -334,7 +334,7 @@ async function loadData() {
   try { DATA = await (await fetch("/api/data")).json(); }
   catch { DATA = { restaurants: [], menus: [], cafeteria: [], source: "none" }; }
   // 데이터 카운터(식당 24 · 메뉴 342)는 뺐다 — 쓰는 사람에게 필요한 숫자가 아니다(사용자 지시 2026-07-21).
-  // 규모를 보여주는 자리는 랜딩의 증거 띠와 /verify.html 이다.
+  // 규모를 보여주는 자리는 랜딩의 증거 띠와 /about.html §지금까지 돌아간 것 이다.
   render(); renderMarkers();
   greet();
   applyUrlQuery();
