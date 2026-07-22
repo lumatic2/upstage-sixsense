@@ -331,7 +331,9 @@ async function identify(text, name = "") {
     fill("raddr", d.address);
     fill("rcat", d.category);
     $("#nameHint").textContent = !name && d.name ? " · 메뉴판에서 찾음 (고칠 수 있어요)" : "";
-    $("#addrHint").textContent = d.placeFound ? " · 자동으로 찾음" : "";
+    // 어느 가게로 찾았는지 **이름을 밝힌다** — 검색이 비슷한 다른 가게를 물어올 수 있으므로
+    // "자동으로 찾음"만 적으면 엉뚱한 주소가 조용히 들어간다.
+    $("#addrHint").textContent = d.placeFound ? ` · 「${d.placeName}」로 찾음` : "";
     // 상호를 메뉴판에서 막 찾아냈는데 주소가 비어 있으면, 그 이름으로 한 번 더 찾아본다.
     if (!name && d.name && !d.placeFound) identify("", d.name);
   } catch {

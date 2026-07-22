@@ -10,6 +10,12 @@
  *  가격대는 명륜동 실제 시세를 참고한 그럴듯한 값이고, 상호는 실재하지 않는 이름이다.
  *  화면에서도 "예시"라고 밝힌다 — 실제 가게로 오해하게 두지 않는다.
  *
+ *  ⚠ **상호는 지어내기 전에 실재 여부를 반드시 확인한다.** 처음 쓴 "명륜손칼국수" 는 지어낸
+ *  이름이었는데 종로구 혜화로에 **실재하는 가게**였다(Kakao 검색으로 발각). 그대로 뒀으면 실제
+ *  가게 이름에 우리가 만든 가격표를 붙여 공개하는 셈이 된다. 현재 "한입국수당" 은 Kakao 전국
+ *  검색 0건으로 확인했다(2026-07-22). 이름을 바꾸려면 같은 검사를 다시 하라:
+ *    https://dapi.kakao.com/v2/local/search/keyword.json?query=<상호>   → documents 가 비어야 한다
+ *
  *  사용법: node scripts/make-sample-menu.mjs   → public/img/samples/*.png
  */
 import { chromium } from "playwright";
@@ -27,8 +33,8 @@ const printed = {
   html: `
 <div class="board">
   <div class="head">
-    <div class="brand">명륜손칼국수</div>
-    <div class="sub">MYEONGNYUN NOODLE · SINCE 1998</div>
+    <div class="brand">한입국수당</div>
+    <div class="sub">HANIP NOODLE · SINCE 1998</div>
   </div>
   <div class="sect">면 요리</div>
   <table>
