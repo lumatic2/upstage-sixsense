@@ -317,11 +317,10 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
       </div>
 
       <div class="proof" id="proof" aria-live="polite">
-        <div><span class="n" id="nRest">–</span><span class="k">수집한 식당</span></div>
-        <div><span class="n" id="nMenu">–</span><span class="k">검수 통과 메뉴</span></div>
-        <div><span class="n" id="nCaf">–</span><span class="k" id="kCaf">오늘 문 연 학식당</span></div>
+        <div><span class="n" id="nRest">–</span><span class="k">식당</span></div>
+        <div><span class="n" id="nMenu">–</span><span class="k">메뉴</span></div>
+        <div><span class="n" id="nCaf">–</span><span class="k" id="kCaf">학식</span></div>
       </div>
-      <p class="proof-note">가격은 메뉴판 사진에서 뽑아 사람이 검수한 것만 셉니다. 학식은 매일 아침 6시에 자동으로 받아옵니다.</p>
       <div class="wavewrap" aria-hidden="true">
         <div class="waverow" id="wave1"></div>
         <div class="waverow" id="wave2"></div>
@@ -339,19 +338,19 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
           <div class="duo-head">
             <div>
               <p class="who">범용 챗봇</p>
-              <p class="duo-line">검색해 보고,<br>확인은 나에게 미룹니다.</p>
+              <p class="duo-line">식당은 찾아도<br>메뉴와 가격은 모릅니다.</p>
             </div>
           </div>
           <div class="duo-visual is-gray">
             <div class="bubble q" id="duoQ1">쫄면 얼마예요?</div>
-            <div class="bubble a muted-a" id="duoA1">후기마다 가격이 달라서요, 정확한 가격은 매장에 문의해 보세요.</div>
+            <div class="bubble a muted-a" id="duoA1">정확한 메뉴와 가격은 직접 확인이 필요해요.</div>
           </div>
         </div>
         <div class="duo-card">
           <div class="duo-head">
             <div>
               <p class="who">한입지도</p>
-              <p class="duo-line">이번 주 메뉴판에서<br>꺼낸 가격으로 답합니다.</p>
+              <p class="duo-line">이번 주 메뉴판<br>가격으로 답합니다.</p>
             </div>
             <a class="duo-arrow" href="/app.html" aria-label="서비스 열기">→</a>
           </div>
@@ -841,7 +840,7 @@ function startDemo(data) {
         await new Promise((ok) => setTimeout(ok, reduced ? 0 : 120));
         amtEl.textContent += ch;
       }
-      await new Promise((ok) => setTimeout(ok, reduced ? 3000 : 4000));
+      await new Promise((ok) => setTimeout(ok, reduced ? 4500 : 6000));
       hi++;
     }
   })();
