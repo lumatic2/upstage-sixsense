@@ -53,6 +53,22 @@ const shownDate = ((await page.locator("#cafDate").textContent().catch(() => "")
 const todayKST = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);
 check("학식 날짜 = 오늘(KST)", shownDate === todayKST, `화면 ${shownDate || "(없음)"} / 오늘 ${todayKST}`);
 
+// 2-2. 추천 학식도 오늘 것이어야 한다 (2026-07-22 회귀 가드).
+//   크롤러가 며칠치를 **앞서** 넣기 때문에 `menu_date` 내림차순의 첫 행은 미래 날짜다.
+//   실제로 7/22 에 7/24 식단이 "오늘의 추천"에 떴다. 화면은 위치만 보여줘 눈으로는 안 잡히므로
+//   API 응답을 직접 본다. 카드가 날짜를 감춘 만큼 이 검사가 그 자리를 대신한다.
+//   예산을 크게 잡는 이유: 예산에 걸려 null 이 되면 날짜를 검사할 대상 자체가 사라진다.
+const recJson = await fetch(`${URL_}/api/recommend`, {
+  method: "POST", headers: { "content-type": "application/json" },
+  body: JSON.stringify({ budget: 30000, walkMax: null, tags: [] }),
+}).then((r) => r.json()).catch(() => ({}));
+const recCaf = recJson.cafeteria ?? null;
+check(
+  "추천 학식 = 오늘 것",
+  recCaf === null || recCaf.menu_date === todayKST,
+  recCaf ? `${recCaf.cafeteria} ${recCaf.menu_date} (오늘 ${todayKST})` : "오늘 열린 학식 없음 — 검사 대상 없음",
+);
+
 // 3. 자연어 검색 → 추천+이유
 await page.fill("#q", "8천원 이하 혼밥");
 await page.click("#goBtn");

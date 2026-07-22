@@ -111,7 +111,13 @@ export default async function handler(req, res) {
   const picks = candidates.slice(0, 3);
 
   // 학식: 최신 날짜 1건 (예산 내면)
-  const cafRow = data.cafeteria.slice().sort((a, b) => a.menu_date < b.menu_date ? 1 : -1)
+  /* **오늘 것만** 고른다. 예전엔 `menu_date` 내림차순의 첫 행을 집었는데, 크롤러가 며칠치를
+     앞서 넣기 때문에(`cafeteriaFeed.lastDate` 가 오늘보다 미래) 그 첫 행이 **모레 메뉴**였다.
+     실측 2026-07-22: 오늘의 추천에 7/24 식단이 떴다. 아래 `오늘의 학식` 섹션은 이미
+     `menu_date === today` 로 거르고 있어서(api/data.js) 한 화면에서 두 날짜를 말하고 있었다. */
+  const today = new Date(Date.now() + 9 * 3600 * 1000).toISOString().slice(0, 10);   // KST
+  const cafRow = data.cafeteria
+    .filter((c) => c.menu_date === today)
     .find((c) => !budget || !c.price || c.price <= budget) ?? null;
   // 시트의 축약 이름을 정본 명칭으로 펴고 **위치(건물·층)를 함께 싣는다** — 카드에 학식당만
   // 적혀 있으면 "어디로 가라는 건지" 가 빠진다(사용자 지적 2026-07-22). 아래 `오늘의 학식`

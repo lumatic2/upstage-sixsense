@@ -720,7 +720,7 @@ async function loadPicks(wait = null, { record = true } = {}) {
     renderMarkers();
     const cards = [];
     if (d.cafeteria) {
-      cards.push(`<div class="card pick"><div class="rowhead"><h3>학식 · ${esc(d.cafeteria.cafeteria)}</h3><span class="small muted">${[d.cafeteria.place, d.cafeteria.menu_date].filter(Boolean).map(esc).join(" · ")}</span></div>
+      cards.push(`<div class="card pick"><div class="rowhead"><h3>학식 · ${esc(d.cafeteria.cafeteria)}</h3><span class="small muted">${esc(d.cafeteria.place ?? d.cafeteria.menu_date ?? "")}</span></div>
         <ul class="menus"><li><span>${d.cafeteria.items.slice(0,5).join(", ")}${d.cafeteria.items.length>5?" 외":""}</span><span class="price">${d.cafeteria.price ? d.cafeteria.price.toLocaleString()+"원" : ""}</span></li></ul>
         <p class="reason muted">캠퍼스 안에서 해결하는 가장 확실한 선택.</p></div>`);
     }
