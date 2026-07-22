@@ -227,12 +227,10 @@ document.getElementById("loginClose").addEventListener("click", () => document.g
 
 <section class="band-warm">
   <div class="container centered">
-    <h2>찾던 가게가 없었나요?</h2>
-    <p class="lead">메뉴판 사진 한 장이면 Document Parse가 메뉴와 가격을 읽습니다.
-      운영진이 그 사진과 대조해 확인한 뒤에 지도와 추천에 올라갑니다. 검수 전에는 어디에도 나오지 않습니다.</p>
+    <h2>내 단골 식당을 추가하려면?</h2>
+    <p class="lead">메뉴판 사진 한 장이면 등록 완료!</p>
     <div style="display:flex;gap:var(--s3);justify-content:center;flex-wrap:wrap;margin-top:var(--s6)">
       <a class="btn" href="/contribute.html">사진 제보하기</a>
-      <a class="btn tint" href="/about.html#upstage">어떤 AI를 어디에 썼나</a>
     </div>
   </div>
 </section>
@@ -341,9 +339,8 @@ async function loadData() {
    가진 데이터를 먼저 밝히고(지어내지 않는다는 태도의 시작점) 예시를 하나 준다. */
 function greet() {
   if (chatEl().children.length) return;
-  bubble("ai", `오늘은 뭘 먹어 볼까요?`);
-  const hint = bubble("ai muted", `눌러서 골라도 되고, "8천원 이하 도보 5분 혼밥" 처럼 말해도 됩니다.`);
-  sugChips(entryChips(), hint);
+  const greeting = bubble("ai", `오늘은 뭘 먹어 볼까요?`);
+  sugChips(entryChips(), greeting);
   greetRevisit();
 }
 
@@ -719,13 +716,17 @@ async function loadPicks(wait = null, { record = true } = {}) {
         <p class="reason muted">캠퍼스 안에서 해결하는 가장 확실한 선택.</p></div>`);
     }
     for (const p of d.picks ?? []) {
-      const b = p.grounded === "grounded" ? { t: "Solar 생성 · 근거 검증됨", ok: true, i: CHECK }
+      /* 통과(grounded)는 배지를 그리지 않는다 — 정상이 기본값이라 매 카드에 체크가 붙으면
+         장식으로 읽히고, 정작 눈에 띄어야 할 "교체됨"까지 같이 묻힌다(사용자 지시 2026-07-22).
+         판정 자체는 그대로 돈다: 결과는 카드의 `data-grounded` 에 남아 smoke 가 그걸 검사한다
+         (배지를 지웠다고 검증이 사라진 게 아님을 자동으로 지킨다). */
+      const b = p.grounded === "grounded" ? null
         : p.grounded === "replaced" ? { t: "근거 미달 판정 → 데이터 팩트로 교체", ok: false, i: SWAP }
         : p.reasonSource === "solar" ? { t: "Solar 생성", ok: false, i: SPARK } : { t: "데이터 기반", ok: false, i: SPARK };
-      cards.push(`<div class="card pick"><div class="rowhead"><h3>${p.name}</h3><span class="small muted">${p.category}${p.walkMin?` · 도보 ${p.walkMin}분`:""}</span></div>
+      const badge = b ? `<span class="badge" title="추천 이유를 solar-mini 가 데이터와 대조해 판정한 결과입니다">${b.i}${b.t}</span>` : "";
+      cards.push(`<div class="card pick" data-grounded="${p.grounded ?? "none"}"><div class="rowhead"><h3>${p.name}</h3><span class="small muted">${p.category}${p.walkMin?` · 경영관 도보 ${p.walkMin}분`:""}</span></div>
         <ul class="menus">${p.menus.map((m)=>`<li><span>${m.name}</span><span class="price">${m.price.toLocaleString()}원</span></li>`).join("")}</ul>
-        <div class="reason"><p>${p.reason}</p><span class="badge${b.ok?" ok":""}" title="추천 이유를 solar-mini 가 데이터와 대조해 판정한 결과입니다">
-          ${b.i}${b.t}</span>${routeLink(p)}</div></div>`);
+        <div class="reason"><p>${p.reason}</p>${badge}${routeLink(p)}</div></div>`);
     }
     $("#picksNote").textContent = d.walkRelaxed ? "도보 조건에 맞는 곳이 없어 가까운 순으로 보여드립니다" : "";
     block.innerHTML = cards.join("") || emptyState();

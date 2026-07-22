@@ -67,16 +67,21 @@ check("추천 이유 문구", (reasonText ?? "").trim().length > 5, (reasonText 
 const parsedText = await page.locator("#parsed").textContent();
 check("조건 파싱 표시", (parsedText ?? "").includes("8,000"));
 
-// 3-2. Groundedness 배지 — DoD 가 시연 시나리오에 포함하므로 실제로 검사한다.
-//   구조 검사만 하면 판정기(solar-mini)가 죽어 배지가 폴백 문구로 떨어져도 PASS 가 난다(2026-07-20 독립검증 지적).
-//   그래서 "배지가 있다"와 "판정이 실제로 돌았다"를 나눠 본다.
-const badgeText = (await page.locator("#picksBlock .badge").first().textContent().catch(() => "")) ?? "";
-check("Groundedness 배지 렌더", badgeText.trim().length > 0, badgeText.trim().slice(0, 40));
+// 3-2. Groundedness 판정 — DoD 가 시연 시나리오에 포함하므로 실제로 검사한다.
+//   구조 검사만 하면 판정기(solar-mini)가 죽어 폴백으로 떨어져도 PASS 가 난다(2026-07-20 독립검증 지적).
+//   2026-07-22: 통과 배지를 화면에서 뺐으므로(정상은 기본값이라 장식으로 읽힘) 검사 대상을
+//   보이는 텍스트에서 카드의 `data-grounded` 로 옮겼다. 배지를 지웠다고 판정이 사라지지
+//   않았음을 이 검사가 계속 지킨다 — 판정이 죽으면 값이 "none" 으로 떨어져 FAIL 한다.
+const verdict = (await page.locator("#picksBlock .card.pick").first().getAttribute("data-grounded").catch(() => null)) ?? "";
+check("Groundedness 판정 기록", verdict.length > 0, `data-grounded="${verdict}"`);
 check(
   "Groundedness 판정 실행",
-  badgeText.includes("근거 검증됨") || badgeText.includes("근거 미달"),
-  badgeText.includes("근거") ? "판정 결과 반영됨" : `판정 미실행 — 폴백 배지("${badgeText.trim()}")`,
+  verdict === "grounded" || verdict === "replaced",
+  verdict === "grounded" || verdict === "replaced" ? "판정 결과 반영됨" : `판정 미실행 — 폴백("${verdict}")`,
 );
+// 통과 카드에는 배지가 없어야 한다 (사용자 지시 2026-07-22 — 화면에서 뺀 게 실제로 빠졌는지)
+const okBadges = await page.locator('#picksBlock .card.pick[data-grounded="grounded"] .badge').count();
+check("통과 카드 배지 없음", okBadges === 0, `${okBadges}건`);
 
 // 4. 예산 필터 (6천원) — 표시된 전 메뉴 가격이 상한 이내인지
 //    검사 대상을 추천 카드로 옮겼다. 구 셀렉터(#restaurantBlock)는 DR9 에서 사라져 요소가 0개였고,
