@@ -330,7 +330,9 @@ async function identify(text, name = "") {
     if (!name) fill("rname", d.name);
     fill("raddr", d.address);
     fill("rcat", d.category);
-    $("#nameHint").textContent = !name && d.name ? " · 메뉴판에서 찾음 (고칠 수 있어요)" : "";
+    // 이름 힌트는 **이름을 찾아온 호출**만 건드린다. 아래 재시도(`identify("", d.name)`)까지
+    // 이 줄을 타면 방금 띄운 "메뉴판에서 찾음"을 자기가 지워버린다(2026-07-22 실측).
+    if (!name) $("#nameHint").textContent = d.name ? " · 메뉴판에서 찾음 (고칠 수 있어요)" : "";
     // 어느 가게로 찾았는지 **이름을 밝힌다** — 검색이 비슷한 다른 가게를 물어올 수 있으므로
     // "자동으로 찾음"만 적으면 엉뚱한 주소가 조용히 들어간다.
     $("#addrHint").textContent = d.placeFound ? ` · 「${d.placeName}」로 찾음` : "";
