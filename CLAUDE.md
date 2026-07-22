@@ -59,6 +59,14 @@
 
 ## Gotchas
 - 필수 env var: `UPSTAGE_API_KEY` (커밋·로그 노출 금지)
+- **`git push` 는 배포가 아니다** (2026-07-22 실측). 이 Vercel 프로젝트
+  (`upstage-sixsense-staging`)는 **GitHub 연동이 없다**(`GET /v9/projects/…` 의 `link: null`).
+  푸시만 하고 "배포됐다"고 말하면 거짓 보고가 된다 — 실제로 20시간 전 빌드가 계속 서빙됐다.
+  배포는 **`node scripts/deploy-staging.mjs`** (REST 업로드, `VERCEL_TOKEN` 필요) 로 명시 실행하고,
+  `curl -s https://sixsense.askewly.com/<파일> | grep <이번에 바꾼 문자열>` 로 반영을 확인한 뒤
+  smoke 를 돌린다. 반영 전에 돌린 smoke 는 옛 빌드를 채점한다.
+- **`.badge` 는 판정 배지 전용이 아니다** — 카카오맵 길찾기 링크가 크기를 맞추려고 같은 클래스를
+  쓴다(`.badge.route`). 배지를 세는 셀렉터는 반드시 `:not(.route)` 를 붙인다.
 
 ## 작업 방식
 - 신규 기능 → 항상 계획 먼저, 구현 나중

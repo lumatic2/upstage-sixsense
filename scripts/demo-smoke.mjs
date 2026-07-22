@@ -79,8 +79,10 @@ check(
   verdict === "grounded" || verdict === "replaced",
   verdict === "grounded" || verdict === "replaced" ? "판정 결과 반영됨" : `판정 미실행 — 폴백("${verdict}")`,
 );
-// 통과 카드에는 배지가 없어야 한다 (사용자 지시 2026-07-22 — 화면에서 뺀 게 실제로 빠졌는지)
-const okBadges = await page.locator('#picksBlock .card.pick[data-grounded="grounded"] .badge').count();
+// 통과 카드에는 판정 배지가 없어야 한다 (사용자 지시 2026-07-22 — 화면에서 뺀 게 실제로 빠졌는지)
+//   `.route`(카카오맵 길찾기)는 판정 배지가 아니라 동작 링크인데 크기를 맞추려고 `.badge` 를
+//   같이 쓴다 — 빼지 않으면 길찾기 3개를 "안 지워진 배지" 로 세어 항상 FAIL 한다(2026-07-22 실측).
+const okBadges = await page.locator('#picksBlock .card.pick[data-grounded="grounded"] .badge:not(.route)').count();
 check("통과 카드 배지 없음", okBadges === 0, `${okBadges}건`);
 
 // 4. 예산 필터 (6천원) — 표시된 전 메뉴 가격이 상한 이내인지
