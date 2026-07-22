@@ -29,16 +29,48 @@ const png = await page.evaluate(async ({ dataUrl, max, jpeg }) => {
   const img = await new Promise((ok, no) => {
     const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = dataUrl;
   });
-  const s = Math.min(1, max / Math.max(img.width, img.height));
+
+  /* 여백 자동 절단 — 생성 모델은 그림을 캔버스 가운데에 놓지 않는다(1차 생성물은 아래쪽
+     15% 가 통째로 비어 있어 본문에서 캡션과 벌어져 보였다). 뽑을 때마다 여백 위치가
+     달라지므로 눈으로 자르지 않고 배경색과 다른 픽셀의 경계를 재서 자른다. */
+  const probe = document.createElement("canvas");
+  probe.width = img.width; probe.height = img.height;
+  const pctx = probe.getContext("2d", { willReadFrequently: true });
+  pctx.drawImage(img, 0, 0);
+  const px = pctx.getImageData(0, 0, img.width, img.height).data;
+  const at = (x, y) => (y * img.width + x) * 4;
+  const bg = [px[0], px[1], px[2]];                       // 좌상단 픽셀을 배경으로 본다
+  const differs = (x, y) => {
+    const i = at(x, y);
+    return Math.abs(px[i] - bg[0]) + Math.abs(px[i + 1] - bg[1]) + Math.abs(px[i + 2] - bg[2]) > 24;
+  };
+  let x0 = img.width, y0 = img.height, x1 = 0, y1 = 0;
+  for (let y = 0; y < img.height; y++) {
+    for (let x = 0; x < img.width; x++) {
+      if (!differs(x, y)) continue;
+      if (x < x0) x0 = x; if (x > x1) x1 = x;
+      if (y < y0) y0 = y; if (y > y1) y1 = y;
+    }
+  }
+  if (x1 <= x0 || y1 <= y0) { x0 = 0; y0 = 0; x1 = img.width - 1; y1 = img.height - 1; }
+  const pad = Math.round(Math.max(img.width, img.height) * 0.02);   // 선이 가장자리에 붙지 않게
+  x0 = Math.max(0, x0 - pad); y0 = Math.max(0, y0 - pad);
+  x1 = Math.min(img.width - 1, x1 + pad); y1 = Math.min(img.height - 1, y1 + pad);
+  const cw = x1 - x0 + 1, ch = y1 - y0 + 1;
+
+  const s = Math.min(1, max / Math.max(cw, ch));
   const c = document.createElement("canvas");
-  c.width = Math.round(img.width * s);
-  c.height = Math.round(img.height * s);
+  c.width = Math.round(cw * s);
+  c.height = Math.round(ch * s);
   const ctx = c.getContext("2d");
   ctx.imageSmoothingQuality = "high";
-  ctx.drawImage(img, 0, 0, c.width, c.height);
-  return jpeg ? c.toDataURL("image/jpeg", 0.92) : c.toDataURL("image/png");
+  // JPEG 는 투명을 못 담는다 — 배경색으로 먼저 칠해야 잘린 여백이 검게 나오지 않는다.
+  ctx.fillStyle = `rgb(${bg[0]},${bg[1]},${bg[2]})`;
+  ctx.fillRect(0, 0, c.width, c.height);
+  ctx.drawImage(img, x0, y0, cw, ch, 0, 0, c.width, c.height);
+  return { url: jpeg ? c.toDataURL("image/jpeg", 0.92) : c.toDataURL("image/png"), crop: `${img.width}×${img.height} → ${cw}×${ch}` };
 }, { dataUrl, max: maxEdge, jpeg });
 
-fs.writeFileSync(out, Buffer.from(png.split(",")[1], "base64"));
-console.log(`${out}  ${(fs.statSync(src).size / 1024).toFixed(0)}KB → ${(fs.statSync(out).size / 1024).toFixed(0)}KB`);
+fs.writeFileSync(out, Buffer.from(png.url.split(",")[1], "base64"));
+console.log(`${out}  ${(fs.statSync(src).size / 1024).toFixed(0)}KB → ${(fs.statSync(out).size / 1024).toFixed(0)}KB  (여백 절단 ${png.crop})`);
 await browser.close();
