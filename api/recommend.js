@@ -1,11 +1,12 @@
 /** POST /api/recommend — 조건 → 실데이터 추천 Top3 + Solar 이유 생성 (DR2 step-2)
  *  요청: { budget: number|null, walkMax: number|null, tags: string[] }
- *  응답: 200 { picks: [{ kind, name, category, walkMin, menus, reason, reasonSource }], cafeteria: {...}|null }
+ *  응답: 200 { picks: [{ kind, id, name, category, walkMin, menus, reason, reasonSource }], cafeteria: { …, place }|null }
  *  이유 생성: solar-pro2, 타임아웃 5s(SOLAR_TIMEOUT_MS) — 실패 시 데이터 기반 템플릿 이유로 폴백(추천 루프는 불사).
  *  이유는 반드시 전달된 실데이터(메뉴·가격·거리)에만 근거하도록 프롬프트 고정 — step-3 Groundedness 가 이를 검증한다.
  */
 import { loadSheetData } from "./_lib/sheet-data.js";
 import { walkMin } from "./_lib/geo.js";
+import { CAFETERIAS, officialName } from "./_lib/cafeterias.js";
 
 const CHAT_URL = "https://api.upstage.ai/v1/chat/completions";
 // 이유 생성·근거 판정 타임아웃 — 2026-07-20 상향(구 2500/2000).
@@ -87,7 +88,9 @@ export default async function handler(req, res) {
       .sort((a, b) => (a.isSide === b.isSide ? a.price - b.price : a.isSide ? 1 : -1));
     const mainCount = menus.filter((m) => !m.isSide).length;
     // lat/lng 를 실어 보내는 이유는 길찾기 링크 하나다 — 카드에서 카카오맵으로 넘길 좌표.
-    return { kind: "restaurant", name: r.name, category: r.category, address: r.address, lat: r.lat, lng: r.lng, walkMin: walkMin(r.lat, r.lng), menus, mainCount, tags: r.tags };
+    // `id` 는 화면이 **지도 마커를 추천 후보로 좁히는 데** 쓴다 — 이름으로 맞추면 동명 이인·
+    // 표기 흔들림에서 어긋난다(2026-07-22).
+    return { kind: "restaurant", id: r.id, name: r.name, category: r.category, address: r.address, lat: r.lat, lng: r.lng, walkMin: walkMin(r.lat, r.lng), menus, mainCount, tags: r.tags };
   }).filter((p) => p.mainCount > 0);
 
   // 도보 상한: 전부 걸러지면 상한을 버리고 가까운 순으로 완화 (relaxed 플래그로 정직하게 표시)
@@ -108,8 +111,13 @@ export default async function handler(req, res) {
   const picks = candidates.slice(0, 3);
 
   // 학식: 최신 날짜 1건 (예산 내면)
-  const caf = data.cafeteria.slice().sort((a, b) => a.menu_date < b.menu_date ? 1 : -1)
+  const cafRow = data.cafeteria.slice().sort((a, b) => a.menu_date < b.menu_date ? 1 : -1)
     .find((c) => !budget || !c.price || c.price <= budget) ?? null;
+  // 시트의 축약 이름을 정본 명칭으로 펴고 **위치(건물·층)를 함께 싣는다** — 카드에 학식당만
+  // 적혀 있으면 "어디로 가라는 건지" 가 빠진다(사용자 지적 2026-07-22). 아래 `오늘의 학식`
+  // 섹션은 이미 `place` 를 보여주고 있어서 같은 화면 안에서 표기가 갈려 있었다.
+  const caf = cafRow ? { ...cafRow, cafeteria: officialName(cafRow.cafeteria) ?? cafRow.cafeteria } : null;
+  if (caf) caf.place = CAFETERIAS.find((c) => c.name === caf.cafeteria)?.place ?? null;
 
   const conditions = { budget, walkMax, tags };
   let reasonSource = "template";

@@ -324,6 +324,11 @@ function forgetProfile() {
 let DATA = { restaurants: [], menus: [], cafeteria: [] };
 let MAP = null, MARKERS = [];
 let state = { budget: null, walkMax: null, tags: [] };
+/* 검색 뒤 지도에 남길 식당 id 집합. `null` = 아직 검색 안 함(전체 표시).
+   검색을 하고도 전부 찍혀 있으면 "골라줬다"가 화면에서 안 보인다 — 카드는 3곳인데 지도는
+   23개가 꽂혀 있었다(사용자 지적 2026-07-22). 빈 Set 은 "조건에 맞는 곳 0" 이라는 사실이므로
+   `null` 과 구분한다. */
+let PICK_IDS = null;
 
 async function loadData() {
   try { DATA = await (await fetch("/api/data")).json(); }
@@ -695,6 +700,7 @@ async function loadPicks(wait = null, { record = true } = {}) {
   const wrap = $("#picksWrap"), block = $("#picksBlock");
   if (!state.budget && !state.tags.length) {
     wrap.hidden = true;
+    PICK_IDS = null; renderMarkers();   // 조건이 없으면 지도도 전체로 되돌린다
     if (wait) { wait.className = "cb ai"; wait.innerHTML = `조건 없이 전체 <b>${DATA.restaurants.length}곳</b>을 아래에 놓았습니다.`; }
     return;
   }
@@ -709,9 +715,12 @@ async function loadPicks(wait = null, { record = true } = {}) {
       body: JSON.stringify({ budget: state.budget, walkMax: state.walkMax, tags: state.tags }),
     })).json();
     if (record) noteConditions(state);
+    // 지도를 추천한 곳만 남긴다 — 카드와 마커가 같은 것을 가리켜야 "골라줬다"가 보인다.
+    PICK_IDS = new Set((d.picks ?? []).map((p) => p.id).filter((id) => id != null));
+    renderMarkers();
     const cards = [];
     if (d.cafeteria) {
-      cards.push(`<div class="card pick"><div class="rowhead"><h3>학식 · ${d.cafeteria.cafeteria}</h3><span class="small muted">${d.cafeteria.menu_date}</span></div>
+      cards.push(`<div class="card pick"><div class="rowhead"><h3>학식 · ${esc(d.cafeteria.cafeteria)}</h3><span class="small muted">${[d.cafeteria.place, d.cafeteria.menu_date].filter(Boolean).map(esc).join(" · ")}</span></div>
         <ul class="menus"><li><span>${d.cafeteria.items.slice(0,5).join(", ")}${d.cafeteria.items.length>5?" 외":""}</span><span class="price">${d.cafeteria.price ? d.cafeteria.price.toLocaleString()+"원" : ""}</span></li></ul>
         <p class="reason muted">캠퍼스 안에서 해결하는 가장 확실한 선택.</p></div>`);
     }
@@ -732,6 +741,8 @@ async function loadPicks(wait = null, { record = true } = {}) {
     block.innerHTML = cards.join("") || emptyState();
     if (wait) { try { chatSummary(wait, d); } catch { wait.className = "cb ai"; wait.textContent = "결과는 아래 카드에서 확인하세요."; } }
   } catch {
+    // 추천이 실패했으면 지도를 좁혀 둘 근거가 없다 — 전체로 되돌려 아래 목록과 앞뒤를 맞춘다.
+    PICK_IDS = null; renderMarkers();
     block.innerHTML = `<div class="empty">추천을 불러오지 못했습니다 — 아래 목록으로 골라보세요.</div>`;
     if (wait) { wait.className = "cb ai"; wait.textContent = "추천을 불러오지 못했습니다 — 아래 전체 목록에서 골라보세요."; }
   }
@@ -799,6 +810,8 @@ function menusFor(rid) {
    `치즈추가 1,000원` 있는 집이 "1,000원으로 갈 수 있는 집"처럼 떴다. 판정은 서버가 붙여
    보내주므로(api/_lib/side-menu.js) 여기선 플래그만 본다 — 추천과 목록이 어긋나지 않게. */
 function visibleRestaurants() {
+  // 검색이 끝났으면 지도는 **추천한 곳만** 보여준다 (PICK_IDS). 검색 전에는 전체를 보여준다.
+  if (PICK_IDS) return DATA.restaurants.filter((r) => PICK_IDS.has(r.id));
   return DATA.restaurants.filter((r) => !state.budget || menusFor(r.id).some((m) => !m.isSide));
 }
 /* 학식은 명륜캠 4곳을 항상 같은 순서로, 오늘 것만 보여준다.
