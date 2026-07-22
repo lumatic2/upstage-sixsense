@@ -2,7 +2,8 @@
  *  자동 저장하지 않는다: 후보 반환만 — 클라이언트가 제보 폼에 프리필하고 사용자가 수정 후 제출.
  *  (TRD §5.9 · M2 실측 76.4% — 사용자 수정 전제. 키는 서버 전용 UPSTAGE_API_KEY.)
  *  요청: { image: "<base64 | dataURL>", filename?: "menu.jpg" }  (jpeg/png/webp, ≤8MB)
- *  응답: 200 { items: [{name, price}], elements } | 4xx/5xx { error, code }
+ *  응답: 200 { items: [{name, price}], text, elements } | 4xx/5xx { error, code }
+ *        `text` = 태그를 걷어낸 OCR 평문 앞부분 — `/api/identify` 가 상호를 찾는 입력.
  */
 import { extractMenu } from "./_lib/extract-menu.js";
 
@@ -83,6 +84,10 @@ export default async function handler(req, res) {
   }
 
   const json = await up.json();
-  const items = extractMenu(json.content?.html ?? "");
-  return res.status(200).json({ items, elements: json.elements?.length ?? 0 });
+  const html = json.content?.html ?? "";
+  const items = extractMenu(html);
+  // `text` 는 `/api/identify` 가 상호를 찾는 데 쓴다 — 메뉴판에 상호가 찍혀 있는 경우가 있어서다.
+  // 태그를 걷어낸 평문만, 앞부분만 보낸다(상호는 대개 맨 위에 있고 본문을 다 실을 이유가 없다).
+  const text = html.replace(/<[^>]+>/g, " ").replace(/\s+/g, " ").trim().slice(0, 1200);
+  return res.status(200).json({ items, text, elements: json.elements?.length ?? 0 });
 }

@@ -47,6 +47,18 @@
   @media (prefers-reduced-motion: reduce){.spin{animation:none}}
   .err{color:var(--accent);font-size:var(--sm);margin-top:var(--s4)}
   .done{text-align:center;padding:var(--s16) 0}
+
+  /* 예시 메뉴판 — 사진 없이도 파이프라인을 끝까지 볼 수 있어야 한다(심사 시연).
+     썸네일 자체가 버튼이다: 누르면 그 이미지가 곧바로 업로드 흐름을 탄다. */
+  .samples{margin-top:var(--s8);text-align:center}
+  .samplerow{display:flex;gap:var(--s4);justify-content:center;flex-wrap:wrap;margin-top:var(--s3)}
+  .samplebtn{border:1px solid var(--border);background:var(--surface);border-radius:var(--r);padding:var(--s2);
+             cursor:pointer;font:inherit;color:inherit;width:150px;
+             transition:border-color 180ms ease-out,transform 160ms ease-out}
+  .samplebtn:hover{border-color:var(--accent);transform:translateY(-2px)}
+  .samplebtn:disabled{opacity:.5;cursor:default;transform:none}
+  .samplebtn img{width:100%;height:96px;object-fit:cover;object-position:top;border-radius:4px;display:block}
+  .samplebtn span{display:block;font-size:13px;color:var(--muted);margin-top:6px}
 </style>
 </head>
 <body>
@@ -81,7 +93,7 @@
 
   <ol class="steps" id="steps">
     <li class="on" data-s="1"><b>1. 사진 업로드</b>메뉴와 가격이 보이게</li>
-    <li data-s="2"><b>2. 메뉴판 분석</b>Document Parse 가 표 구조를 복원</li>
+    <li data-s="2"><b>2. 메뉴판 분석</b>Upstage AI가 텍스트 인식</li>
     <li data-s="3"><b>3. 식당 등록 완료</b>검수 후 서비스에 반영</li>
   </ol>
 
@@ -93,6 +105,21 @@
     </div>
     <input type="file" id="file" accept="image/jpeg,image/png,image/webp" hidden>
     <p class="err" id="err1"></p>
+
+    <div class="samples">
+      <p class="small muted">사진이 없으면 예시로 해보세요 — 누르면 그대로 올라갑니다.
+        <b>실재하지 않는 가상 식당</b>의 메뉴판입니다.</p>
+      <div class="samplerow">
+        <button class="samplebtn" type="button" data-sample="/img/samples/sample-menu-printed.png">
+          <img src="/img/samples/sample-menu-printed.png" alt="" loading="lazy">
+          <span>인쇄 메뉴판</span>
+        </button>
+        <button class="samplebtn" type="button" data-sample="/img/samples/sample-menu-board.png">
+          <img src="/img/samples/sample-menu-board.png" alt="" loading="lazy">
+          <span>오늘의 백반 보드</span>
+        </button>
+      </div>
+    </div>
   </section>
 
   <!-- 2·3단계 -->
@@ -103,7 +130,7 @@
         <button class="btn ghost sm" id="again" style="width:100%;margin-top:var(--s3)">다른 사진 고르기</button>
       </div>
       <div>
-        <div class="working" id="working"><span class="spin"></span><span id="workingMsg">Document Parse 가 표 구조를 복원하는 중…</span></div>
+        <div class="working" id="working"><span class="spin"></span><span id="workingMsg">Upstage AI가 텍스트를 인식하는 중…</span></div>
 
         <div id="result" hidden>
           <h2 style="font-size:var(--lg)">이렇게 읽었습니다</h2>
@@ -115,13 +142,6 @@
             <div id="manualRows"></div>
             <button class="btn ghost sm" id="addRow" type="button" style="margin-top:var(--s2)">행 추가</button>
           </div>
-          <div class="note" id="noteParsed">
-            <strong>고치지 않으셔도 됩니다.</strong> 읽은 내용이 조금 틀려도 그대로 접수해주세요 —
-            운영진이 원본 사진과 대조해 검수한 뒤에 서비스에 반영합니다. 검수 전에는 어디에도 노출되지 않습니다.
-            <br><br>
-            <strong>AI 가 채우고 사람이 검수합니다.</strong> 자체 실측에서 메뉴판 사진 6장·72개 항목 중
-            <b>55개(76.4%)</b>를 정확히 읽었습니다. 나머지를 사람이 잡는 단계가 있어서 이 숫자로도 서비스가 됩니다.
-          </div>
           <div class="note" id="noteManual" hidden>
             <strong>사진에서 메뉴를 찾지 못했습니다.</strong> 흔한 일입니다 — 손글씨·조명·각도에 따라
             읽히지 않습니다(실측 정확도 76.4%). 아는 만큼만 직접 적어주세요. 비워두셔도 사진은 함께
@@ -130,13 +150,14 @@
 
           <div class="fields">
             <div>
-              <label for="rname">식당 이름 <span style="color:var(--accent)">*</span></label>
+              <label for="rname">식당 이름 <span style="color:var(--accent)">*</span>
+                <span id="nameHint" class="small muted"></span></label>
               <input id="rname" placeholder="예: 백미향마라탕 명륜점" autocomplete="off">
             </div>
             <div class="row2">
               <div>
-                <label for="raddr">주소</label>
-                <input id="raddr" placeholder="예: 서울 종로구 명륜3가 ..." autocomplete="off">
+                <label for="raddr">주소 <span id="addrHint" class="small muted"></span></label>
+                <input id="raddr" placeholder="이름을 적으면 자동으로 찾습니다" autocomplete="off">
               </div>
               <div>
                 <label for="rcat">분류</label>
@@ -209,7 +230,25 @@ drop.addEventListener("keydown", (e) => { if (e.key === "Enter" || e.key === " "
 drop.addEventListener("drop", (e) => { const f = e.dataTransfer.files?.[0]; if (f) handle(f); });
 file.addEventListener("change", () => { const f = file.files?.[0]; if (f) handle(f); });
 $("#again").addEventListener("click", () => { file.value = ""; step(1); });
-$("#more").addEventListener("click", () => { file.value = ""; ITEMS = []; step(1); });
+$("#more").addEventListener("click", () => { file.value = ""; ITEMS = []; resetFields(); step(1); });
+
+/* 예시 메뉴판 — 썸네일을 누르면 그 이미지를 받아 **직접 고른 사진과 똑같은 경로**로 흘려보낸다.
+   따로 만든 지름길이 아니라서 예시가 통과하면 진짜 업로드도 통과한다(심사 시연에서 사진이 없어도
+   파이프라인 전체를 보여줄 수 있어야 한다 — docs/SITEMAP.md §contribute). */
+document.querySelectorAll("[data-sample]").forEach((btn) => {
+  btn.addEventListener("click", async () => {
+    const src = btn.dataset.sample;
+    document.querySelectorAll("[data-sample]").forEach((b) => { b.disabled = true; });
+    try {
+      const blob = await (await fetch(src)).blob();
+      await handle(new File([blob], src.split("/").pop(), { type: blob.type || "image/png" }));
+    } catch {
+      $("#err1").textContent = "예시 사진을 불러오지 못했습니다 — 직접 사진을 올려주세요.";
+    } finally {
+      document.querySelectorAll("[data-sample]").forEach((b) => { b.disabled = false; });
+    }
+  });
+});
 
 /** 검수용 사본 — 운영진이 원본 사진과 대조하려면 사진이 서버에 남아야 한다.
  *  원본을 그대로 보내면 8MB 까지 올 수 있어 서버 함수 본문 한도를 넘긴다. 긴 변 1600px·JPEG 로 줄인다. */
@@ -230,6 +269,7 @@ async function handle(f) {
   const dataUrl = await new Promise((ok) => { const r = new FileReader(); r.onload = () => ok(r.result); r.readAsDataURL(f); });
   $("#shot").src = dataUrl;
   PHOTO = await shrink(dataUrl);
+  resetFields();
   step(2);
   $("#working").hidden = false; $("#result").hidden = true; $("#err2").textContent = "";
 
@@ -247,6 +287,7 @@ async function handle(f) {
     $("#rows").innerHTML = ITEMS.map((i) =>
       `<tr><td>${esc(i.name)}</td><td class="p">${Number(i.price).toLocaleString()}원</td></tr>`).join("");
     $("#working").hidden = true; $("#result").hidden = false;
+    identify(data.text);   // 표를 먼저 띄우고 상호·주소는 뒤따라 채운다(기다리게 하지 않는다)
   } catch (e) {
     /* 파싱이 0행이거나 실패해도 사용자를 1단계로 돌려보내지 않는다. 여기서 돌려보내면
        "AI 가 못 읽었으니 당신도 못 한다"가 되는데, 사실은 사람이 적으면 되는 일이다.
@@ -255,6 +296,54 @@ async function handle(f) {
     enterManual(e.message);
   }
 }
+
+/* ── 가게 특정: 상호는 Solar 가 메뉴판 글자에서 찾고, 주소·분류는 Kakao 가 그 이름으로 찾는다 ──
+   전부 **제안**이다. 사용자가 손댄 칸은 절대 덮어쓰지 않는다(고쳐놨는데 뒤늦게 응답이 와서
+   되돌아가면 최악이다). 못 찾으면 조용히 빈칸으로 둔다 — 지어내지 않는다. */
+let TOUCHED = new Set();
+["rname", "raddr", "rcat"].forEach((id) => {
+  document.getElementById(id).addEventListener("input", () => TOUCHED.add(id));
+});
+function resetFields() {
+  TOUCHED = new Set();
+  for (const id of ["rname", "raddr", "rcat"]) $("#" + id).value = "";
+  $("#nameHint").textContent = "";
+  $("#addrHint").textContent = "";
+}
+/** 사용자가 안 건드렸고 비어 있을 때만 채운다. */
+function fill(id, value) {
+  if (!value || TOUCHED.has(id)) return false;
+  const el = $("#" + id);
+  if (el.value.trim()) return false;
+  el.value = value;
+  return true;
+}
+async function identify(text, name = "") {
+  if (!text && !name) return;
+  const hint = name ? $("#addrHint") : $("#nameHint");
+  hint.textContent = " · 찾는 중…";
+  try {
+    const d = await (await fetch("/api/identify", {
+      method: "POST", headers: { "content-type": "application/json" },
+      body: JSON.stringify({ text, name }),
+    })).json();
+    if (!name) fill("rname", d.name);
+    fill("raddr", d.address);
+    fill("rcat", d.category);
+    $("#nameHint").textContent = !name && d.name ? " · 메뉴판에서 찾음 (고칠 수 있어요)" : "";
+    $("#addrHint").textContent = d.placeFound ? " · 자동으로 찾음" : "";
+    // 상호를 메뉴판에서 막 찾아냈는데 주소가 비어 있으면, 그 이름으로 한 번 더 찾아본다.
+    if (!name && d.name && !d.placeFound) identify("", d.name);
+  } catch {
+    $("#nameHint").textContent = "";
+    $("#addrHint").textContent = "";
+  }
+}
+/* 사용자가 이름을 직접 적고 칸을 벗어나면 그 이름으로 주소·분류를 찾아본다. */
+$("#rname").addEventListener("blur", () => {
+  const n = $("#rname").value.trim();
+  if (n && !$("#raddr").value.trim()) identify("", n);
+});
 
 /* 수기 입력 폴백 — 파싱 결과 대신 빈 행을 준다. SITEMAP §contribute 필수 상태 처리. */
 let MANUAL = false;
@@ -269,7 +358,6 @@ function manualRow() {
 function enterManual(reason) {
   MANUAL = true;
   ITEMS = [];
-  $("#noteParsed").hidden = true;
   $("#noteManual").hidden = false;
   $("#manualWrap").hidden = false;
   document.querySelector(".found").hidden = true;
@@ -281,7 +369,6 @@ function enterManual(reason) {
 }
 function exitManual() {
   MANUAL = false;
-  $("#noteParsed").hidden = false;
   $("#noteManual").hidden = true;
   $("#manualWrap").hidden = true;
   document.querySelector(".found").hidden = false;

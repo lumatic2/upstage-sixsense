@@ -59,13 +59,20 @@ export default async function handler(req, res) {
   if (!clean.length) return res.status(400).json({ error: "쓸 수 있는 메뉴가 없습니다", code: "no_valid_items" });
 
   try {
-    const rest = await listRows(REST_SHEET, null);
-
-    // 사진을 먼저 저장한다 — 검수는 사진 대조가 전부라, 사진이 없으면 접수해도 승인할 수 없다.
+    /* 셋을 **동시에** 띄운다. 예전에는 시트 읽기 → 드라이브 업로드 → 지오코딩을 줄줄이 기다려서
+       접수 버튼을 누른 뒤 다음 화면까지 눈에 띄게 걸렸다(사용자 지적 2026-07-22).
+       서로 입력을 주고받지 않는 작업이라 순서가 필요 없다 — 가장 느린 하나(대개 드라이브
+       업로드)만큼만 걸린다. 지오코딩은 신규 식당일 때만 쓰이지만 미리 띄워도 손해가 없다
+       (주소가 없으면 즉시 빈 값으로 끝난다). */
+    const restP = listRows(REST_SHEET, null);
+    // 사진은 검수의 근거다 — 대조할 원본이 없으면 접수해도 승인할 수 없다.
     // 저장에 실패하면 접수 자체를 막는다(근거 없는 대기 행을 쌓지 않는다).
-    const photoLink = photo
-      ? `https://drive.google.com/file/d/${await savePhoto(photo, `${restName}-제보.jpg`)}/view`
-      : "";
+    const photoP = photo
+      ? savePhoto(photo, `${restName}-제보.jpg`).then((id) => `https://drive.google.com/file/d/${id}/view`)
+      : Promise.resolve("");
+    const geoP = geocode(address);
+
+    const [rest, photoLink] = await Promise.all([restP, photoP]);
 
     // 같은 이름이 이미 있으면 그 식당에 메뉴를 붙인다 — 공개 제보라 같은 가게가 여러 번 들어온다.
     const iPhoto = rest.header.indexOf("메뉴판 사진 링크");
@@ -79,7 +86,7 @@ export default async function handler(req, res) {
         await updateCells(REST_SHEET, [{ row: existing.row, col: iPhoto + 1, value: prev ? `${prev}\n${photoLink}` : photoLink }]);
       }
     } else {
-      const { lat, lng } = await geocode(address);
+      const { lat, lng } = await geoP;
       const today = new Date().toISOString().slice(0, 10);
       // [식당] 열 순서: ID·이름·카테고리·주소·위도·경도·태그·사진링크·수집자·촬영일·상태
       await appendRows(REST_SHEET, [[id, restName, String(category).trim(), String(address).trim(),
