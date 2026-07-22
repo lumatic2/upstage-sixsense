@@ -25,6 +25,15 @@ https://dapi.kakao.com/v2/local/search/keyword.json?query=<상호>
 → documents 가 비어 있어야 한다
 ```
 
+## `sample-menu-pasta.jpg` — 사용자 제공본
+
+`라이프치히하우스` 양식 메뉴판. **사용자가 직접 만들어 건넨 이미지**라 생성 프롬프트가 없다
+(원본은 `scripts/make-sample-menu.mjs` 에 넣어 재인코딩만 했다).
+상호는 Kakao 전국 검색 **0건** 확인(2026-07-22).
+
+가격이 `17.0` 같은 **천원단위 표기**라 `extract-menu.js` 의 소수 변환 경로를 밟는 유일한 예시다
+— 파싱 규칙을 건드리면 이 예시로 먼저 확인한다.
+
 ## 생성 방법 (Codex 내장 이미지 생성)
 
 ```bash
@@ -72,8 +81,14 @@ node scripts/make-sample-menu.mjs <gen-*.png 가 있는 디렉터리>
 
 | 파일 | 정확 추출 | 누락 | 오탐 | 상호 추출 |
 |---|---|---|---|---|
+| `sample-menu-pasta.jpg` | **15/16** | 해산물 토마토 리조또 1건 | 0 (`item_01` 은 아래 참조) | `라이프치히하우스` (Solar) |
 | `sample-menu-printed.jpg` | **9/9** | 0 | 0 | `한입국수당` (Solar) |
 | `sample-menu-board.jpg` | **4/5** | 순두부찌개 1건 | `학생 500`(하단 안내문) 1건 | 빈칸 — 보드에 상호가 없으므로 정상 |
+
+> `item_01`: Document Parse 가 양식 메뉴판의 SALAD 구역을 **차트로 오인**해
+> `Chart Type: bar … item_01 12.5` 를 함께 뱉었고, 그 자리표시자가 화면에
+> "item_01 12,500원" 으로 나갔다. `extract-menu.js` 에서 `item_숫자` 이름을 버리도록 고쳤다
+> (2026-07-22). 우리 파싱 버그가 아니라 업스트림 산출물의 부산물이다.
 
 손글씨 보드가 완벽하지 않은 것은 **그대로 둔다.** 실측 정확도 76.4%(`experiments/parse-poc/accuracy.md`)
 와 결이 같고, 사람 검수 단계가 왜 있는지를 시연에서 그대로 보여준다. 100% 만 나오는 예시만 두면

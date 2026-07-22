@@ -31,9 +31,11 @@ if (!SRC_DIR) {
 const OUT = "public/img/samples";
 const MAX_EDGE = 1400;
 const JOBS = [
+  { src: "gen-pasta.jpg", out: "sample-menu-pasta.jpg" },      // 사용자 제공본
   { src: "gen-printed.png", out: "sample-menu-printed.jpg" },
   { src: "gen-board.png", out: "sample-menu-board.jpg" },
 ];
+const MIME = { ".png": "image/png", ".jpg": "image/jpeg", ".jpeg": "image/jpeg", ".webp": "image/webp" };
 
 fs.mkdirSync(OUT, { recursive: true });
 const browser = await chromium.launch();
@@ -42,7 +44,8 @@ const page = await browser.newPage();
 for (const j of JOBS) {
   const srcPath = path.join(SRC_DIR, j.src);
   if (!fs.existsSync(srcPath)) { console.error(`없음: ${srcPath}`); process.exitCode = 1; continue; }
-  const dataUrl = `data:image/png;base64,${fs.readFileSync(srcPath).toString("base64")}`;
+  const mime = MIME[path.extname(srcPath).toLowerCase()] ?? "image/png";
+  const dataUrl = `data:${mime};base64,${fs.readFileSync(srcPath).toString("base64")}`;
   const jpeg = await page.evaluate(async ({ dataUrl, max }) => {
     const img = await new Promise((ok, no) => {
       const i = new Image(); i.onload = () => ok(i); i.onerror = no; i.src = dataUrl;

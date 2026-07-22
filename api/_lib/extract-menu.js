@@ -41,6 +41,10 @@ export function extractMenu(html) {
       if (price < 500 || price > 200000) continue; // 메뉴 가격으로 비현실적인 값 제외
       if (m.index > 0 && /[-\d:~]/.test(line[m.index - 1])) continue; // 전화번호·시각·범위의 일부 제외
       if (!name || /^\d+$/.test(name) || /^\d[\d\s,.]*$/.test(name)) continue;
+      /* Document Parse 가 메뉴 구역을 **차트로 오인**하면 `Chart Type: bar … item_01 12.5` 같은
+         데이터 블록을 함께 뱉는다. 그 자리표시자 이름이 그대로 화면에 "item_01 12,500원" 으로
+         나갔다(2026-07-22 예시 메뉴판 실측). 사람이 읽는 메뉴 이름이 아니므로 버린다. */
+      if (/^item[_-]?\d+$/i.test(name)) continue;
       items.push({ name, price });
     }
   }
