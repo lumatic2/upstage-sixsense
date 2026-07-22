@@ -81,12 +81,20 @@ export default async function handler(req, res) {
 
   // 곁들임(공기밥·음료·토핑)은 예산 안에 들어와도 그 가게를 고를 근거가 되지 못한다.
   // 예산 1,000원 검색이 `공기밥 1,000원` 만 남기고 그 집을 "한 끼 되는 집"으로 추천하던 문제
-  // (docs/OPEN-ISSUES.md ③). 목록에서 지우지는 않고 본메뉴를 앞에 세운다 — 실제로 파는 것이므로.
-  const candidates = data.restaurants.map((r) => {
+  // (docs/OPEN-ISSUES.md ③).
+  /* 한때는 목록에서 지우지 않고 순서만 뒤로 미뤘다 — "실제로 파는 것이므로". **그 결정을
+     뒤집었다**(2026-07-23 사용자 확정). 예산으로 한 끼를 고르는 서비스에서 술을 목록에 남길
+     이유가 없고, 실제로 본메뉴가 5개 미만인 가게는 카드 5칸에 술이 딸려 들어갔다. 지도 마커
+     카드는 이미 `!isSide` 로 걸러내고 있어서 **같은 데이터를 두 화면이 다르게 그리고 있었다.** */
+  const candidates = data.restaurants
+    // 카페·디저트는 "오늘 뭘 먹지" 의 후보가 아니다(2026-07-23 사용자 확정). 음료만 곁들임으로
+    // 빼면 디저트 몇 개로 한 끼 집들과 나란히 서는데, 애초에 끼니를 고르는 자리가 아니다.
+    .filter((r) => !/카페|디저트/.test(r.category ?? ""))
+    .map((r) => {
     const menus = data.menus
-      .filter((m) => m.restaurant_id === r.id && (!budget || m.price <= budget))
-      .sort((a, b) => (a.isSide === b.isSide ? a.price - b.price : a.isSide ? 1 : -1));
-    const mainCount = menus.filter((m) => !m.isSide).length;
+      .filter((m) => m.restaurant_id === r.id && !m.isSide && (!budget || m.price <= budget))
+      .sort((a, b) => a.price - b.price);
+    const mainCount = menus.length;
     // lat/lng 를 실어 보내는 이유는 길찾기 링크 하나다 — 카드에서 카카오맵으로 넘길 좌표.
     // `id` 는 화면이 **지도 마커를 추천 후보로 좁히는 데** 쓴다 — 이름으로 맞추면 동명 이인·
     // 표기 흔들림에서 어긋난다(2026-07-22).
