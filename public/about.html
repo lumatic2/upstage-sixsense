@@ -87,6 +87,22 @@ pre{
 .bar .lab b{font-variant-numeric:tabular-nums}
 .bar .track{margin-top:6px;height:8px;border-radius:999px;background:var(--accent-soft);overflow:hidden}
 .bar .fill{height:100%;background:var(--accent);border-radius:999px}
+/* 학식 보드 — 한 줄에 이름·위치·상태·가격·메뉴를 전부 "—" 로 이어 붙이면 어디가 이름이고
+   어디가 메뉴인지 안 읽힌다(2026-07-23 사용자 지적). 줄바꿈 대신 자리를 나눈다. */
+.caf{margin-top:var(--s4);padding:0;list-style:none;display:grid;gap:var(--s2)}
+.caf li{
+  padding:var(--s3);border:1px solid var(--border);border-radius:var(--r);
+  display:grid;grid-template-columns:1fr auto;gap:2px var(--s3);align-items:baseline;
+}
+.caf li.off{opacity:.62}
+.caf .nm{font-weight:600}
+.caf .pl{font-size:12px;color:var(--muted);grid-column:1}
+.caf .pr{font-variant-numeric:tabular-nums;font-weight:600;white-space:nowrap;grid-row:1;grid-column:2}
+.caf .st{
+  font-size:12px;color:var(--muted);white-space:nowrap;grid-row:1;grid-column:2;
+  border:1px solid var(--border);border-radius:999px;padding:1px 8px;
+}
+.caf .it{grid-column:1 / -1;margin-top:var(--s2);font-size:var(--sm);color:var(--muted);line-height:1.6}
 /* 규모 수치 — 산문 사이에서 한눈에 잡히도록 격자로 세운다. */
 .nums{margin-top:var(--s6);display:grid;gap:var(--s4);grid-template-columns:repeat(auto-fit,minmax(150px,1fr))}
 .nums div .n{font-family:var(--font-head);font-size:1.6rem;display:block;line-height:1.2}
@@ -172,9 +188,9 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
       <div class="run">
         <span class="tag">지금 돌려보기</span>
         <h3>크롤러가 넣은 오늘의 학식</h3>
-        <p class="desc muted small">크롤러가 매일 아침 6시 10분에 <b>학식당 4곳</b>을 조회해 시트에 넣은 값을 그대로 읽습니다.
-          방학 중이라 대부분 휴무로 나오는 것이 정상입니다 — 아래 <a href="#s6">멈추면 어떻게 되나</a>에서 왜 그걸 "정보 없음"과 구별해 적는지 설명합니다.</p>
-        <ul class="plainlist" id="cafeteria"><li class="muted">불러오는 중…</li></ul>
+        <p class="desc muted small">매일 아침 6시 10분에 <b>학식당 4곳</b>을 조회한 값입니다.
+          방학이라 대부분 휴무인 것이 정상입니다 — 그걸 "정보 없음"과 어떻게 구별하는지는 <a href="#s6">멈추면 어떻게 되나</a>에 있습니다.</p>
+        <ul class="caf" id="cafeteria"><li><span class="nm muted">불러오는 중…</span></li></ul>
       </div>
 
       <h2 id="s3">사람이 마지막 문입니다</h2>
@@ -462,11 +478,15 @@ fetch("/api/data").then((r) => r.json()).then((d) => {
   $("dataSource").textContent = `source=${d.source} · 식당 ${d.restaurants.length} · 메뉴 ${d.menus.length} · 학식 ${d.cafeteria.length}${feedTxt}`;
   // 서버가 만든 오늘자 보드(정식 명칭·휴무 포함)를 쓴다. raw `cafeteria` 를 그대로 그리면
   // 시트의 빈 코너값이 그대로 나와 `패컬티 · 코너` 라는 실재하지 않는 이름이 뜬다(2026-07-21 적발).
+  const closedLabel = d.cafeteriaFeed?.fresh === false ? "정보 없음" : "휴무";
   $("cafeteria").innerHTML = (d.cafeteriaBoard ?? [])
     .map((c) => c.open
-      ? `<li><b>${esc(c.name)}</b> <span class="muted">(${esc(d.today ?? "")})</span> — ${esc(c.items.slice(0, 4).join(", "))}${c.items.length > 4 ? " 외" : ""} · <b>${c.price ? c.price.toLocaleString() + "원" : "가격 미상"}</b></li>`
-      : `<li><b>${esc(c.name)}</b> <span class="muted">${esc(c.place)}</span> — ${d.cafeteriaFeed?.fresh === false ? "정보 없음(적재 지연)" : "휴무"}</li>`)
-    .join("") || `<li class="muted">실데이터 없음</li>`;
+      ? `<li><span class="nm">${esc(c.name)}</span><span class="pr">${c.price ? c.price.toLocaleString() + "원" : "가격 미상"}</span>` +
+        `<span class="pl">${esc(c.place ?? "")}</span>` +
+        `<span class="it">${esc(c.items.slice(0, 5).join(" · "))}${c.items.length > 5 ? ` <span class="muted">외 ${c.items.length - 5}개</span>` : ""}</span></li>`
+      : `<li class="off"><span class="nm">${esc(c.name)}</span><span class="st">${closedLabel}</span>` +
+        `<span class="pl">${esc(c.place ?? "")}</span></li>`)
+    .join("") || `<li><span class="nm muted">실데이터 없음</span></li>`;
   renderRealResults(null);
 }).catch((e) => {
   $("dataSource").className = "stat bad";
