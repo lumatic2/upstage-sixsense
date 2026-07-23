@@ -231,7 +231,7 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 .stepper{margin-top:var(--s12);text-align:left}
 .step-tabs{display:grid;gap:var(--s3);grid-template-columns:repeat(auto-fit,minmax(220px,1fr));list-style:none;margin:0;padding:0}
 .step-tab{
-  width:100%;text-align:left;background:transparent;border:1px solid rgba(247,249,252,.18);
+  width:100%;height:100%;text-align:left;background:transparent;border:1px solid rgba(247,249,252,.18);
   border-radius:var(--r);color:inherit;font:inherit;padding:var(--s4);cursor:pointer;
   transition:border-color 180ms ease-out,background 180ms ease-out;
 }
@@ -338,14 +338,14 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
           </div>
           <div class="duo-visual is-gray">
             <div class="bubble q" id="duoQ1">근처에 8,000원 이하 혼밥하기 좋은 곳 있어?</div>
-            <div class="bubble a muted-a" id="duoA1">지금 계신 위치를 몰라서요. 근처 식당을 직접 검색해 메뉴와 가격을 확인해 보세요.</div>
+            <div class="bubble a muted-a" id="duoA1">지금 계신 위치를 몰라서 답변드릴 수 없어요. 근처 식당을 검색해 메뉴와 가격을 확인해 보세요.</div>
           </div>
         </div>
         <div class="duo-card">
           <div class="duo-head">
             <div>
               <p class="who">한입지도</p>
-              <p class="duo-line">이번 주 메뉴판<br>가격으로 답합니다.</p>
+              <p class="duo-line">내 상황과 메뉴를<br>알고 답합니다.</p>
             </div>
             <a class="duo-arrow" href="/app.html" aria-label="서비스 열기">→</a>
           </div>
@@ -365,14 +365,14 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
       <div class="stepper">
         <ol class="step-tabs" id="stepTabs" role="tablist">
           <li><button class="step-tab" role="tab" data-step="0" aria-selected="true">
-            <span class="n">1</span><span class="t">메뉴판을 모읍니다</span>
-            <span class="d">명륜동·혜화를 직접 돌며 메뉴판을 찍어 한 곳에 쌓습니다.</span></button></li>
+            <span class="n">1</span><span class="t">메뉴판을 수집합니다</span>
+            <span class="d">명륜동·혜화 일대 메뉴판을 찍어 한 곳에 저장합니다.</span></button></li>
           <li><button class="step-tab" role="tab" data-step="1" aria-selected="false">
-            <span class="n">2</span><span class="t">가격을 꺼냅니다</span>
-            <span class="d">Upstage Document Parse가 읽고, 사람이 검수해 확정합니다.</span></button></li>
+            <span class="n">2</span><span class="t">데이터로 만듭니다</span>
+            <span class="d">Upstage Document Parse가 읽고 사람이 검수해 확정합니다.</span></button></li>
           <li><button class="step-tab" role="tab" data-step="2" aria-selected="false">
-            <span class="n">3</span><span class="t">고르고, 검증합니다</span>
-            <span class="d">예산에 맞춰 고른 뒤, 추천 이유가 데이터에 근거했는지 <b>다른 모델</b>이 판정합니다.</span></button></li>
+            <span class="n">3</span><span class="t">메뉴를 추천합니다</span>
+            <span class="d">예산/상황에 맞는 식당과 메뉴를 골라 보여줍니다.</span></button></li>
         </ol>
         <div class="card step-panel" id="stepPanel" role="tabpanel" aria-live="polite"></div>
       </div>
@@ -382,8 +382,8 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
   <section class="band-warm">
     <div class="container centered">
       <h2 class="big">빠진 가게가 있나요?</h2>
-      <p class="lead">메뉴판 사진 한 장만 올려주세요. Document Parse가 메뉴와 가격을 읽고,
-        사람이 그 사진과 대조해 확인한 뒤에 지도에 올라갑니다.</p>
+      <p class="lead">메뉴판 사진 한 장만 올려주시면 Upstage AI가 읽어요.<br>
+        운영진이 확인하면 한입지도에 올라갑니다.</p>
       <div class="cta-row">
         <a class="btn" href="/contribute.html">사진 제보하기</a>
       </div>
@@ -560,23 +560,33 @@ function startAsk(data) {
 function startStepper(data) {
   const tabs = document.getElementById("stepTabs");
   const panel = document.getElementById("stepPanel");
-  const rows = data.menus.filter(isCleanMenu).slice(0, 6);
+  // 식당별로 한 메뉴씩 — 안 그러면 한 집(메뉴가 많은 곳)이 표 6줄을 통째로 차지한다.
+  const seenR = new Set();
+  const rows = data.menus.filter(isCleanMenu).filter((m) => {
+    if (seenR.has(m.restaurant_id)) return false;
+    seenR.add(m.restaurant_id); return true;
+  }).slice(0, 6);
 
   const views = [
-    () => `<p class="muted">지금까지 모은 식당 ${data.restaurants.length}곳</p>
+    () => `<p class="muted">한입지도의 식당 ${data.restaurants.length}곳</p>
       <p style="margin-top:var(--s4)">${data.restaurants.map((r) => r.name).join(" · ")}</p>`,
     () => `<p class="muted">Upstage Document Parse 결과</p>
       <table class="rowlist"><thead><tr><th>식당</th><th>메뉴</th><th>출처</th><th style="text-align:right">가격</th></tr></thead>
       <tbody>${rows.map((m, i) =>
-        `<tr style="animation-delay:${i * 80}ms"><td>${m.restaurant_name}</td><td>${menuLabel(m.name)}</td><td>${m.source || "사진파싱"}</td><td class="p">${won(m.price)}</td></tr>`).join("")}
+        `<tr style="animation-delay:${i * 80}ms"><td>${m.restaurant_name}</td><td>${menuLabel(m.name)}</td><td>${m.source || "홍길동"}</td><td class="p">${won(m.price)}</td></tr>`).join("")}
       </tbody></table>`,
-    () => `<p class="muted">추천 이유는 쓴 모델이 스스로 채점하지 않습니다</p>
+    () => `<p class="muted">추천 AI와 검증 AI는 분리되어 있습니다</p>
       <div class="taglist">
-        <span>① solar-pro2 가 전달받은 데이터만으로 이유를 씁니다</span>
-        <span>② solar-mini 가 그 이유에 근거가 있는지 따로 판정합니다</span>
-        <span>③ 근거가 없으면 데이터 사실 문장으로 바꿉니다</span>
+        <span>① solar-pro2 가 메뉴 추천 이유를 작성합니다</span>
+        <span>② solar-mini 가 그 이유에 근거가 있는지 판정합니다</span>
+        <span>③ 근거가 부족하면 결과물을 수정하여 보여줍니다</span>
       </div>
-      <p style="margin-top:var(--s6)">추천 화면은 몇 건이 검증을 통과했는지 알리고, 문장이 바뀐 카드에는 <strong>"근거 미달 → 데이터 사실로 교체"</strong>가 붙습니다.</p>`,
+      <table class="rowlist" style="margin-top:var(--s6)"><tbody>
+        <tr><td style="width:32%;color:var(--band-ink-muted)">추천 이유(초안)</td><td>“양이 푸짐하고 가성비가 좋아요”</td></tr>
+        <tr style="animation-delay:90ms"><td style="color:var(--band-ink-muted)">solar-mini 판정</td><td>근거 없음 — ‘양·가성비’는 데이터에 없는 값</td></tr>
+        <tr style="animation-delay:180ms"><td style="color:var(--band-ink-muted)">교체 후 문장</td><td>“8,000원 예산에서 가장 비싼 메뉴예요”</td></tr>
+      </tbody></table>
+      <p style="margin-top:var(--s5)">그래서 근거가 부족한 카드에는 <strong>“근거 미달 → 데이터 사실로 교체”</strong>가 붙습니다.</p>`,
   ];
 
   let timer = null, cur = -1;
@@ -833,9 +843,9 @@ function startDemo(data) {
     chat.innerHTML = "";
     bubble("user", q.replace(/[<>&]/g, ""));
     const el = bubble("ai", "");
-    el.innerHTML = `여기는 <b>소개용 데모</b>라 미리 준비된 장면만 보여드려요.
-      실제로 찾아드리는 건 <b>메뉴 찾기</b> 화면입니다 — 방금 쓰신 문장 그대로 넘겨드릴게요.
-      <a class="btn sm" style="margin-top:10px" href="/app.html?q=${encodeURIComponent(q)}">이 조건으로 찾아보기</a>`;
+    el.innerHTML = `여기는 <b>소개용 데모</b>입니다.
+      <b>메뉴 찾기</b> 페이지에서 한입지도를 이용해보세요!
+      <a class="btn sm" style="margin-top:10px" href="/app.html?q=${encodeURIComponent(q)}">찾아보기</a>`;
     chat.scrollTop = chat.scrollHeight;
   });
 
