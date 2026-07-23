@@ -36,7 +36,10 @@
 /* dark mode 2026-07-20 사용자 결정으로 제외 — light mode 고정 */
 
 *{box-sizing:border-box}
-html{scroll-behavior:smooth}
+/* 세로 스크롤바 자리를 항상 비워 둔다. 이게 없으면 내용이 한 화면에 들어오는 페이지와
+   넘치는 페이지 사이를 오갈 때(또는 한 페이지 안에서 목록이 접혔다 펼쳐질 때) 스크롤바
+   폭만큼 가운데 정렬이 밀려 화면 전체가 흔들린다(2026-07-23 사용자 지적). */
+html{scroll-behavior:smooth;scrollbar-gutter:stable}
 /* 헤더가 sticky 라 앵커로 점프하면 제목이 헤더 밑에 깔린다 — 헤더 높이(65px)+여백만큼 띄운다.
    DR5 실측: /about.html#upstage 로 들어가면 "어디에 Upstage를 썼나" 가 헤더에 가려졌다. */
 [id]{scroll-margin-top:84px}
@@ -44,6 +47,10 @@ body{
   margin:0;background:var(--bg);color:var(--fg);
   font-family:var(--font-body);font-size:var(--base);line-height:1.75;
   word-break:keep-all;-webkit-font-smoothing:antialiased;
+  /* 스크롤바 자리를 비워 두면 `100vw` 는 그 자리까지 세므로, 화면 끝까지 채우는 요소
+     (랜딩의 물결 띠)가 스크롤바 폭만큼 넘쳐 가로 스크롤바를 부른다. `hidden` 이 아니라
+     `clip` 이라야 스크롤 컨테이너가 안 생겨 sticky 헤더·목차가 그대로 붙어 있는다. */
+  overflow-x:clip;
 }
 .container{max-width:var(--container);margin:0 auto;padding:0 var(--s4)}
 h1,h2,h3{font-family:var(--font-head);font-weight:400;letter-spacing:-.02em;line-height:1.25;text-wrap:balance;margin:0}
