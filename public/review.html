@@ -60,10 +60,14 @@
   <div class="gate">
     <h1>제보 검수</h1>
     <p class="muted small" style="margin-top:var(--s3)">운영진 전용 화면입니다.</p>
+    <!-- 비밀번호는 한 번 넣으면 이 브라우저에 남는다(localStorage). sessionStorage 였을 때는
+         탭을 닫을 때마다 다시 쳐야 했다(2026-07-24 사용자 지적).
+         ⚠ 데모 기간용 짧은 비밀번호다. 이 화면은 팀 시트에 **쓰기** 권한이 있으므로
+         데모가 끝나면 REVIEW_TOKEN 을 긴 값으로 되돌린다. -->
     <!-- form 으로 감싼다 — 비밀번호 입력이 form 밖에 있으면 브라우저가 경고를 남기고
          엔터로 제출도 안 된다(2026-07-21 감사). -->
     <form id="gateForm" autocomplete="off">
-      <input type="password" id="tok" placeholder="검수 토큰" autocomplete="current-password" aria-label="검수 토큰">
+      <input type="password" id="tok" placeholder="비밀번호" inputmode="numeric" autocomplete="current-password" aria-label="비밀번호">
       <button class="btn" id="enter" type="submit" style="width:100%">들어가기</button>
     </form>
     <p class="small" id="gateErr" style="color:var(--accent);margin-top:var(--s3)"></p>
@@ -87,7 +91,7 @@
 
 <script>
 const $ = (s) => document.querySelector(s);
-let TOKEN = sessionStorage.getItem("hanip.reviewToken") || "";
+let TOKEN = localStorage.getItem("hanip.reviewToken") || "";
 let DATA = null;
 const pending = new Map(); // row → 확인|제외
 const edits = new Map();   // row → { menu?, price? }  (원본과 다를 때만)
@@ -198,7 +202,7 @@ $("#gateForm").addEventListener("submit", async (e) => {
   if (!TOKEN) return;
   try {
     await load();
-    sessionStorage.setItem("hanip.reviewToken", TOKEN);
+    localStorage.setItem("hanip.reviewToken", TOKEN);
     $("#gateWrap").hidden = true; $("#app").hidden = false;
   } catch (e) { $("#gateErr").textContent = e.message; }
 });
@@ -299,7 +303,7 @@ $("#reload").addEventListener("click", () => load().catch((e) => toast(e.message
 // 토큰이 세션에 남아 있으면 바로 진입 시도
 if (TOKEN) {
   load().then(() => { $("#gateWrap").hidden = true; $("#app").hidden = false; })
-        .catch(() => { sessionStorage.removeItem("hanip.reviewToken"); TOKEN = ""; });
+        .catch(() => { localStorage.removeItem("hanip.reviewToken"); TOKEN = ""; });
 }
 </script>
 </body>
