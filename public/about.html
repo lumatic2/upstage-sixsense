@@ -40,12 +40,15 @@
    용어를 바꾸거나 팔레트를 바꿔도 다시 굽지 않는다. */
 .figure.diagram svg{display:block;width:100%;height:auto;background:var(--bg);padding:var(--s4) 0}
 .dg text{font-size:13px;fill:var(--fg);text-anchor:middle;dominant-baseline:middle}
-.dg .hd{font-size:11px;fill:var(--muted);letter-spacing:.06em}
-.dg rect{fill:var(--surface);stroke:var(--border);stroke-width:1}
-.dg rect.on{stroke:var(--accent)}
-.dg path{fill:none;stroke:var(--border);stroke-width:1.5}
-.dg path.on{stroke:var(--accent)}
-.dg polygon{fill:var(--border)}
+/* 열 이름표 — 흐림체로 두니 흐름도의 뼈대가 아니라 주석처럼 읽혔다(2026-07-23 사용자 지적). */
+.dg .hd{font-size:12px;font-weight:700;fill:var(--fg);letter-spacing:.06em}
+/* 선은 --border(불투명도 .10)로는 화면에서 거의 안 보였다. 새 색을 만들지 않고 --muted 를
+   낮춰 쓴다 — 상자 테두리는 옅게, 화살표는 그보다 진하게 해서 흐름이 먼저 읽히도록. */
+.dg rect{fill:var(--surface);stroke:var(--muted);stroke-opacity:.42;stroke-width:1.2}
+.dg rect.on{stroke:var(--accent);stroke-opacity:1;stroke-width:1.5}
+.dg path{fill:none;stroke:var(--muted);stroke-opacity:.75;stroke-width:1.8}
+.dg path.on{stroke:var(--accent);stroke-opacity:1}
+.dg polygon{fill:var(--muted)}
 .dg polygon.on{fill:var(--accent)}
 /* 표 다섯 개는 같은 문법이다: [무엇이] · [어떤 값/무엇이 문제] · [그래서 어떻게].
    폭을 내용에 맡기면 표마다 다른 자리에서 줄이 바뀌어, 같은 종류의 표가 서로 다른 물건으로
@@ -134,17 +137,25 @@ pre{
 .linklike-more:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .stat{font-size:var(--sm);color:var(--muted)}
 .stat.bad{color:var(--accent)}
-/* 예시 메뉴판 버튼 — 썸네일이 보여야 "사진을 넣는 자리"라는 게 설명 없이 읽힌다. */
+/* 예시 메뉴판 — 읽히는 대상이 사람 눈에도 메뉴판으로 보여야 "이게 이렇게 읽혔다"가 성립한다.
+   썸네일 34px 로는 무엇을 읽는 건지 알 수 없었다(2026-07-23 사용자 지적). */
 .samplebtn{
-  display:inline-flex;align-items:center;gap:var(--s2);padding:var(--s1) var(--s3) var(--s1) var(--s1);
+  display:block;width:100%;max-width:420px;margin-top:var(--s4);padding:0;
   background:var(--bg);border:1px solid var(--border);border-radius:var(--r);
-  font:inherit;font-size:var(--sm);color:var(--fg);cursor:pointer;
+  font:inherit;color:var(--fg);cursor:pointer;overflow:hidden;text-align:left;
   transition:border-color 180ms ease-out;
 }
-.samplebtn img{width:34px;height:34px;object-fit:cover;border-radius:3px;flex:none}
+.samplebtn img{display:block;width:100%;height:auto}
+.samplebtn .cap{
+  display:block;padding:var(--s2) var(--s3);font-size:var(--sm);color:var(--muted);
+  border-top:1px solid var(--border);
+}
 .samplebtn:hover{border-color:var(--accent)}
+.samplebtn:hover .cap{color:var(--accent)}
 .samplebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .samplebtn:disabled{opacity:.5;cursor:not-allowed}
+.panel-body>.stat{display:block;margin-top:var(--s3)}
+.panel-body>.stat:empty{display:none}
 .prefill{margin:var(--s4) 0 0;padding:0;list-style:none}
 .prefill li{display:flex;gap:var(--s2);align-items:center;padding:2px 0}
 .prefill input{height:34px;padding:0 var(--s2);background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:inherit;font:inherit;font-size:var(--sm)}
@@ -213,36 +224,36 @@ addEventListener("load", () => {
       <p class="eyebrow">데이터 파이프라인</p>
 
       <h2 id="s1">1. 한눈에 보는 전체 흐름</h2>
-      <p>동네 식당 가격은 웹에 정리돼 있지 않습니다. <b>메뉴판 사진 안에만</b> 있습니다. 챗봇이 "정확한 가격은 매장에 문의하세요"로 끝나는 이유가 이것입니다. 그래서 이 서비스는 검색이 아니라 사진 수집에서 시작합니다.</p>
-      <p>들어오는 것 세 갈래가 각자 다른 처리를 거쳐 <b>사람 검수라는 하나의 문</b>을 통과합니다. 아래 절들은 이걸 하나씩 뜯어 보이고, <b>중간중간 이 자리에서 직접 돌려볼 수 있게</b> 해 두었습니다.</p>
+      <p>동네 식당의 메뉴와 가격은 일부 서비스 혹은 <b>메뉴판 사진에</b> 존재합니다. 일반 챗봇이 "정확한 가격은 매장에 문의하세요"로 끝나는 이유가 여기에 있습니다. 특정 서비스에 대한 API가 필요하거나, 메뉴판 데이터를 수집해야 하기 때문입니다. 한입지도 서비스는 성균관대학교 명륜캠퍼스의 학식 정보를 웹에서 확보함과 동시에 '메뉴판 사진 수집'을 통해 데이터를 확보합니다.</p>
+      <p>들어오는 비정형 데이터 세 갈래가 각자 다른 처리를 거쳐 <b>사람 검수라는 하나의 문</b>을 통과합니다. 아래에서 이 과정들을 하나씩 살펴보고, <b>이 자리에서 직접 테스트해볼 수 있게</b> 만들어 두었습니다.</p>
       <!-- 흐름도는 이미지가 아니라 SVG 다 (2026-07-23). 낱말 하나 고치려고 이미지를 다시
            굽던 것을 여기서 끝낸다 — 아래 <text> 를 고치면 그게 그대로 화면이다. 색도 토큰을
            그대로 쓰므로 팔레트가 바뀌면 따라온다(굽는 이미지는 어긋난다). -->
       <figure class="figure diagram">
         <svg viewBox="0 0 660 224" role="img"
-             aria-label="메뉴판 사진·학식 웹페이지·가게 주소가 각각 Document Parse·자동 수집·주소를 좌표로 를 거쳐 사람 검수로 모인 뒤 한입지도로 나가는 흐름도">
+             aria-label="메뉴판 사진은 Document Parse 로, 학식 웹페이지는 자동 수집으로, 가게 주소는 지도 좌표로 처리된 뒤 셋이 사람 검수 한 곳으로 모여 한입지도로 나가는 흐름도">
           <g class="dg">
             <text class="hd" x="86" y="22">들어오는 것</text>
             <text class="hd" x="266" y="22">처리</text>
 
             <rect x="16" y="40" width="140" height="42" rx="6"/>
-            <text x="86" y="66">메뉴판 사진</text>
+            <text x="86" y="61">메뉴판 사진</text>
             <rect x="16" y="104" width="140" height="42" rx="6"/>
-            <text x="86" y="130">학식 웹페이지</text>
+            <text x="86" y="125">학식 웹페이지</text>
             <rect x="16" y="168" width="140" height="42" rx="6"/>
-            <text x="86" y="194">가게 주소</text>
+            <text x="86" y="189">가게 주소</text>
 
             <rect x="196" y="40" width="140" height="42" rx="6"/>
-            <text x="266" y="66">Document Parse</text>
+            <text x="266" y="61">Document Parse</text>
             <rect x="196" y="104" width="140" height="42" rx="6"/>
-            <text x="266" y="130">자동 수집</text>
+            <text x="266" y="125">자동 수집</text>
             <rect x="196" y="168" width="140" height="42" rx="6"/>
-            <text x="266" y="194">주소 → 지도 위치</text>
+            <text x="266" y="189">주소 → 지도 좌표</text>
 
             <rect class="on" x="386" y="104" width="120" height="42" rx="6"/>
-            <text x="446" y="130">사람 검수</text>
+            <text x="446" y="125">사람 검수</text>
             <rect class="on" x="536" y="104" width="108" height="42" rx="6"/>
-            <text x="590" y="130">한입지도</text>
+            <text x="590" y="125">한입지도</text>
 
             <!-- 들어오는 것 → 처리 (셋이 나란히) -->
             <path d="M156 61 H188"/><path d="M156 125 H188"/><path d="M156 189 H188"/>
@@ -257,26 +268,25 @@ addEventListener("load", () => {
             <polygon class="on" points="536,125 526,120 526,130"/>
           </g>
         </svg>
-        <figcaption>들어오는 것마다 처리가 다르고, 나가는 문은 하나입니다.</figcaption>
       </figure>
 
       <h2 id="s2">2. 어떻게 만드나</h2>
-      <div class="stage"><span class="dot">1</span><span><b>수집</b><span class="muted">명륜동·혜화 식당의 메뉴판 사진을 모아 한 저장소에 쌓습니다. 출처와 촬영일을 함께 기록합니다.</span></span></div>
-      <div class="stage"><span class="dot">2</span><span><b>파싱</b><span class="muted">Upstage Document Parse에 <code>ocr=force</code>·<code>coordinates=true</code>로 요청해, 사진 속 레이아웃을 유지한 채 메뉴명과 가격을 뽑습니다.</span></span></div>
-      <div class="stage"><span class="dot">3</span><span><b>검수</b><span class="muted">파싱 결과는 바로 쓰지 않습니다. 운영진이 원본 사진을 나란히 놓고 메뉴 한 줄씩 확인·제외를 찍습니다. 틀린 값은 그 자리에서 고칩니다. <b>확인이 찍힌 메뉴만 서비스로 나갑니다.</b></span></span></div>
-      <div class="stage"><span class="dot">4</span><span><b>보강</b><span class="muted">주소는 지오코딩으로 좌표를 자동으로 채우고, 학식은 매일 아침 크롤링해 당일 식단을 넣습니다.</span></span></div>
+      <div class="stage"><span class="dot">1</span><span><b>수집</b><span class="muted">명륜동·혜화 식당의 메뉴판 사진을 모아 출처와 촬영일을 함께 저장합니다.</span></span></div>
+      <div class="stage"><span class="dot">2</span><span><b>파싱</b><span class="muted">Upstage Document Parse에 <code>ocr=force</code>·<code>coordinates=true</code>로 요청해 메뉴명과 가격을 추출합니다.</span></span></div>
+      <div class="stage"><span class="dot">3</span><span><b>검수</b><span class="muted">파싱 결과는 운영진이 원본 사진과 대조하며 검수 작업을 진행합니다. <b>최종 검수가 완료된 사항만 실서비스에 노출됩니다.</b></span></span></div>
+      <div class="stage"><span class="dot">4</span><span><b>보강</b><span class="muted">식당 주소를 바탕으로 위치 좌표를 채우고, 학식 정보는 매일 크롤링으로 데이터를 추가합니다.</span></span></div>
 
-      <p>단계보다 중요한 것은 <b>메뉴 한 줄이 무엇을 함께 들고 다니느냐</b>입니다. 가격만 저장하면 나중에 그 값을 믿어도 되는지 판단할 방법이 없습니다. 그래서 모든 줄이 자기 출처와 상태를 함께 지고 다닙니다.</p>
+      <p>가장 중요한 사항은 <b>메뉴 하나와 연결되어 있는 메타데이터</b>입니다. 해당 값의 신뢰도 확보를 위해 모든 메뉴가 출처와 상태를 함께 가지고 있도록 설계했습니다.</p>
       <table class="stacked">
         <tr><th>칸</th><th>들어가는 값</th><th>왜 필요한가</th></tr>
-        <tr><td>출처</td><td>사진에서 읽음 · 제보 · 직접 입력</td><td>이 값이 어디서 왔는지 모르면 틀렸을 때 어디를 고쳐야 하는지도 모릅니다.</td></tr>
-        <tr><td>검수</td><td>확인 · 제외 · 대기</td><td>화면에 나갈지 말지를 가르는 유일한 스위치입니다. 확인이 아닌 줄은 조회에서 아예 빠집니다.</td></tr>
+        <tr><td>출처</td><td>사진에서 읽음 · 제보 · 직접 입력</td><td>해당 값의 출처를 모르면 이슈 발생 시 어디를 고쳐야 하는지 알 수 없습니다.</td></tr>
+        <tr><td>검수</td><td>확인 · 제외 · 대기</td><td>화면에 나갈지 말지를 가르는 스위치입니다.</td></tr>
         <tr><td>본메뉴 여부</td><td>본메뉴 · 곁들임</td><td>공기밥 1,000원으로 예산 조건이 충족되면 안 됩니다(아래 <a href="#s4">어려운 것들</a>).</td></tr>
-        <tr><td>촬영일 · 수집자</td><td>날짜 · 이름</td><td>가격은 낡습니다. 언제 찍은 사진에서 나온 값인지가 남아 있어야 갱신 순서를 정할 수 있습니다.</td></tr>
-        <tr><td>좌표</td><td>위도 · 경도</td><td>주소 텍스트만으로는 도보 시간을 못 잽니다. 지오코딩으로 채웁니다.</td></tr>
+        <tr><td>촬영일 · 수집자</td><td>날짜 · 이름</td><td>데이터는 언젠가 낡기 때문에 갱신 순서를 정하기 위해 필요합니다.</td></tr>
+        <tr><td>좌표</td><td>위도 · 경도</td><td>주소 텍스트만으로는 도보 시간을 측정하지 못합니다.</td></tr>
       </table>
 
-      <p>도구는 문제에 맞춰 고릅니다. 학교 식단 페이지는 <b>이미 표로 정리된 HTML</b>이라, 사진 파싱을 적용하면 비용만 늘고 정확도는 떨어집니다. 좋은 도구를 가졌다고 모든 자리에 넣는 것은 파이프라인 설계가 아닙니다.</p>
+      <p>학교 식단 페이지는 <b>이미 표로 정리된 HTML</b>이므로 메뉴판 이미지와 처리 방식을 달리하였습니다.</p>
       <table>
         <tr><th>입력</th><th>형태</th><th>처리</th></tr>
         <tr><td>메뉴판</td><td>사진(비구조)</td><td>Document Parse → 검수</td></tr>
@@ -286,51 +296,49 @@ addEventListener("load", () => {
 
       <div class="evidence">
         <h3>크롤러가 넣은 오늘의 학식</h3>
-        <p class="desc">매일 아침 6시 10분에 <b>학식당 4곳</b>을 조회한 값입니다.
-          방학이라 대부분 휴무인 것이 정상입니다. 그걸 "정보 없음"과 어떻게 구별하는지는 <a href="#s6">멈추면 어떻게 되나</a>에 있습니다.</p>
+        <p class="desc">매일 아침 6시 10분에 <b>학식당 4곳</b>을 조회한 값을 처리합니다.
+          '휴무'와 "정보 없음"을 구별하는 방법론은 <a href="#s6">멈추면 어떻게 되나</a></p>
         <ul class="caf" id="cafeteria"><li><span class="nm muted">불러오는 중…</span></li></ul>
       </div>
 
-      <h2 id="s3">3. 사람이 마지막 문입니다</h2>
-      <p>자동과 사람의 경계는 한 곳에 분명히 그어져 있습니다. <b>AI는 후보를 만들고, 사람은 도장을 찍습니다.</b> 검수 화면은 원본 사진을 옆에 띄워 두고 한 줄씩 확인·제외를 누르게 돼 있습니다. 값이 틀렸으면 그 자리에서 고칩니다.</p>
+      <h2 id="s3">3. 사람이 마지막으로 확인합니다</h2>
+      <p>자동화와 사람 개입의 경계는 분명합니다. <b>AI는 후보를 만들고 사람은 도장을 찍습니다.</b> 검수자는 원본 사진과 AI 파싱 결과물을 함께 보면서 한 줄씩 확인합니다.</p>
       <div class="card">
-        <b>지금까지 통과한 것과 걸러진 것</b>
-        <p class="small">AI가 만든 후보 <b>386개</b> 중 <b>확인 343 · 제외 30 · 대기 13</b>입니다(2026-07-23 직접 세어 본 값). 제외한 30개는 메뉴가 아닌 것을 메뉴로 읽은 것들이었습니다. 영업시간, 가게 연혁, 옵션 가격 같은 것들입니다. <b>사람이 보지 않았다면 이 30개가 그대로 화면에 나갔습니다.</b></p>
+        <b>통과한 것과 걸러진 것</b>
+        <p class="small">AI가 만든 후보 <b>386개</b> 중 <b>확인 343 · 제외 30 · 대기 13</b>입니다. 제외한 30개는 영업시간, 가게 연혁, 옵션 가격 같은 것들입니다. <b>사람이 최종 검수함으로써 Noise를 줄일 수 있었습니다.</b></p>
       </div>
-      <p>제외만으로는 부족한 경우도 있었습니다. 백미향마라탕에서 <code>100g/</code>만 남은 3줄은 못 쓸 값이 아니라 <b>마라탕·마라반·마라샹궈의 이름이 날아간 것</b>이었습니다. 제외밖에 못 했다면 그 가게의 핵심 메뉴가 통째로 사라졌을 겁니다. 그래서 검수에는 확인·제외에 더해 <b>이름·가격 고치기</b>가 있습니다. 대신 아무 값이나 들어가지 않도록 칸마다 허용 범위를 확인합니다.</p>
-      <p>이 문은 한 번 닫히고 끝나지 않습니다. 가격은 낡기 마련이라 잘못된 값은 고치면 <b>다음 조회부터 반영</b>됩니다. 빠진 가게를 보셨다면 <a href="/contribute.html">메뉴판 사진 한 장</a>이면 됩니다.</p>
+      <p>이 검증은 한 번으로 끝나지 않습니다. 데이터의 최종 검수 일자를 꾸준히 모니터링하여 낡은 데이터가 남아있지 않도록 했습니다.
 
       <div class="evidence">
-        <h3>검수를 통과한 데이터 그대로 보기</h3>
-        <p class="desc">미리 만들어 둔 예시가 아니라, 방금 데이터에서 받아온 값입니다.
-          <b>검수를 통과한 것만</b> 여기 나옵니다. 예산을 넣어 보려면 <a href="#upstage">아래 Solar 칸</a>에서 문장을 먼저 쪼개 보세요.</p>
+        <h3>검수 통과 데이터 목록</h3>
+        <p class="desc">테스트는 <a href="#upstage">아래 Solar 칸</a></p>
         <ul class="plainlist" id="realResults"></ul>
         <span class="stat" id="dataSource">불러오는 중…</span>
       </div>
 
-      <h2 id="s4">4. 어려운 것들</h2>
-      <p>파이프라인의 깊이는 잘 되는 사진에서 나오지 않습니다. 안 되는 것들을 하나씩 처리한 자국에서 나옵니다. 실제로 걸렸고 실제로 고친 것 넷입니다.</p>
+      <h2 id="s4">4. 시행착오</h2>
+      <p>서비스를 구축하며 겪은 문제와 해결의 기록입니다. 크게 네 부분으로 나타났습니다.</p>
       <table class="stacked">
         <tr><th>걸린 것</th><th>왜 문제인가</th><th>어떻게 했나</th></tr>
         <tr>
-          <td>곁들임이 예산을 만족시킴</td>
-          <td>"8천원 이하"에 공기밥 1,000원이 걸리면 그 가게는 조건을 통과합니다. 사용자는 밥만 먹으러 가지 않습니다.</td>
+          <td>사이드 메뉴</td>
+          <td>"8천원 이하"에 공기밥 1,000원이 걸리면 그 가게는 조건을 통과합니다.</td>
           <td>메뉴마다 본메뉴/곁들임을 판정해, <b>예산 판정과 개수 세기 모두 본메뉴로만</b> 합니다. 판정 규칙은 41개 케이스로 고정해 두었습니다.</td>
         </tr>
         <tr>
           <td>천원단위 소수 표기</td>
-          <td>성대 앞 백반집은 가격을 <code>7.0</code>·<code>1.5</code>로 씁니다. 그대로 읽으면 7원짜리 백반이 됩니다.</td>
+          <td>일부 식당은 가격을 <code>7.0</code>·<code>1.5</code>로 표기합니다.</td>
           <td>소수 표기를 1,000배로 환산합니다. OCR이 만든 공백 천단위(<code>4 000</code>, <code>21 ,000</code>)도 같은 자리에서 흡수합니다.</td>
         </tr>
         <tr>
           <td>메뉴판을 그래프로 읽음</td>
           <td>Document Parse가 메뉴 구역을 그래프로 오인해 <code>Chart Type: bar … item_01 12.5</code>를 뱉었고 그 빈칸 이름이 화면에 <b>"item_01 12,500원"</b>으로 나갔습니다.</td>
-          <td>사람이 읽을 메뉴 이름이 아닌, 기계가 붙인 빈칸 이름은 버립니다. 우리 쪽 버그가 아니라 <b>읽어 온 결과에 섞여 들어온 것</b>이라 받는 자리에서 막는 게 맞습니다.</td>
+          <td>사람이 읽을 메뉴 이름이 아닌 기계가 붙인 빈칸 이름은 버립니다. 우리 쪽 버그가 아니라 <b>읽어 온 결과에 섞여 들어온 것</b>이라 받는 자리에서 막는 게 맞습니다.</td>
         </tr>
         <tr>
-          <td>없는 낱말을 기억함</td>
-          <td>사용자가 "마라탕버거"라고 말하면 그걸 관심어로 저장했다가 다음에 꺼냅니다. 우리에게 없는 말을 우리가 아는 척하는 것입니다.</td>
-          <td>기억할 낱말을 <b>실제 메뉴·식당 이름과 대조</b>해 통과한 것만 남깁니다. 꺼낼 때도 다시 대조해서, 사라진 메뉴는 말하지 않습니다.</td>
+          <td>LLM의 메모리 문제</td>
+          <td>사용자가 "마라탕버거"(실제 존재하지 않는 메뉴)를 검색한 경우 그것을 관심어로 저장하고 다음 추천 서비스에 활용하는 문제가 있었습니다. </td>
+          <td>기억할 키워드를 <b>실제 메뉴·식당 이름과 대조</b>해 통과한 것만 남깁니다. 꺼낼 때도 다시 대조해서 없는 메뉴는 말하지 않습니다.</td>
         </tr>
       </table>
 
@@ -341,8 +349,8 @@ addEventListener("load", () => {
       </div>
 
       <h2 id="s5">5. 얼마나 정확한가</h2>
-      <p>메뉴판 사진 5장·72개 항목을 눈으로 대조해 채점했습니다. <b>55개(76.4%)</b>를 정확히 읽었습니다. 100%인 척하지 않습니다 — 나머지를 사람이 잡기 때문에 이 숫자로도 서비스가 됩니다.</p>
-      <p>중요한 건 총점이 아니라 <b>어디서 떨어지느냐</b>입니다. 사진 상태별로 나눠 보면 한 변수가 지배합니다.</p>
+      <p>메뉴판 사진 5장·72개 메뉴를 채점한 결과 <b>55개(76.4%)</b>의 정확도가 나왔습니다. 나머지는 사람이 직접 조정해야 했습니다.</p>
+      <p>중요한 건 정확도 자체보다 <b>정확도에 영향을 주는 변수를 파악하는 것</b>입니다. 투입한 사진을 상태별로 나눠 보면 한 가지 변수가 정확도를 크게 흔들고 있었습니다.</p>
       <div class="bars">
         <div class="bar">
           <div class="lab"><span>인쇄체 · 해상도 충분 <span class="muted">(2장)</span></span><b>100% <span class="muted">37/37</span></b></div>
@@ -357,73 +365,69 @@ addEventListener("load", () => {
           <div class="track"><div class="fill" style="width:20%"></div></div>
         </div>
       </div>
-      <p><b>반사와 거리는 문제가 아니었습니다.</b> 유리창에 붙은 메뉴를 멀리서, 반사까지 얹어 찍은 사진이 <b>25개 항목 전부</b> 맞았습니다. 무너지는 건 해상도가 부족할 때뿐이었습니다.</p>
-      <p>그래서 이건 한계 고백이 아니라 <b>설계 근거</b>입니다. 채점에 쓴 사진이 웹에서 모은 축소본이라 실제보다 낮게 나온 값이고, 제보 화면이 <b>폰으로 찍은 원본</b>을 그대로 받는 이유가 여기 있습니다. 500원을 지우고 700원을 덧쓴 손글씨는 원리상 못 읽습니다 — 검수 단계가 있는 이유입니다.</p>
+      <p><b>반사와 거리는 문제가 아니었습니다.</b> 유리창에 붙은 메뉴를 멀리서, 반사까지 얹어 찍은 사진이 <b>25개 항목 전부</b> 맞았습니다. 무너지는 건 '해상도'가 부족한 경우 때뿐이었습니다.</p>
+      <p>500원을 지우고 700원을 덧쓴 손글씨는 읽지 못한다는 점도 발견했습니다. 사람의 검수 단계가 필요한 이유 중 하나입니다.</p>
       <p class="small muted">채점 방법과 사진별 원본 응답은 <a href="https://github.com/lumatic2/upstage-sixsense/blob/master/experiments/parse-poc/accuracy.md">깃허브 저장소</a>에 그대로 남겨 두었습니다.</p>
 
       <div class="panel">
         <div class="panel-head">
-          <h3>사진을 넣어 직접 채점해 보기</h3>
+          <h3>사진으로 파싱 결과 확인해 보기</h3>
           <button class="btn sm" id="parseBtn" type="button">파싱</button>
         </div>
         <div class="panel-body">
-          <p class="desc">Document Parse가 읽어낸 후보입니다. 사람이 확인해야 서비스로 나갑니다.</p>
-          <div class="row">
-            <!-- 사진이 없는 사람(=심사위원 대부분)을 다른 페이지로 보내면 거기서 돌아오지 않는다.
-                 한 장을 여기 두고 누르면 바로 돌게 한다 (2026-07-23 사용자 지시). -->
-            <button class="samplebtn" type="button" id="sampleBtn"
-                    data-sample="/img/samples/sample-menu-printed.jpg">
-              <img src="/img/samples/sample-menu-printed.jpg" alt="" loading="lazy">
-              <span>예시 메뉴판으로 해보기</span>
-            </button>
-            <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
-            <span class="stat" id="parseStatus"></span>
-          </div>
+          <!-- 파일 선택은 없앴다 (2026-07-23 사용자 지시). 사진을 가진 사람은 제보 페이지로 가고,
+               여기는 "이 메뉴판이 이렇게 읽힌다"를 한 번에 보여주는 자리다. 그러려면 읽히는 대상이
+               사람 눈에도 메뉴판으로 보여야 해서 썸네일이 아니라 실물 크기로 세운다. -->
+          <button class="samplebtn" type="button" id="sampleBtn"
+                  data-sample="/img/samples/sample-menu-printed.jpg">
+            <img src="/img/samples/sample-menu-printed.jpg"
+                 alt="예시 메뉴판 사진 — 손칼국수 7,000원부터 아홉 줄이 인쇄된 차림표" loading="lazy">
+            <span class="cap">눌러서 이 메뉴판 읽어보기</span>
+          </button>
+          <p class="stat" id="parseStatus"></p>
           <ul class="prefill" id="prefill"></ul>
         </div>
       </div>
 
       <h2 id="s6">6. 멈추면 어떻게 되나</h2>
-      <p>절반은 잘 돌 때의 설계고, 나머지 절반은 <b>멈췄을 때 무엇이 보이느냐</b>입니다. 조용히 잘못된 값을 보여주는 게 가장 나쁩니다.</p>
+      <p>장애 발생 시나리오와 해결에 대한 설명입니다. <b>UX 관점에서 무엇이 보여야 하느냐</b>에 중점을 두고 진행했습니다.</p>
       <table class="stacked">
-        <tr><th>멈추는 곳</th><th>그냥 두면</th><th>지금 하는 일</th></tr>
+        <tr><th>멈추는 곳</th><th>그냥 두면</th><th>대응</th></tr>
         <tr>
           <td>학식 크롤러</td>
-          <td>새 식단이 안 들어와도 화면은 조용히 <b>"오늘 휴무"</b>로 보입니다. 데이터가 없는 것과 식당이 쉬는 것이 구별되지 않습니다.</td>
-          <td>식단이 마지막으로 들어온 날짜를 함께 보내, 그게 오늘보다 이르면 <b>"정보 없음"</b>으로 갈라 씁니다. 쉬는 것과 고장 난 것은 다른 말입니다.</td>
+          <td>새 식단 데이터가 들어오지 않으면 <b>"오늘 휴무"</b>를 내보냅니다. 데이터가 없는 것과 식당이 쉬는 것이 구별되지 않습니다.</td>
+          <td>식단이 마지막으로 들어온 날짜를 함께 보내 그게 오늘보다 이르면 <b>"정보 없음"</b>으로 표현합니다.</td>
         </tr>
         <tr>
           <td>Document Parse</td>
-          <td>제보 화면에서 한 줄도 못 읽으면 사용자는 아무것도 못 하고 나갑니다.</td>
-          <td>한 줄도 못 읽거나 아예 실패하면 <b>직접 입력으로 흐름을 잇습니다.</b> 사진이 나빠도 제보는 끝까지 갑니다.</td>
+          <td>제보 화면에서 OCR이 실패하면 사용자는 곧바로 나갑니다.</td>
+          <td>한 줄도 못 읽거나 아예 실패하면 <b>직접 입력으로 흐름을 이어가도록 했습니다.</b></td>
         </tr>
         <tr>
-          <td>이 페이지에서 직접 돌려보는 칸</td>
-          <td>기능 하나가 죽으면 페이지 전체가 빈 화면이 됩니다.</td>
-          <td>칸마다 따로 실패합니다. 하나가 죽어도 나머지는 계속 돌아야 "직접 돌려보기"라는 말이 참이 됩니다.</td>
+          <td>메뉴 찾기</td>
+          <td>기능 하나가 죽으면 서비스 전체가 불능이 됩니다.</td>
+          <td>기능을 모듈화해두어 하나가 죽어도 나머지는 계속 돌아야 "직접 돌려보기"라는 말이 참이 됩니다.</td>
         </tr>
       </table>
 
-      <p>가정이 아니라 <b>지금 일어나는 일</b>입니다. 학식당 4곳을 매일 조회하는데 방학이라 문을 연 곳은 1곳뿐입니다. 위 구분이 없었다면 <b>크롤러가 죽은 날과 방학인 날이 화면에서 똑같았을 것</b>입니다.</p>
-
-      <p>파이프라인은 그림이 아니라 돌아간 흔적으로 증명됩니다. 2026-07-23에 직접 재본 값입니다.</p>
+      <p>2026-07-23에 직접 측정한 결과값은 다음과 같습니다.</p>
       <div class="nums">
         <div><span class="n">24</span><span class="k">수집한 식당</span></div>
         <div><span class="n">386</span><span class="k">파싱이 만든 메뉴 후보</span></div>
         <div><span class="n">342</span><span class="k">검수를 통과해 화면에 나가는 메뉴</span></div>
-        <div><span class="n">4곳</span><span class="k">매일 조회하는 학식당<br>(방학 중 운영 1곳 · 식단 9일치)</span></div>
+        <div><span class="n">4곳</span><span class="k">조회하는 학식당<br></span></div>
       </div>
       <p>메뉴 342개의 출처는 <b>사진에서 읽은 것 341 · 제보 1</b>입니다. 거의 전부가 사진에서 나왔습니다. 정확도를 재는 데는 Document Parse 호출 8회, 비용 <b>약 $0.08</b>이 들었고 <b>원본 응답 5건을 그대로 박제</b>해 두었습니다. 나중에 후처리만 고쳐 재채점할 수 있게 하기 위해서입니다. 실제로 API 재호출 없이 후처리만 두 번 고쳐 <b>0건 → 62.5% → 76.4%</b>로 끌어올렸습니다.</p>
       <p>규칙은 말이 아니라 테스트로 고정합니다. 곁들임 판정 41 케이스, 대화에서 조건 뽑기 35 케이스, 추천 칩 18 케이스, 그리고 배포된 사이트를 실제 브라우저로 훑는 16개 점검이 매 배포마다 돕니다.</p>
 
       <h2 id="upstage">7. 어디에 Upstage를 썼나</h2>
-      <p>제품을 하나 고르고 거기에 문제를 맞추지 않았습니다. 각 지점에서 <b>무엇이 부족한지</b>를 먼저 정하고 그 자리에 맞는 것을 넣었습니다. 그래서 안 쓴 자리도 함께 적습니다.</p>
+      <p>파이프라인 각 지점에서 <b>무엇이 문제인지</b> 먼저 정의하고 그 해결책으로 Upsatge AI를 활용했습니다.</p>
       <table class="stacked">
         <tr><th>제품</th><th>쓴 자리</th><th>왜 여기인가</th></tr>
         <tr>
           <td>Document Parse</td>
           <td>메뉴판 사진 → 메뉴명·가격<br><span class="small muted"><code>ocr=force</code> · <code>coordinates=true</code></span></td>
-          <td>가격은 웹에 구조화돼 있지 않고 사진 안에만 있습니다. 좌표를 살려 받아야 메뉴명과 가격을 같은 줄로 짝지을 수 있습니다.</td>
+          <td>실제 메뉴와 가격은 메뉴판 사진에 있습니다. OCR을 활용하기 가장 좋은 수단이라 판단했습니다.</td>
         </tr>
         <tr>
           <td>Solar <code>solar-pro2</code></td>
@@ -449,14 +453,14 @@ addEventListener("load", () => {
 
       <div class="panel">
         <div class="panel-head">
-          <h3>자연어 질의 → Solar 구조화</h3>
+          <h3>자연어 질문 → Solar 구조화</h3>
           <button class="btn sm" id="queryBtn" type="button">구조화</button>
         </div>
         <div class="panel-body">
           <p class="desc">문장을 예산·도보시간·태그로 쪼갭니다. 아래는 <code>solar-pro2</code>의 원본 응답이고,
             성공하면 <a href="#s3">위의 실데이터 블록</a>이 그 예산으로 다시 계산됩니다.</p>
           <div class="row">
-            <input type="text" id="query" value="8천원 이하 도보 5분 혼밥" aria-label="검색 문장">
+            <input type="text" id="query" value="8천원 이하 10분 거리 이내 혼밥" aria-label="검색 문장">
             <span class="stat" id="queryStatus"></span>
           </div>
           <pre id="queryOut">아직 실행하지 않았습니다.</pre>
@@ -464,8 +468,7 @@ addEventListener("load", () => {
       </div>
 
       <h2 id="s7">8. 로그인이 없는 이유</h2>
-      <p>한입지도는 계정을 만들지 않습니다. 두 번째 방문부터 지난 관심을 이어받아 말하지만("지난번엔 돈까스 찾으셨는데, 오늘도 그쪽으로 볼까요?"), 그 기억은 <b>이 브라우저 안에만</b> 있습니다(관심어 5개·30일). 서버는 요청마다 받아 쓰고 버립니다. 대가도 분명합니다 — 기기나 브라우저를 바꾸면 기록은 사라집니다.</p>
-      <p><b>추천 순서는 이 기억으로 바뀌지 않습니다.</b> 한때는 바꿨습니다. 눌러본 가게의 분류를 세어 같은 계열을 위로 올렸는데, 그 기능을 걷어냈습니다. 세고 있던 클릭이 눌러도 아무 일이 안 일어나는 클릭이었기 때문입니다. 사용자는 고른 적이 없는데 우리는 그걸 취향이라 부르고 있었습니다. <b>없는 신호를 재서 순서를 바꾸는 것은, 없는 가격을 지어내는 것과 같은 종류의 일입니다.</b> 그래서 값을 조정하는 대신 그 축을 닫았습니다(<a href="https://github.com/lumatic2/upstage-sixsense/blob/master/docs/adr/0004-personalization.md">ADR-0004</a>).</p>
+      <p>한입지도는 계정을 만들지 않았습니다. 최초 설계상 재방문 사용자는 기존 활용 기록을 토대로 추천을 위한 데이터를 쌓고 활용하자는 의도여쓰나, 백엔드가 아닌 브라우저에서 메모리를 저장하게 함으로써 두 번째 방문부터 지난 관심을 이어받아 말할 수 있게 했습니다.("지난번엔 돈까스 찾으셨는데, 오늘도 그쪽으로 볼까요?"), </b> 그래서 값을 조정하는 대신 그 축을 닫았습니다(<a href="https://github.com/lumatic2/upstage-sixsense/blob/master/docs/adr/0004-personalization.md">ADR-0004</a>).</p>
 
       <div class="cta-row" style="display:flex;gap:var(--s3);margin-top:var(--s8);flex-wrap:wrap">
         <a class="btn" href="/app.html">서비스 써보기</a>
@@ -517,12 +520,9 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 // ① 사진 → parse-menu
-$("parseBtn").onclick = () => {
-  const f = $("photo").files[0];
-  if (!f) { $("parseStatus").textContent = "사진을 먼저 고르세요."; return; }
-  parsePhoto(f);
-};
-// 예시 메뉴판 — 가진 사진이 없어도 이 자리에서 바로 돌려볼 수 있어야 한다.
+// 읽을 대상이 예시 한 장뿐이라 머리의 버튼과 사진이 같은 일을 한다 —
+// 사진을 누르는 사람과 버튼을 찾는 사람이 갈리므로 둘 다 둔다.
+$("parseBtn").onclick = () => $("sampleBtn").click();
 $("sampleBtn").onclick = async () => {
   const src = $("sampleBtn").dataset.sample;
   $("sampleBtn").disabled = true;
