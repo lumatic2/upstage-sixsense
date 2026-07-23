@@ -132,10 +132,41 @@ export default async function handler(req, res) {
       await appendRows(REST_SHEET, [[id, restName, place.category, place.address,
         place.lat, place.lng, "", photoLink, "웹 제보", today, "입력완료"]]);
     }
+    /* 중복 판정 (2026-07-24 사용자 규칙). 공개 제보라 같은 메뉴가 되풀이 들어온다.
+       같은 이름 + 같은 가격 → **중복**: 검수·서비스에서 빠지되 "누가 다시 제보했다"는 흔적은
+         남긴다(행을 지우지 않는다).
+       같은 이름 + 다른 가격 → **대기**: 가격이 바뀐 것일 수 있으니 사람이 어느 쪽이 최신인지
+         정한다(검수 화면이 기존 확인가를 나란히 보여준다).
+       새 이름 → **대기**.
+       seen 은 기존 시트(제외 아닌 행) + 이번 배치를 함께 본다 — 한 사진에 같은 줄이 두 번
+       읽혀도 뒤엣것이 중복으로 잡힌다. */
+    const seen = new Map(); // 이름(NFC) → Set(가격)
+    if (existing) {
+      const prior = await listRows(MENU_SHEET, null);
+      for (const r of prior.items) {
+        if (String(r.values[0] ?? "").trim() !== id) continue;
+        if (String(r.values[5] ?? "").trim() === "제외") continue;
+        const nm = String(r.values[2] ?? "").trim().normalize("NFC");
+        const pr = Number(String(r.values[3] ?? "").replace(/[^\d]/g, ""));
+        if (!seen.has(nm)) seen.set(nm, new Set());
+        seen.get(nm).add(pr);
+      }
+    }
     // [메뉴] 열 순서: 식당ID·식당이름·메뉴명·가격·출처·검수·비고
-    await appendRows(MENU_SHEET, clean.map((m) => [id, restName, m.name, m.price, "제보", "대기", ""]));
+    const rows = clean.map((m) => {
+      const nm = m.name.normalize("NFC");
+      const set = seen.get(nm);
+      const review = set && set.has(m.price) ? "중복" : "대기";
+      if (!set) seen.set(nm, new Set([m.price])); else set.add(m.price);
+      return [id, restName, m.name, m.price, "제보", review, ""];
+    });
+    await appendRows(MENU_SHEET, rows);
+    const duplicates = rows.filter((r) => r[5] === "중복").length;
 
-    return res.status(200).json({ restaurantId: id, menus: clean.length, photoSaved: photoLink !== "" });
+    return res.status(200).json({
+      restaurantId: id, menus: clean.length,
+      added: clean.length - duplicates, duplicates, photoSaved: photoLink !== "",
+    });
   } catch (e) {
     return res.status(502).json({ error: "접수 중 문제가 생겼습니다", code: "sheet_error", detail: String(e.message ?? e) });
   }

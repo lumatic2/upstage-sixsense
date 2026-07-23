@@ -59,7 +59,17 @@ export default async function handler(req, res) {
   try {
     if (req.method === "GET") {
       const status = req.query?.status || "대기";
-      const [menu, rest] = await Promise.all([listRows(MENU_SHEET, status), listRows(REST_SHEET, null)]);
+      // 확인된 행도 함께 읽어, 대기 행이 "이미 확인된 메뉴의 가격이 바뀐 제보"인지 가른다.
+      const [menu, confirmed, rest] = await Promise.all([
+        listRows(MENU_SHEET, status), listRows(MENU_SHEET, "확인"), listRows(REST_SHEET, null),
+      ]);
+      // rid|메뉴명(NFC) → 확인가. 같은 메뉴가 여러 확인가를 가지면 첫 값을 기준으로 둔다.
+      const ci = confirmed.header;
+      const priceOf = new Map();
+      for (const r of confirmed.items) {
+        const k = `${String(r.values[0] ?? "").trim()}|${String(r.values[ci.indexOf("메뉴명")] ?? "").trim().normalize("NFC")}`;
+        if (!priceOf.has(k)) priceOf.set(k, Number(String(r.values[ci.indexOf("가격(원)")] ?? "").replace(/[^\d]/g, "")));
+      }
 
       const iName = rest.header.indexOf("식당이름");
       const iPhoto = rest.header.indexOf("메뉴판 사진 링크");
@@ -70,19 +80,25 @@ export default async function handler(req, res) {
       }
 
       const h = menu.header;
-      const iMenu = h.indexOf("메뉴명"), iNote = h.indexOf("비고");
+      const iMenu = h.indexOf("메뉴명"), iNote = h.indexOf("비고"), iPrice = h.indexOf("가격(원)");
       const items = menu.items.map((r) => {
         const name = r.values[iMenu];
+        const rid = String(r.values[0] ?? "").trim();
+        const price = r.values[iPrice];
+        // 이미 확인된 같은 메뉴의 가격과 다르면, 이 대기 행은 "가격이 바뀐 제보" 다.
+        const prior = priceOf.get(`${rid}|${String(name ?? "").trim().normalize("NFC")}`);
+        const priceNum = Number(String(price ?? "").replace(/[^\d]/g, ""));
         return {
           row: r.row,
-          restaurantId: String(r.values[0] ?? "").trim(),
+          restaurantId: rid,
           restaurant: r.values[1],
           menu: name,
-          price: r.values[h.indexOf("가격(원)")],
+          price,
           source: r.values[h.indexOf("출처")],
           review: r.values[h.indexOf("검수")],
           note: String(r.values[iNote] ?? "").trim(),          // 사람 override 현재값
           autoSide: isSideMenu({ name, note: "" }),            // 규칙만으로 본 판정(override 무시)
+          priorPrice: prior != null && prior !== priceNum ? prior : null, // 확인가와 다르면 그 값
         };
       });
       return res.status(200).json({ reviewCol: h.indexOf("검수") + 1, noteCol: iNote + 1, items, photos });

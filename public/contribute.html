@@ -405,7 +405,12 @@ $("#submit").addEventListener("click", async () => {
     });
     const data = await res.json().catch(() => ({}));
     if (!res.ok) throw new Error(data.error ?? `HTTP ${res.status}`);
-    $("#doneMsg").textContent = `${name} 의 메뉴 ${data.menus}개가 검수 대기열에 들어갔습니다. 운영진이 사진과 대조해 확인하면 한입지도에 나타납니다.`;
+    // 서버가 이미 있는 메뉴를 중복으로 걸러냈으면 그 사실을 정직하게 알린다.
+    const dup = Number(data.duplicates ?? 0);
+    const added = Number(data.added ?? data.menus ?? 0);
+    $("#doneMsg").textContent = dup
+      ? `${name} 의 메뉴 ${added}개가 검수 대기열에 들어갔습니다. ${dup}개는 이미 있는 메뉴(같은 이름·같은 가격)라 중복으로 처리했습니다. 운영진이 사진과 대조해 확인하면 한입지도에 나타납니다.`
+      : `${name} 의 메뉴 ${added}개가 검수 대기열에 들어갔습니다. 운영진이 사진과 대조해 확인하면 한입지도에 나타납니다.`;
     step(3);
   } catch (e) {
     $("#err2").textContent = e.message;
