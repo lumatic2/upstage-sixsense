@@ -454,6 +454,12 @@ const isCleanMenu = (m) =>
   m.name && m.name.length <= 12 &&
   !/[!?]|추가|Since|Set\s*[A-Z]|세트\s*[A-Z]/i.test(m.name);
 
+/* 카페·디저트는 "오늘 뭘 먹지" 의 후보가 아니다 — 지도 마커에도 세우지 않고 예산 검색에도
+   안 올린다(사용자 지시 2026-07-23). 같은 규칙이 `api/recommend.js`·`app.html`·`about.html`
+   에도 있다 — 한 곳만 고치면 랜딩과 서비스가 다른 답을 낸다.
+   메뉴 마키·듀오 카드는 그대로 둔다: 저기 실린 숫자는 추천이 아니라 "파싱이 이만큼 됐다" 는 증거다. */
+const isEatery = (r) => !/카페|디저트/.test(r.category ?? "");
+
 /* OCR 이 한 글자씩 띄워 읽은 이름 복원 ("쫄 면" → "쫄면"). 모든 토큰이 1글자일 때만 — 표시용 정규화이고 원본 시트는 건드리지 않는다. */
 const menuLabel = (name) => {
   const t = String(name).trim().split(/\s+/);
@@ -594,7 +600,7 @@ function startMini(data) {
   const go = document.getElementById("miniGo");
 
   const render = (budget) => {
-    const hits = data.restaurants.map((r) => {
+    const hits = data.restaurants.filter(isEatery).map((r) => {
       const ms = data.menus
         .filter((m) => m.restaurant_id === r.id && isCleanMenu(m) && m.price <= budget)
         .sort((a, b) => a.price - b.price);
@@ -644,7 +650,7 @@ function startDemo(data) {
   // 시뮬레이션에 실제로 참여하는 식당만 지도에 세운다 — 아래 스캔 루프가 `isCleanMenu` 가 없는
   // 가게를 건너뛰므로, 전부 찍으면 "왜 저 마커는 아무 일도 안 하지" 가 된다(사용자 지시 2026-07-21).
   const pts = data.restaurants.filter((r) =>
-    r.lat && r.lng && data.menus.some((m) => m.restaurant_id === r.id && isCleanMenu(m)));
+    isEatery(r) && r.lat && r.lng && data.menus.some((m) => m.restaurant_id === r.id && isCleanMenu(m)));
   if (pts.length < 2) { chat.innerHTML = '<div class="cb ai">데모에 쓸 좌표가 부족합니다.</div>'; return; }
   const lats = pts.map((p) => p.lat), lngs = pts.map((p) => p.lng);
   const span = (a) => ({ min: Math.min(...a), max: Math.max(...a) });
