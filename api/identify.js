@@ -9,10 +9,10 @@
  *      실측 6곳 중 4곳 적중 — 못 찾으면 빈칸으로 두고 사용자가 적는다.
  *  두 값 모두 화면에서 수정 가능한 **제안**이다. 서버가 확정하지 않는다.
  */
+import { lookupPlace } from "./_lib/place.js";
+
 const CHAT_URL = "https://api.upstage.ai/v1/chat/completions";
-const CAMPUS = { lat: 37.58878, lng: 126.99260 };   // 경영관 — geo.js 와 같은 기준점
 const NAME_TIMEOUT_MS = 4000;
-const KAKAO_TIMEOUT_MS = 3000;
 
 /** 메뉴판 OCR 텍스트에서 상호만 뽑는다. 없으면 빈 문자열 — 메뉴명을 상호로 둔갑시키지 않는다. */
 async function guessName(text, key) {
@@ -46,27 +46,6 @@ async function guessName(text, key) {
   if (!res.ok) throw new Error(`solar ${res.status}`);
   const raw = (await res.json()).choices?.[0]?.message?.content ?? "{}";
   return String(JSON.parse(raw).name ?? "").trim().slice(0, 60);
-}
-
-/** Kakao 키워드 검색 — 경영관 반경 안에서 가장 가까운 곳. 주소·분류를 함께 준다. */
-async function lookupPlace(name, key) {
-  const url = `https://dapi.kakao.com/v2/local/search/keyword.json?${new URLSearchParams({
-    query: name, x: String(CAMPUS.lng), y: String(CAMPUS.lat), radius: "1500", size: "3", sort: "distance",
-  })}`;
-  const r = await fetch(url, {
-    headers: { Authorization: `KakaoAK ${key}` },
-    signal: AbortSignal.timeout(KAKAO_TIMEOUT_MS),
-  });
-  if (!r.ok) return null;
-  const d = (await r.json()).documents?.[0];
-  if (!d) return null;
-  // "음식점 > 한식 > 두부전문점" → "한식" (시트의 분류 열이 쓰는 단위)
-  const parts = String(d.category_name ?? "").split(">").map((s) => s.trim()).filter(Boolean);
-  return {
-    placeName: d.place_name ?? "",
-    address: d.road_address_name || d.address_name || "",
-    category: parts[1] ?? parts[0] ?? "",
-  };
 }
 
 export default async function handler(req, res) {

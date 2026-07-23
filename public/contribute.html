@@ -313,6 +313,8 @@ function fill(id, value) {
   el.value = value;
   return true;
 }
+/* 진행 중인 조회. 접수 버튼이 이것을 기다린다 — 아래 blur 주석 참고. */
+let LOOKUP = Promise.resolve();
 async function identify(text, name = "") {
   if (!text && !name) return;
   const hint = name ? $("#addrHint") : $("#nameHint");
@@ -339,9 +341,14 @@ async function identify(text, name = "") {
   }
 }
 /* 사용자가 이름을 직접 적고 칸을 벗어나면 그 이름으로 주소·분류를 찾아본다. */
+/* ⚠ 이 blur 는 **접수 버튼을 누를 때도** 일어난다. 조회는 비동기라 그대로 두면
+   요청이 먼저 나가고 주소는 그 뒤에 도착한다 — 화면에는 채워지므로 제보자는 들어간 줄
+   알지만 시트는 빈칸이다(2026-07-23 실측: 클릭 후 37ms 에 빈 주소로 전송, 조회 응답은
+   그 뒤 도착. 시트의 웹 제보 4건 중 3건이 이렇게 주소·좌표가 비어 있었다).
+   그래서 진행 중인 조회를 `LOOKUP` 에 담아 두고 접수 직전에 기다린다. */
 $("#rname").addEventListener("blur", () => {
   const n = $("#rname").value.trim();
-  if (n && !$("#raddr").value.trim()) identify("", n);
+  if (n && !$("#raddr").value.trim()) LOOKUP = identify("", n);
 });
 
 /* 수기 입력 폴백 — 파싱 결과 대신 빈 행을 준다. SITEMAP §contribute 필수 상태 처리. */
@@ -389,6 +396,9 @@ $("#submit").addEventListener("click", async () => {
   if (MANUAL) ITEMS = collectManual();   // 수기 입력은 제출 직전에 모은다
   const btn = $("#submit"); btn.disabled = true; btn.textContent = "접수 중…";
   try {
+    // 방금 시작된 주소 조회가 있으면 끝날 때까지 기다린다(위 blur 주석).
+    // 조회가 늦거나 죽어도 접수는 막지 않는다 — 서버가 이름으로 한 번 더 찾는다.
+    await Promise.race([LOOKUP, new Promise((r) => setTimeout(r, 2500))]);
     const res = await fetch("/api/contribute", {
       method: "POST", headers: { "content-type": "application/json" },
       body: JSON.stringify({ name, address: $("#raddr").value.trim(), category: $("#rcat").value.trim(), items: ITEMS, photo: PHOTO }),

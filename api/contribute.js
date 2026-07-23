@@ -7,6 +7,7 @@
  *  따라서 여기서 들어간 행은 `검수="대기"` 라 서비스에 노출되지 않는다(step-4 게이트).
  */
 import { listRows, appendRows, updateCells, savePhoto, sheetWriteReady } from "./_lib/sheet-write.js";
+import { lookupPlace } from "./_lib/place.js";
 
 const REST_SHEET = "식당";
 const MENU_SHEET = "메뉴";
@@ -24,7 +25,7 @@ function nextId(rows) {
   return `R${String(max + 1).padStart(3, "0")}`;
 }
 
-/** 카카오 주소 검색 — 좌표가 없으면 지도에 안 뜨고 도보 시간도 못 낸다.
+/** 주소 → 좌표. 좌표가 없으면 지도에 안 뜨고 도보 시간도 못 낸다.
  *  키가 없거나 실패해도 제보 자체는 살린다(좌표는 나중에 배치 스크립트가 채운다). */
 async function geocode(address) {
   const key = process.env.KAKAO_REST_API_KEY;
@@ -38,6 +39,28 @@ async function geocode(address) {
   } catch {
     return { lat: "", lng: "" };
   }
+}
+
+/** 주소·분류·좌표를 정한다.
+ *
+ *  **주소가 비어 오는 것은 흔한 일이다** (2026-07-23 실측). 제보 화면은 이름 칸을 벗어날 때
+ *  주소를 찾아 채우는데, 사람이 이름을 치고 곧바로 접수를 누르면 그 조회가 끝나기 전에
+ *  요청이 나간다. 화면에는 잠시 뒤 주소가 채워지므로 제보자는 들어간 줄 알지만 시트는
+ *  빈칸이다(실측: 클릭 후 37ms 에 빈 주소로 전송, 조회 응답은 그 뒤 도착).
+ *  클라이언트도 고쳤지만, 시트에 무엇이 남는지는 서버가 책임진다 — 이름만 있으면
+ *  여기서 한 번 더 찾는다. */
+async function resolvePlace(name, address, category) {
+  if (address) {
+    const { lat, lng } = await geocode(address);
+    if (lat !== "") return { address, category, lat, lng };
+  }
+  const found = await lookupPlace(name).catch(() => null);
+  if (!found) return { address, category, lat: "", lng: "" };
+  return {
+    address: address || found.address,
+    category: category || found.category,
+    lat: found.lat, lng: found.lng,
+  };
 }
 
 export default async function handler(req, res) {
@@ -70,7 +93,7 @@ export default async function handler(req, res) {
     const photoP = photo
       ? savePhoto(photo, `${restName}-제보.jpg`).then((id) => `https://drive.google.com/file/d/${id}/view`)
       : Promise.resolve("");
-    const geoP = geocode(address);
+    const placeP = resolvePlace(restName, String(address).trim(), String(category).trim());
 
     const [rest, photoLink] = await Promise.all([restP, photoP]);
 
@@ -80,17 +103,30 @@ export default async function handler(req, res) {
     const id = existing ? String(existing.values[0]).trim() : nextId(rest.items);
 
     if (existing) {
+      const edits = [];
       // 새 사진은 기존 링크에 덧붙인다(줄바꿈 구분) — 검수 화면이 여러 장을 탭으로 보여준다.
       if (photoLink && iPhoto >= 0) {
         const prev = String(existing.values[iPhoto] ?? "").trim();
-        await updateCells(REST_SHEET, [{ row: existing.row, col: iPhoto + 1, value: prev ? `${prev}\n${photoLink}` : photoLink }]);
+        edits.push({ row: existing.row, col: iPhoto + 1, value: prev ? `${prev}\n${photoLink}` : photoLink });
       }
+      /* 이미 있는 행의 **빈칸만** 메운다. 예전에는 사진 링크만 갱신해서, 주소·좌표가 비어 있던
+         가게는 나중에 주소를 아는 제보가 들어와도 영영 빈칸으로 남았다(실측 R014·R026).
+         채워져 있는 칸은 절대 덮지 않는다 — 사람이 검수해 고친 값을 기계가 되돌리면 안 된다. */
+      const place = await placeP;
+      for (const [col, value] of [["주소", place.address], ["카테고리", place.category],
+                                  ["위도", place.lat], ["경도", place.lng]]) {
+        const c = rest.header.indexOf(col);
+        if (c < 0 || value === "" || value == null) continue;
+        if (String(existing.values[c] ?? "").trim()) continue;
+        edits.push({ row: existing.row, col: c + 1, value });
+      }
+      if (edits.length) await updateCells(REST_SHEET, edits);
     } else {
-      const { lat, lng } = await geoP;
+      const place = await placeP;
       const today = new Date().toISOString().slice(0, 10);
       // [식당] 열 순서: ID·이름·카테고리·주소·위도·경도·태그·사진링크·수집자·촬영일·상태
-      await appendRows(REST_SHEET, [[id, restName, String(category).trim(), String(address).trim(),
-        lat, lng, "", photoLink, "웹 제보", today, "입력완료"]]);
+      await appendRows(REST_SHEET, [[id, restName, place.category, place.address,
+        place.lat, place.lng, "", photoLink, "웹 제보", today, "입력완료"]]);
     }
     // [메뉴] 열 순서: 식당ID·식당이름·메뉴명·가격·출처·검수·비고
     await appendRows(MENU_SHEET, clean.map((m) => [id, restName, m.name, m.price, "제보", "대기", ""]));
