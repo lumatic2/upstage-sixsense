@@ -153,7 +153,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
     <article>
       <p class="eyebrow">데이터 파이프라인</p>
 
-      <h2 id="s1">한 장으로</h2>
+      <h2 id="s1">1. 한눈에 보는 전체 흐름</h2>
       <p>식당 가격은 웹에 구조화된 형태로 존재하지 않습니다. 메뉴판 사진 안에만 있습니다. 범용 챗봇이 "정확한 가격은 매장에 문의하세요"로 끝나는 지점이 정확히 여기입니다. 읽을 데이터가 없어서가 아니라, <b>데이터가 사진 안에 있어서</b>입니다. 그래서 이 서비스의 출발점은 검색이 아니라 사진 수집입니다.</p>
       <p>서로 다른 형태의 입력 세 갈래가 각자에게 맞는 처리를 거쳐, <b>사람 검수라는 하나의 문</b>을 통과해야 서비스로 나갑니다. 아래 절들은 이 문장을 근거로 뜯어 보이고, <b>중간중간 실제 API를 지금 이 자리에서 돌려볼 수 있게</b> 해 두었습니다.</p>
       <figure class="figure diagram">
@@ -161,7 +161,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
         <figcaption>입력마다 처리가 다르고, 나가는 문은 하나입니다.</figcaption>
       </figure>
 
-      <h2 id="s2">어떻게 만드나</h2>
+      <h2 id="s2">2. 어떻게 만드나</h2>
       <div class="stage"><span class="dot">1</span><span><b>수집</b><span class="muted">명륜동·혜화 식당의 메뉴판 사진을 모아 한 저장소에 쌓습니다. 출처와 촬영일을 함께 기록합니다.</span></span></div>
       <div class="stage"><span class="dot">2</span><span><b>파싱</b><span class="muted">Upstage Document Parse에 <code>ocr=force</code>·<code>coordinates=true</code>로 요청해, 사진 속 레이아웃을 유지한 채 메뉴명과 가격을 뽑습니다.</span></span></div>
       <div class="stage"><span class="dot">3</span><span><b>검수</b><span class="muted">파싱 결과는 바로 쓰지 않습니다. 운영진이 원본 사진과 나란히 놓고 행마다 확인·제외를 찍고, 틀린 값은 그 자리에서 고칩니다. <b>확인이 찍힌 행만 서비스로 나갑니다.</b></span></span></div>
@@ -193,7 +193,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
         <ul class="caf" id="cafeteria"><li><span class="nm muted">불러오는 중…</span></li></ul>
       </div>
 
-      <h2 id="s3">사람이 마지막 문입니다</h2>
+      <h2 id="s3">3. 사람이 마지막 문입니다</h2>
       <p>이 파이프라인에서 자동과 사람의 경계는 한 곳에 분명히 그어져 있습니다. <b>AI는 후보를 만들고, 사람은 도장을 찍습니다.</b> 도장이 찍힌 행만 서비스에 나옵니다. 검수 화면에서는 원본 사진을 나란히 띄워 놓고 행마다 확인·제외를 누르고, 값이 틀렸으면 그 자리에서 고칩니다.</p>
       <div class="card">
         <b>지금까지 통과한 것과 걸러진 것</b>
@@ -211,7 +211,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
         <ul class="plainlist" id="realResults"></ul>
       </div>
 
-      <h2 id="s4">어려운 것들</h2>
+      <h2 id="s4">4. 어려운 것들</h2>
       <p>파이프라인의 깊이는 잘 되는 사진에서 나오지 않습니다. 안 되는 것들을 하나씩 처리한 자국에서 나옵니다. 실제로 걸렸고 실제로 고친 것 넷입니다.</p>
       <table class="stacked">
         <tr><th>걸린 것</th><th>왜 문제인가</th><th>어떻게 했나</th></tr>
@@ -243,7 +243,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
         <p class="small">추천을 마친 대화창이 <b>몇 건이 근거 검증을 통과했는지</b> 알려줍니다. 통과하지 못한 카드에는 "근거 미달 판정 → 데이터 팩트로 교체" 배지가 붙습니다. 통과한 카드에는 배지를 달지 않습니다. 정상이 기본값이라 매 카드에 도장을 찍으면 정작 눈에 띄어야 할 교체 표시가 묻히기 때문입니다. 환각을 막았다는 주장이 아니라, 막는 동작을 그대로 보여주는 방식입니다.</p>
       </div>
 
-      <h2 id="s5">얼마나 정확한가</h2>
+      <h2 id="s5">5. 얼마나 정확한가</h2>
       <p>메뉴판 사진 5장·72개 항목을 육안 대조로 채점했습니다. <b>55개(76.4%)</b>를 정확히 읽었습니다. 100%인 척하지 않습니다. 나머지를 사람이 잡는 검수 단계가 있어서 이 숫자로도 서비스가 됩니다.</p>
       <p>중요한 건 총점이 아니라 <b>어디서 떨어지느냐</b>입니다. 사진 상태별로 나눠 보면 한 변수가 지배합니다.</p>
       <div class="bars">
@@ -278,7 +278,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
         <ul class="prefill" id="prefill"></ul>
       </div>
 
-      <h2 id="s6">멈추면 어떻게 되나</h2>
+      <h2 id="s6">6. 멈추면 어떻게 되나</h2>
       <p>파이프라인의 절반은 잘 돌 때의 설계고, 나머지 절반은 <b>멈췄을 때 무엇이 보이느냐</b>입니다. 조용히 잘못된 값을 보여주는 게 가장 나쁩니다.</p>
       <table class="stacked">
         <tr><th>멈추는 곳</th><th>그냥 두면</th><th>지금 하는 일</th></tr>
@@ -311,7 +311,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
       <p>메뉴 342행의 출처는 <b>사진파싱 341 · 제보 1</b>입니다. 거의 전부가 사진에서 나왔습니다. 파싱 정확도 실측에는 Document Parse 호출 8회, 비용 <b>약 $0.08</b>이 들었고 <b>원본 응답 5건을 그대로 박제</b>해 두었습니다. 나중에 후처리만 고쳐 재채점할 수 있게 하기 위해서입니다. 실제로 API 재호출 없이 후처리만 두 번 고쳐 <b>0건 → 62.5% → 76.4%</b>로 끌어올렸습니다.</p>
       <p>규칙은 말이 아니라 테스트로 고정합니다. 곁들임 판정 41 케이스, 대화에서 조건 뽑기 35 케이스, 추천 칩 18 케이스, 그리고 배포된 사이트를 실제 브라우저로 훑는 16개 점검이 매 배포마다 돕니다.</p>
 
-      <h2 id="upstage">어디에 Upstage를 썼나</h2>
+      <h2 id="upstage">7. 어디에 Upstage를 썼나</h2>
       <p>제품을 하나 고르고 거기에 문제를 맞추지 않았습니다. 파이프라인의 각 지점에서 <b>무엇이 부족한지</b>를 먼저 정하고, 그 자리에 맞는 것을 넣었습니다. 그래서 안 쓴 자리도 함께 적습니다.</p>
       <table class="stacked">
         <tr><th>제품</th><th>쓴 자리</th><th>왜 여기인가</th></tr>
@@ -360,7 +360,7 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
         <p class="small">Upstage 호출은 전부 서버 함수(<code>/api/chat</code>·<code>/api/recommend</code>·<code>/api/parse-menu</code>·<code>/api/parse-query</code>·<code>/api/identify</code>)에서 일어납니다. 브라우저는 API 키를 볼 수 없습니다.</p>
       </div>
 
-      <h2 id="s7">로그인이 없는 이유</h2>
+      <h2 id="s7">8. 로그인이 없는 이유</h2>
       <p>한입지도는 계정을 만들지 않습니다. 두 번째 방문부터 에이전트가 지난 관심을 이어받아 말하지만("지난번엔 돈까스 찾으셨는데, 오늘도 그쪽으로 볼까요?"), 그 기억은 <b>이 브라우저 안에만</b> 있습니다(<code>localStorage</code>, 관심어 5개·30일). 서버는 요청마다 받아 쓰고 버립니다. 대가는 분명합니다. 기기나 브라우저를 바꾸면 기록은 사라지고, 시크릿 모드에서는 아예 남지 않습니다.</p>
       <p><b>추천 순서는 이 기억으로 바뀌지 않습니다.</b> 한때는 바꿨습니다. 눌러본 가게의 분류를 세어 같은 계열을 위로 올렸습니다. 그 기능을 걷어냈습니다. 세고 있던 클릭이 눌러도 아무 일이 일어나지 않는 클릭이었기 때문입니다. 사용자는 고른 적이 없는데 우리는 그걸 취향이라 부르고 있었습니다. <b>없는 신호를 재서 순서를 바꾸는 것은, 없는 가격을 지어내는 것과 같은 종류의 일입니다.</b> 그래서 값을 조정하는 대신 그 축을 닫았습니다(<a href="https://github.com/lumatic2/upstage-sixsense/blob/master/docs/adr/0004-personalization.md">ADR-0004</a>).</p>
 
@@ -372,14 +372,14 @@ document.getElementById("loginClose").addEventListener("click", () => dlg.close(
 
     <nav class="toc" aria-label="목차">
       <p class="small muted" style="margin-bottom:var(--s2)">목차</p>
-      <a href="#s1">한 장으로</a>
-      <a href="#s2">어떻게 만드나</a>
-      <a href="#s3">사람이 마지막 문입니다</a>
-      <a href="#s4">어려운 것들</a>
-      <a href="#s5">얼마나 정확한가</a>
-      <a href="#s6">멈추면 어떻게 되나</a>
-      <a href="#upstage">어디에 Upstage를 썼나</a>
-      <a href="#s7">로그인이 없는 이유</a>
+      <a href="#s1">1. 한눈에 보는 전체 흐름</a>
+      <a href="#s2">2. 어떻게 만드나</a>
+      <a href="#s3">3. 사람이 마지막 문입니다</a>
+      <a href="#s4">4. 어려운 것들</a>
+      <a href="#s5">5. 얼마나 정확한가</a>
+      <a href="#s6">6. 멈추면 어떻게 되나</a>
+      <a href="#upstage">7. 어디에 Upstage를 썼나</a>
+      <a href="#s7">8. 로그인이 없는 이유</a>
     </nav>
   </div>
 </section>
