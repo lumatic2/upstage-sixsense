@@ -280,6 +280,7 @@
 
 - **슬라이드 구조안**(16장·장별 주제·시간·근거 자료·발표 원칙·예상 질문) → [`docs/presentation/slides-outline.md`](presentation/slides-outline.md)
 - **시연 영상 촬영 순서**(5스텝·화면별 멈춤 초·배지 주의) → [`docs/presentation/demo-walkthrough.md`](presentation/demo-walkthrough.md)
+- **심사 루브릭 + 항목별 우리 대응**(총 100점) → [`docs/presentation/rubric.md`](presentation/rubric.md)
 
 두 문서 모두 이 스펙(§1~§12)의 숫자·주장에서 뽑았다. **슬라이드에 올릴 숫자는 항상 §8을 정본으로** 한다.
 
