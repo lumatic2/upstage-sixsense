@@ -56,6 +56,10 @@ const UNIT_PRICE = /\b100\s*g\b/i;
 // 낱개 판매 — `꼬치 1개`, `새우튀김 (1P)`.
 const SINGLE = /1개$|\(\s*1\s*P\s*\)|\b1pc\b/i;
 
+// 반 인분 — `왕만두(반접시) 5,000`. 같은 집에 온전한 것이 따로 있고(`왕만두 9,000`), 반만
+// 시키는 건 곁들일 때다. 어느 집에서나 통하는 표기라 규칙에 둔다(2026-07-23 실측 1행).
+const HALF = /반접시|하프|1\/2/;
+
 // 규칙으로 안 잡히는 곁들임. 이름만으로 끼니가 아닌 것이 분명한 것만 넣는다.
 const NAMED_SIDE = /반숙란|아지타마고|계란후라이|크로켓|단무지|피클|김치$|쿠키|츄러스/;
 
@@ -73,6 +77,6 @@ export function isSideMenu(menu) {
   if (!name) return false;
   if (SET.test(name)) return false;
   return ADDON.test(name) || DRINK.test(name) || DRINK_BRAND.test(name) || PROOF.test(name)
-    || RICE.test(name) || UNIT_PRICE.test(name) || SINGLE.test(name)
+    || RICE.test(name) || UNIT_PRICE.test(name) || SINGLE.test(name) || HALF.test(name)
     || NAMED_SIDE.test(name) || DUMPLING.test(name);
 }
