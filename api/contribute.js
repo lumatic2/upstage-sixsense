@@ -99,7 +99,11 @@ export default async function handler(req, res) {
 
     // 같은 이름이 이미 있으면 그 식당에 메뉴를 붙인다 — 공개 제보라 같은 가게가 여러 번 들어온다.
     const iPhoto = rest.header.indexOf("메뉴판 사진 링크");
-    const existing = rest.items.find((r) => String(r.values[1] ?? "").trim() === restName);
+    // NFC 정규화 후 비교한다. 같아 보이는 한글도 조합/완성형이 섞이면 다른 문자열이라,
+    // 그대로 비교하면 이미 있는 가게가 새 식당으로 한 번 더 들어간다
+    // (2026-07-24 시트 실측: 소친친·개미식당·나누미떡볶이 세 곳이 이 상태였다).
+    const key = restName.normalize("NFC");
+    const existing = rest.items.find((r) => String(r.values[1] ?? "").trim().normalize("NFC") === key);
     const id = existing ? String(existing.values[0]).trim() : nextId(rest.items);
 
     if (existing) {
