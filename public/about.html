@@ -224,7 +224,7 @@ addEventListener("load", () => {
       <p class="eyebrow">데이터 파이프라인</p>
 
       <h2 id="s1">1. 한눈에 보는 전체 흐름</h2>
-      <p>동네 식당의 메뉴와 가격은 일부 서비스 혹은 <b>메뉴판 사진에</b> 존재합니다. 일반 챗봇이 "정확한 가격은 매장에 문의하세요"로 끝나는 이유가 여기에 있습니다. 특정 서비스에 대한 API가 필요하거나, 메뉴판 데이터를 수집해야 하기 때문입니다. 한입지도 서비스는 성균관대학교 명륜캠퍼스의 학식 정보를 웹에서 확보함과 동시에 '메뉴판 사진 수집'을 통해 데이터를 확보합니다.</p>
+      <p>동네 식당의 메뉴와 가격은 일부 서비스 혹은 <b>메뉴판 사진에</b> 존재합니다. 일반 챗봇이 "정확한 가격은 매장에 문의하세요"로 끝나는 이유가 여기에 있습니다. 한입지도 서비스는 성균관대학교 명륜캠퍼스의 학식 정보를 웹에서 확보함과 동시에 '메뉴판 사진 수집'을 통해 데이터를 확보합니다.</p>
       <p>들어오는 비정형 데이터 세 갈래가 각자 다른 처리를 거쳐 <b>사람 검수라는 하나의 문</b>을 통과합니다. 아래에서 이 과정들을 하나씩 살펴보고, <b>이 자리에서 직접 테스트해볼 수 있게</b> 만들어 두었습니다.</p>
       <!-- 흐름도는 이미지가 아니라 SVG 다 (2026-07-23). 낱말 하나 고치려고 이미지를 다시
            굽던 것을 여기서 끝낸다 — 아래 <text> 를 고치면 그게 그대로 화면이다. 색도 토큰을
@@ -281,7 +281,7 @@ addEventListener("load", () => {
         <tr><th>칸</th><th>들어가는 값</th><th>왜 필요한가</th></tr>
         <tr><td>출처</td><td>사진에서 읽음 · 제보 · 직접 입력</td><td>해당 값의 출처를 모르면 이슈 발생 시 어디를 고쳐야 하는지 알 수 없습니다.</td></tr>
         <tr><td>검수</td><td>확인 · 제외 · 대기</td><td>화면에 나갈지 말지를 가르는 스위치입니다.</td></tr>
-        <tr><td>본메뉴 여부</td><td>본메뉴 · 곁들임</td><td>공기밥 1,000원으로 예산 조건이 충족되면 안 됩니다(아래 <a href="#s4">어려운 것들</a>).</td></tr>
+        <tr><td>본메뉴 여부</td><td>본메뉴 · 곁들임</td><td>공기밥 1,000원으로 예산 조건이 충족되면 안 됩니다(아래 <a href="#s4">시행착오</a>).</td></tr>
         <tr><td>촬영일 · 수집자</td><td>날짜 · 이름</td><td>데이터는 언젠가 낡기 때문에 갱신 순서를 정하기 위해 필요합니다.</td></tr>
         <tr><td>좌표</td><td>위도 · 경도</td><td>주소 텍스트만으로는 도보 시간을 측정하지 못합니다.</td></tr>
       </table>
@@ -297,7 +297,7 @@ addEventListener("load", () => {
       <div class="evidence">
         <h3>크롤러가 넣은 오늘의 학식</h3>
         <p class="desc">매일 아침 6시 10분에 <b>학식당 4곳</b>을 조회한 값을 처리합니다.
-          '휴무'와 "정보 없음"을 구별하는 방법론은 <a href="#s6">멈추면 어떻게 되나</a></p>
+          "휴무"와 "정보 없음"을 구별하는 방법은 <a href="#s6">멈추면 어떻게 되나</a></p>
         <ul class="caf" id="cafeteria"><li><span class="nm muted">불러오는 중…</span></li></ul>
       </div>
 
@@ -307,23 +307,22 @@ addEventListener("load", () => {
         <b>통과한 것과 걸러진 것</b>
         <p class="small">AI가 만든 후보 <b>386개</b> 중 <b>확인 343 · 제외 30 · 대기 13</b>입니다. 제외한 30개는 영업시간, 가게 연혁, 옵션 가격 같은 것들입니다. <b>사람이 최종 검수함으로써 Noise를 줄일 수 있었습니다.</b></p>
       </div>
-      <p>이 검증은 한 번으로 끝나지 않습니다. 데이터의 최종 검수 일자를 꾸준히 모니터링하여 낡은 데이터가 남아있지 않도록 했습니다.
+      <p>이 검증은 한 번으로 끝나지 않습니다. 메뉴마다 마지막으로 검수한 날짜를 함께 저장해 두어, 오래된 것부터 다시 확인합니다.</p>
 
       <div class="evidence">
         <h3>검수 통과 데이터 목록</h3>
-        <p class="desc">테스트는 <a href="#upstage">아래 Solar 칸</a></p>
         <ul class="plainlist" id="realResults"></ul>
         <span class="stat" id="dataSource">불러오는 중…</span>
       </div>
 
       <h2 id="s4">4. 시행착오</h2>
-      <p>서비스를 구축하며 겪은 문제와 해결의 기록입니다. 크게 네 부분으로 나타났습니다.</p>
+      <p>서비스를 구축하며 겪은 문제와 해결의 기록입니다. 크게 다섯 가지였습니다.</p>
       <table class="stacked">
         <tr><th>걸린 것</th><th>왜 문제인가</th><th>어떻게 했나</th></tr>
         <tr>
           <td>사이드 메뉴</td>
           <td>"8천원 이하"에 공기밥 1,000원이 걸리면 그 가게는 조건을 통과합니다.</td>
-          <td>메뉴마다 본메뉴/곁들임을 판정해, <b>예산 판정과 개수 세기 모두 본메뉴로만</b> 합니다. 판정 규칙은 41개 케이스로 고정해 두었습니다.</td>
+          <td>메뉴마다 본메뉴/곁들임을 판정해, <b>예산 판정과 개수 세기 모두 본메뉴로만</b> 합니다. 판정 규칙은 63개 케이스로 고정해 두었습니다.</td>
         </tr>
         <tr>
           <td>천원단위 소수 표기</td>
@@ -340,13 +339,12 @@ addEventListener("load", () => {
           <td>사용자가 "마라탕버거"(실제 존재하지 않는 메뉴)를 검색한 경우 그것을 관심어로 저장하고 다음 추천 서비스에 활용하는 문제가 있었습니다. </td>
           <td>기억할 키워드를 <b>실제 메뉴·식당 이름과 대조</b>해 통과한 것만 남깁니다. 꺼낼 때도 다시 대조해서 없는 메뉴는 말하지 않습니다.</td>
         </tr>
+        <tr>
+          <td>추천 이유</td>
+          <td>이유 문장은 Solar가 씁니다. 데이터에 없는 말이 섞여도 문장만 봐서는 티가 나지 않습니다.</td>
+          <td>이유 문장을 <b>실제 메뉴·가격·도보 시간과 한 줄씩 대조</b>합니다. 대조는 문장을 쓴 모델이 아니라 <b>다른 모델</b>이 맡고, 근거가 없으면 그 문장을 버리고 데이터 사실로 바꿉니다. 추천 결과에서 통과하지 못한 카드에만 <b>"근거 미달 → 데이터 사실로 교체"</b> 표시가 붙습니다.</td>
+        </tr>
       </table>
-
-      <p>다섯 번째는 <b>추천 이유 그 자체</b>입니다. 이유 문장은 Solar가 쓰지만 쓰고 끝내지 않습니다. <b>판정은 다른 모델이 맡습니다.</b> 그 문장을 실제 데이터(메뉴·가격·도보 시간)와 대조해, 근거가 없으면 버리고 데이터 사실로 바꿉니다. 쓴 모델이 스스로 채점하면 검증이 아니니까요.</p>
-      <div class="card">
-        <b>화면에서 보이는 것</b>
-        <p class="small">추천을 마친 대화창이 <b>몇 건이 검증을 통과했는지</b> 알려줍니다. 통과 못 한 카드에만 "근거 미달 → 데이터 사실로 교체" 배지가 붙습니다. 통과한 카드에 도장을 찍으면 정작 눈에 띄어야 할 교체 표시가 묻힙니다.</p>
-      </div>
 
       <h2 id="s5">5. 얼마나 정확한가</h2>
       <p>메뉴판 사진 5장·72개 메뉴를 채점한 결과 <b>55개(76.4%)</b>의 정확도가 나왔습니다. 나머지는 사람이 직접 조정해야 했습니다.</p>
@@ -365,23 +363,22 @@ addEventListener("load", () => {
           <div class="track"><div class="fill" style="width:20%"></div></div>
         </div>
       </div>
-      <p><b>반사와 거리는 문제가 아니었습니다.</b> 유리창에 붙은 메뉴를 멀리서, 반사까지 얹어 찍은 사진이 <b>25개 항목 전부</b> 맞았습니다. 무너지는 건 '해상도'가 부족한 경우 때뿐이었습니다.</p>
+      <p><b>반사와 거리는 문제가 아니었습니다.</b> 유리창에 붙은 메뉴를 멀리서, 반사까지 얹어 찍은 사진이 <b>25개 항목 전부</b> 맞았습니다. 무너지는 건 해상도가 부족할 때뿐이었습니다.</p>
       <p>500원을 지우고 700원을 덧쓴 손글씨는 읽지 못한다는 점도 발견했습니다. 사람의 검수 단계가 필요한 이유 중 하나입니다.</p>
       <p class="small muted">채점 방법과 사진별 원본 응답은 <a href="https://github.com/lumatic2/upstage-sixsense/blob/master/experiments/parse-poc/accuracy.md">깃허브 저장소</a>에 그대로 남겨 두었습니다.</p>
 
       <div class="panel">
         <div class="panel-head">
           <h3>사진으로 파싱 결과 확인해 보기</h3>
-          <button class="btn sm" id="parseBtn" type="button">파싱</button>
         </div>
         <div class="panel-body">
           <!-- 파일 선택은 없앴다 (2026-07-23 사용자 지시). 사진을 가진 사람은 제보 페이지로 가고,
                여기는 "이 메뉴판이 이렇게 읽힌다"를 한 번에 보여주는 자리다. 그러려면 읽히는 대상이
                사람 눈에도 메뉴판으로 보여야 해서 썸네일이 아니라 실물 크기로 세운다. -->
           <button class="samplebtn" type="button" id="sampleBtn"
-                  data-sample="/img/samples/sample-menu-printed.jpg">
-            <img src="/img/samples/sample-menu-printed.jpg"
-                 alt="예시 메뉴판 사진 — 손칼국수 7,000원부터 아홉 줄이 인쇄된 차림표" loading="lazy">
+                  data-sample="/img/samples/sample-menu-pasta.jpg">
+            <img src="/img/samples/sample-menu-pasta.jpg"
+                 alt="예시 메뉴판 사진 — 파스타·피자·리조또·샐러드 열일곱 줄이 인쇄된 차림표. 가격이 17.0 같은 천원단위 소수로 적혀 있다" loading="lazy">
             <span class="cap">눌러서 이 메뉴판 읽어보기</span>
           </button>
           <p class="stat" id="parseStatus"></p>
@@ -406,7 +403,7 @@ addEventListener("load", () => {
         <tr>
           <td>메뉴 찾기</td>
           <td>기능 하나가 죽으면 서비스 전체가 불능이 됩니다.</td>
-          <td>기능을 모듈화해두어 하나가 죽어도 나머지는 계속 돌아야 "직접 돌려보기"라는 말이 참이 됩니다.</td>
+          <td>기능을 따로 떼어 두어 하나가 멈춰도 나머지는 계속 돕니다. 추천이 안 되어도 지도와 학식은 그대로 보입니다.</td>
         </tr>
       </table>
 
@@ -417,11 +414,12 @@ addEventListener("load", () => {
         <div><span class="n">342</span><span class="k">검수를 통과해 화면에 나가는 메뉴</span></div>
         <div><span class="n">4곳</span><span class="k">조회하는 학식당<br></span></div>
       </div>
-      <p>메뉴 342개의 출처는 <b>사진에서 읽은 것 341 · 제보 1</b>입니다. 거의 전부가 사진에서 나왔습니다. 정확도를 재는 데는 Document Parse 호출 8회, 비용 <b>약 $0.08</b>이 들었고 <b>원본 응답 5건을 그대로 박제</b>해 두었습니다. 나중에 후처리만 고쳐 재채점할 수 있게 하기 위해서입니다. 실제로 API 재호출 없이 후처리만 두 번 고쳐 <b>0건 → 62.5% → 76.4%</b>로 끌어올렸습니다.</p>
-      <p>규칙은 말이 아니라 테스트로 고정합니다. 곁들임 판정 41 케이스, 대화에서 조건 뽑기 35 케이스, 추천 칩 18 케이스, 그리고 배포된 사이트를 실제 브라우저로 훑는 16개 점검이 매 배포마다 돕니다.</p>
+      <p>화면에 나가는 메뉴 342개 중 <b>341개는 메뉴판 사진에서 읽은 것</b>이고 제보로 들어온 것은 1개입니다.</p>
+      <p>정확도를 잴 때 Document Parse를 8번 불렀고 비용은 <b>약 $0.08</b>이었습니다. 그때 받은 <b>응답 원본 5건을 파일로 저장</b>해 두었기 때문에, 읽어 온 결과를 다듬는 규칙을 고칠 때마다 API를 다시 부르지 않고 같은 응답으로 다시 채점할 수 있습니다. 실제로 이 방식으로 규칙만 두 번 고쳐 정확도가 <b>0% → 62.5% → 76.4%</b>로 올랐습니다.</p>
+      <p>이렇게 정한 규칙은 문서가 아니라 테스트로 지킵니다. 곁들임 판정 63개, 대화에서 조건 뽑기 35개, 추천 칩 18개 케이스가 있고, <b>배포된 사이트를 실제 브라우저로 훑는 점검 16개</b>가 배포할 때마다 함께 돕니다. 규칙을 고치다 예전에 맞던 것이 깨지면 여기서 걸립니다.</p>
 
       <h2 id="upstage">7. 어디에 Upstage를 썼나</h2>
-      <p>파이프라인 각 지점에서 <b>무엇이 문제인지</b> 먼저 정의하고 그 해결책으로 Upsatge AI를 활용했습니다.</p>
+      <p>파이프라인 각 지점에서 <b>무엇이 문제인지</b> 먼저 정의하고 그 해결책으로 Upstage AI를 활용했습니다.</p>
       <table class="stacked">
         <tr><th>제품</th><th>쓴 자리</th><th>왜 여기인가</th></tr>
         <tr>
@@ -431,18 +429,18 @@ addEventListener("load", () => {
         </tr>
         <tr>
           <td>Solar <code>solar-pro2</code></td>
-          <td>대화 응답 + 조건 구조화 + 추천 이유 생성<br><span class="small muted">한 번의 왕복으로 답과 조건을 함께 받습니다(구조화 출력)</span></td>
+          <td>대화 응답 · 조건 구조화 · 추천 이유 생성<br><span class="small muted">한 번의 왕복으로 답과 조건을 함께 받습니다(구조화 출력)</span></td>
           <td>"둘이서 2만원"에서 인원·예산을 뽑는 나눗셈을 <code>solar-mini</code>는 틀렸습니다. 구조화 출력 실측 0.7~1.3초로 충분히 빠릅니다.</td>
-        </tr>
-        <tr>
-          <td>Solar <code>solar-mini</code></td>
-          <td>추천 이유의 근거 판정</td>
-          <td>생성한 모델이 스스로 채점하면 검증이 아닙니다. 판정은 <b>다른 모델</b>이 맡아 데이터와 대조합니다.</td>
         </tr>
         <tr>
           <td>Solar <code>solar-pro2</code></td>
           <td>제보 사진에서 <b>상호 추출</b><br><span class="small muted">메뉴판에 상호가 없으면 빈 문자열을 돌려줍니다</span></td>
           <td>사람이 타이핑할 칸을 줄입니다. 다만 <b>없으면 지어내지 않게</b> 못 박아 두었습니다. 여기서 지어내면 다른 가게의 가격표가 됩니다.</td>
+        </tr>
+        <tr>
+          <td>Solar <code>solar-mini</code></td>
+          <td>추천 이유의 근거 판정</td>
+          <td>생성한 모델이 스스로 채점하면 검증이 아닙니다. 판정은 <b>다른 모델</b>이 맡아 데이터와 대조합니다.</td>
         </tr>
         <tr>
           <td class="muted">— (안 씀)</td>
@@ -468,7 +466,9 @@ addEventListener("load", () => {
       </div>
 
       <h2 id="s7">8. 로그인이 없는 이유</h2>
-      <p>한입지도는 계정을 만들지 않았습니다. 최초 설계상 재방문 사용자는 기존 활용 기록을 토대로 추천을 위한 데이터를 쌓고 활용하자는 의도여쓰나, 백엔드가 아닌 브라우저에서 메모리를 저장하게 함으로써 두 번째 방문부터 지난 관심을 이어받아 말할 수 있게 했습니다.("지난번엔 돈까스 찾으셨는데, 오늘도 그쪽으로 볼까요?"), </b> 그래서 값을 조정하는 대신 그 축을 닫았습니다(<a href="https://github.com/lumatic2/upstage-sixsense/blob/master/docs/adr/0004-personalization.md">ADR-0004</a>).</p>
+      <p>한입지도는 계정을 만들지 않습니다. 로그인 없이 바로 쓸 수 있습니다.</p>
+      <p>그렇다고 올 때마다 처음부터 시작하지는 않습니다. 지난번에 물어본 관심사는 서버가 아니라 <b>브라우저 안에</b> 남겨 두어, 두 번째 방문부터 이어서 말합니다("지난번엔 돈까스 찾으셨는데, 오늘도 그쪽으로 볼까요?"). 계정을 만들지 않아도 여기까지는 됩니다.</p>
+      <p>대신 그 기억이 <b>추천 순서를 바꾸지는 않습니다.</b> 한때는 눌러 본 카테고리에 점수를 더해 순서를 바꿨지만, 이 서비스에는 '고른다'는 행동이 없어서 그 점수는 잴 것이 없는 값이었습니다. 값을 조정하는 대신 그 축을 닫았습니다(<a href="https://github.com/lumatic2/upstage-sixsense/blob/master/docs/adr/0004-personalization.md">ADR-0004</a>). 순서는 사용자가 직접 말한 조건 — 예산·도보 시간·태그 — 만으로 정해집니다.</p>
 
       <div class="cta-row" style="display:flex;gap:var(--s3);margin-top:var(--s8);flex-wrap:wrap">
         <a class="btn" href="/app.html">서비스 써보기</a>
@@ -480,8 +480,8 @@ addEventListener("load", () => {
       <p class="small muted" style="margin-bottom:var(--s2)">목차</p>
       <a href="#s1">1. 한눈에 보는 전체 흐름</a>
       <a href="#s2">2. 어떻게 만드나</a>
-      <a href="#s3">3. 사람이 마지막 문입니다</a>
-      <a href="#s4">4. 어려운 것들</a>
+      <a href="#s3">3. 사람이 마지막으로 확인합니다</a>
+      <a href="#s4">4. 시행착오</a>
       <a href="#s5">5. 얼마나 정확한가</a>
       <a href="#s6">6. 멈추면 어떻게 되나</a>
       <a href="#upstage">7. 어디에 Upstage를 썼나</a>
@@ -520,9 +520,8 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 // ① 사진 → parse-menu
-// 읽을 대상이 예시 한 장뿐이라 머리의 버튼과 사진이 같은 일을 한다 —
-// 사진을 누르는 사람과 버튼을 찾는 사람이 갈리므로 둘 다 둔다.
-$("parseBtn").onclick = () => $("sampleBtn").click();
+// 누를 것은 사진 하나뿐이다. 머리에 따로 두었던 `파싱` 버튼은 없앴다 —
+// 같은 일을 하는 버튼이 둘이면 뭐가 대상인지 오히려 흐려진다(2026-07-23 사용자 지시).
 $("sampleBtn").onclick = async () => {
   const src = $("sampleBtn").dataset.sample;
   $("sampleBtn").disabled = true;
@@ -536,7 +535,6 @@ $("sampleBtn").onclick = async () => {
   $("sampleBtn").disabled = false;
 };
 async function parsePhoto(f) {
-  $("parseBtn").disabled = true;
   $("parseStatus").className = "stat";
   $("parseStatus").textContent = "Document Parse 호출 중…";
   try {
@@ -559,7 +557,6 @@ async function parsePhoto(f) {
     $("parseStatus").className = "stat bad";
     $("parseStatus").textContent = `실패: ${e.message}`;
   }
-  $("parseBtn").disabled = false;
 }
 
 // ② 자연어 → parse-query (성공 시 실데이터 블록 재계산)
