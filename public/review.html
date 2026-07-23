@@ -37,9 +37,10 @@
   tr.done-ok{opacity:.5}
   tr.done-no{opacity:.5;text-decoration:line-through}
   .why{display:block;font-size:12px;color:var(--accent);margin-top:2px}
-  /* 가격이 바뀐 제보 — 기존 확인가를 나란히 띄워 어느 쪽이 최신인지 사람이 정하게 한다. */
-  .chg{display:block;font-size:12px;color:#b45309;margin-top:2px}
-  tr.pricechg{background:color-mix(in srgb,#f59e0b 12%,transparent)}
+  /* 가격이 바뀐 제보 — 기존 확인가를 나란히 띄워 어느 쪽이 최신인지 사람이 정하게 한다.
+     경고색 토큰이 없어 배지 텍스트가 의미를 지고, 색은 주의색(--accent)을 쓴다. */
+  .chg{display:block;font-size:12px;color:var(--accent);margin-top:2px;font-weight:600}
+  tr.pricechg{background:color-mix(in srgb,var(--accent-soft) 45%,transparent)}
   /* 메뉴명·가격은 그 자리에서 고친다 — 파편이 정답을 담고 있을 때 제외로 버리면 정보가 사라진다. */
   .ed{font:inherit;font-size:var(--sm);border:1px solid transparent;border-radius:var(--r);
       padding:4px 6px;background:transparent;width:100%}

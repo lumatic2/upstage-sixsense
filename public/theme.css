@@ -181,6 +181,8 @@ section{padding:var(--s16) 0}
 @media (max-width:640px){.foot-grid{grid-template-columns:1fr}}
 .foot-brand .brand{display:inline-flex;align-items:center;gap:8px;color:var(--fg);font-family:var(--font-head);font-size:var(--base);text-decoration:none}
 .foot-brand p{margin:var(--s3) 0 0;line-height:1.6}
+/* 운영자 검수 진입 — 공개 링크와 구별되게 옅고 작게. 눈에 띄려는 게 아니라 있는 자리다. */
+.foot-op{display:inline-block;margin-top:var(--s4);font-size:var(--sm);opacity:.65}
 .foot-col{display:flex;flex-direction:column;gap:var(--s2)}
 .foot-col .k{color:var(--fg);font-weight:500;margin:0 0 var(--s1)}
 .site-foot a{color:var(--muted);text-decoration:none}
