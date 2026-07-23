@@ -337,8 +337,8 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
             </div>
           </div>
           <div class="duo-visual is-gray">
-            <div class="bubble q" id="duoQ1">쫄면 얼마예요?</div>
-            <div class="bubble a muted-a" id="duoA1">정확한 메뉴와 가격은 직접 확인이 필요해요.</div>
+            <div class="bubble q" id="duoQ1">근처에 8,000원 이하 혼밥하기 좋은 곳 있어?</div>
+            <div class="bubble a muted-a" id="duoA1">지금 계신 위치를 몰라서요. 근처 식당을 직접 검색해 메뉴와 가격을 확인해 보세요.</div>
           </div>
         </div>
         <div class="duo-card">
@@ -350,8 +350,8 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
             <a class="duo-arrow" href="/app.html" aria-label="서비스 열기">→</a>
           </div>
           <div class="duo-visual is-warm">
-            <div class="bubble q" id="duoQ2">쫄면 얼마예요?</div>
-            <div class="bubble a answer-a" id="duoA2">둘리분식 · <b>4,000원</b></div>
+            <div class="bubble q" id="duoQ2">근처에 8,000원 이하 혼밥하기 좋은 곳 있어?</div>
+            <div class="bubble a answer-a" id="duoA2">경영관에서 도보 4분 · 둘리분식<br>쫄면 <b>4,000원</b></div>
           </div>
         </div>
       </div>
@@ -360,7 +360,7 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 
   <section class="band-ink">
     <div class="container">
-      <h2 class="big feature-head">사진 한 장이<br>가격 데이터가 되기까지.</h2>
+      <h2 class="big feature-head">한입지도가<br>만들어지는 과정.</h2>
       <p class="lead">메뉴판 사진은 이 세 단계를 지납니다.</p>
       <div class="stepper">
         <ol class="step-tabs" id="stepTabs" role="tablist">
@@ -509,21 +509,43 @@ function buildMarquee(menus) {
   addEventListener("resize", phase);
 }
 
-/* ── §왜 필요한가: 듀오 카드 — 같은 질문이 두 카드에서 동시에 갈린다 (실데이터 자동 순환) ── */
+/* ── §왜 필요한가: 듀오 카드 — 같은 질문이 두 카드에서 갈린다 (실데이터 자동 순환) ──
+   범용 챗봇은 사용자 위치를 몰라 "직접 확인" 으로 돌려보내고, 한입지도는 경영관 기준
+   도보 분 + 실제 식당·메뉴·가격으로 답한다. 도보 분은 서버(api/_lib/geo.js)와 같은
+   기준점(경영관)·같은 환산(80m/분)이어야 화면과 추천이 어긋나지 않는다. */
+const CAMPUS = { lat: 37.58878, lng: 126.99260 }; // 경영관 — geo.js 와 동일 값
+function walkMin(lat, lng) {
+  if (!lat || !lng) return null;
+  const R = 6371000, d = Math.PI / 180;
+  const dLat = (lat - CAMPUS.lat) * d, dLng = (lng - CAMPUS.lng) * d;
+  const s = Math.sin(dLat / 2) ** 2 + Math.cos(CAMPUS.lat * d) * Math.cos(lat * d) * Math.sin(dLng / 2) ** 2;
+  return Math.max(1, Math.round((2 * R * Math.asin(Math.sqrt(s))) / 80));
+}
+const BUDGETS = [5000, 8000, 10000, 20000];
+const fitBudget = (price) => BUDGETS.find((b) => b >= price) ?? 20000;
+
 function startAsk(data) {
   const q1 = document.getElementById("duoQ1"), q2 = document.getElementById("duoQ2");
   const a1 = document.getElementById("duoA1"), a2 = document.getElementById("duoA2");
+  // 좌표가 있어야 "경영관에서 도보 N분" 을 말할 수 있다 — 좌표 없는 곳은 이 데모에서 뺀다.
   const seen = new Set();
-  const picks = data.menus.filter((m) => {
-    if (!isCleanMenu(m) || seen.has(m.restaurant_id)) return false;
-    seen.add(m.restaurant_id); return true;
-  }).slice(0, 6);
+  const picks = data.restaurants.filter(isEatery).map((r) => {
+    if (seen.has(r.id) || !r.lat || !r.lng) return null;
+    const ms = data.menus
+      .filter((m) => m.restaurant_id === r.id && isCleanMenu(m))
+      .sort((x, y) => x.price - y.price);
+    if (!ms.length) return null;
+    seen.add(r.id);
+    return { r, menu: ms[0], walk: walkMin(r.lat, r.lng) };
+  }).filter(Boolean).slice(0, 6);
   if (!picks.length) return;
   const show = (i) => {
-    const m = picks[i];
-    const q = `${menuLabel(m.name)} 얼마예요?`;
+    const { r, menu, walk } = picks[i];
+    // 질문의 예산은 이 집 메뉴가 실제로 담기는 가장 작은 버킷 — 답이 질문 조건을 어기지 않게.
+    const q = `근처에 ${won(fitBudget(menu.price))} 이하 혼밥하기 좋은 곳 있어?`;
     q1.textContent = q; q2.textContent = q;
-    a2.innerHTML = `${m.restaurant_name} · <b>${won(m.price)}</b>`;
+    a1.textContent = "지금 계신 위치를 몰라서요. 근처 식당을 직접 검색해 메뉴와 가격을 확인해 보세요.";
+    a2.innerHTML = `경영관에서 도보 ${walk}분 · ${r.name}<br>${menuLabel(menu.name)} <b>${won(menu.price)}</b>`;
     // 등장 애니메이션 리셋 — 질문 먼저, 답이 한 박자 뒤에 (CSS bubin + delay)
     [q1, a1, q2, a2].forEach((el) => { el.style.animation = "none"; void el.offsetWidth; el.style.animation = ""; });
   };
