@@ -118,6 +118,14 @@ dialog.sheet .btn{margin-top:var(--s6)}
   position:absolute;top:calc(100% + var(--s2));right:0;z-index:20;width:max-content;max-width:min(280px,calc(100vw - var(--s8)));
   background:var(--surface);border:1px solid var(--border);border-radius:var(--r);
   padding:var(--s4);box-shadow:0 8px 24px var(--shadow);text-align:left;
+  /* 버튼 아래에서 살짝 내려오며 떠오른다. 기준점을 오른쪽 위로 두어 버튼에서 자라 나오는
+     것처럼 보이게 한다. 닫힘은 visibility 가 맡으므로 `hidden` 속성을 쓰지 않는다. */
+  visibility:hidden;opacity:0;transform:translateY(-6px) scale(.97);transform-origin:top right;
+  transition:opacity 140ms ease-out,transform 140ms ease-out,visibility 140ms;
+}
+.pop.open{visibility:visible;opacity:1;transform:none}
+@media (prefers-reduced-motion:reduce){
+  .pop{transition-duration:1ms;transform:none}
 }
 .pop p{margin:0;color:var(--muted);font-size:var(--sm);line-height:1.6}
 .pop .btn{margin-top:var(--s3)}

@@ -40,8 +40,9 @@
 
   const onApp = location.pathname.startsWith("/app");
   const pop = document.createElement("div");
+  // 여닫힘을 `hidden` 이 아니라 `.open` 으로 다룬다 — `hidden` 은 display:none 이라
+  // 페이드가 걸리지 않는다. 닫힘 상태의 접근성은 CSS 의 visibility:hidden 이 맡는다.
   pop.className = "pop";
-  pop.hidden = true;
   pop.innerHTML = `<p>한입지도는 로그인 없이 이용할 수 있어요.</p>`
     + (onApp
       ? `<button class="btn sm" type="button" data-close>알겠어요</button>`
@@ -53,15 +54,15 @@
   if (extra) { extra.hidden = false; pop.appendChild(extra); }
   wrap.appendChild(pop);
 
-  const close = () => { pop.hidden = true; btn.setAttribute("aria-expanded", "false"); };
+  const close = () => { pop.classList.remove("open"); btn.setAttribute("aria-expanded", "false"); };
   btn.setAttribute("aria-expanded", "false");
   btn.addEventListener("click", (e) => {
     e.stopPropagation();
-    pop.hidden = !pop.hidden;
-    btn.setAttribute("aria-expanded", String(!pop.hidden));
+    const open = pop.classList.toggle("open");
+    btn.setAttribute("aria-expanded", String(open));
   });
   pop.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) close(); });
   // 바깥을 누르거나 Esc — 말풍선은 닫는 방법이 분명해야 한다.
-  document.addEventListener("click", (e) => { if (!pop.hidden && !wrap.contains(e.target)) close(); });
+  document.addEventListener("click", (e) => { if (pop.classList.contains("open") && !wrap.contains(e.target)) close(); });
   addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
 })();
