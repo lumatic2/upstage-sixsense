@@ -39,7 +39,11 @@ const DRINK = /음료|콜라|사이다|펩시|탄산|맥주|소주|막걸리|하
 // 본메뉴로 서 있었다(2026-07-23 실측 6행). 규칙이 잡으려던 대상인데 목록에 중국 술이 없었다.
 // `얼그레이(FEAT. 양하대곡) 8,000` 은 이름 앞머리가 차라서 술로 안 걸렸다 — 브랜드가 이름
 // 어디에 있든 잡히도록 낱말로 둔다(2026-07-23 실측: 이 행이 8천원 예산 통과 근거였다).
-const DRINK_BRAND = /청하|테라|카스|하이트|켈리|처음처럼|참이슬|진로|산토리|아사히|칭따오|청도|기린|하이네켄|에델바이스|매화수|백세주|고량주|이과두주|백주|양하대곡|수정방|우량예|마오타이/;
+const DRINK_BRAND = /청하|테라|카스|하이트|켈리|처음처럼|참이슬|진로|산토리|아사히|칭따오|청도|기린|하이네켄|에델바이스|매화수|백세주|고량주|이과두주|백주|양하대곡|수정방|우량예|마오타이|연태|모히또/;
+
+// 도수 표기 — `설원 30도 125`·`연태고량주 35도 250`. 술이 아니면 도수를 안 적는다.
+// 뒤에 숫자(용량)를 요구해 `3도미` 같은 우연한 일치를 막는다.
+const PROOF = /\d+\s*도\s*\d/;
 
 // 밥 단품.
 const RICE = /^공기밥|^공깃밥|^밥\s*추가/;
@@ -55,6 +59,11 @@ const SINGLE = /1개$|\(\s*1\s*P\s*\)|\b1pc\b/i;
 // 규칙으로 안 잡히는 곁들임. 이름만으로 끼니가 아닌 것이 분명한 것만 넣는다.
 const NAMED_SIDE = /반숙란|아지타마고|계란후라이|크로켓|단무지|피클|김치$|쿠키|츄러스/;
 
+// 만두류·꽃빵은 **어느 집에서나** 곁들임이다 — 중식당 군만두, 라멘집 교자, 마라탕집 물만두가
+// 각각 본메뉴로 서 있었다(2026-07-23 실측 8행. 사용자 지적: "마라탕집에 만두가 메인으로 뜬다").
+// 단 `만두` 통째로는 안 잡는다 — 분식집 `통만두`·`만두국`·`신만두라면` 은 그것만으로 한 끼다.
+const DUMPLING = /군만두|물만두|교자|꽃빵/;
+
 /** 이 메뉴가 곁들임인가 — `{ name, note }` 를 받는다. */
 export function isSideMenu(menu) {
   const name = (menu?.name ?? "").trim();
@@ -63,6 +72,7 @@ export function isSideMenu(menu) {
   if (NOTE_SIDE.test(note)) return true;
   if (!name) return false;
   if (SET.test(name)) return false;
-  return ADDON.test(name) || DRINK.test(name) || DRINK_BRAND.test(name) || RICE.test(name)
-    || UNIT_PRICE.test(name) || SINGLE.test(name) || NAMED_SIDE.test(name);
+  return ADDON.test(name) || DRINK.test(name) || DRINK_BRAND.test(name) || PROOF.test(name)
+    || RICE.test(name) || UNIT_PRICE.test(name) || SINGLE.test(name)
+    || NAMED_SIDE.test(name) || DUMPLING.test(name);
 }
