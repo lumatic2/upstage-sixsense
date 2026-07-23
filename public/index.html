@@ -249,7 +249,7 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 .rowlist tr{opacity:0;animation:rowin 320ms ease-out forwards}
 @keyframes rowin{from{opacity:0;transform:translateY(6px)}to{opacity:1;transform:none}}
 .taglist{display:flex;flex-wrap:wrap;gap:var(--s2);margin-top:var(--s4)}
-.taglist span{border:1px solid rgba(247,249,252,.2);border-radius:999px;padding:2px 10px;font-size:var(--sm)}
+.taglist span{border:1px solid rgba(247,249,252,.2);border-radius:var(--r);padding:4px 10px;font-size:var(--sm)}
 
 /* ── §지금 예산 넣어보세요: 실제로 도는 미니 검색 ── */
 .mini-results{margin-top:var(--s8);display:grid;gap:var(--s4);grid-template-columns:repeat(auto-fit,minmax(240px,1fr));text-align:left;min-height:220px;align-items:start}
@@ -361,8 +361,7 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
   <section class="band-ink">
     <div class="container">
       <h2 class="big feature-head">사진 한 장이<br>가격 데이터가 되기까지.</h2>
-      <p class="lead">메뉴판 사진은 이 세 단계를 지납니다. 학식은 지나지 않습니다.
-        이미 표로 정리된 HTML이라 매일 아침 크롤링하면 됩니다.</p>
+      <p class="lead">메뉴판 사진은 이 세 단계를 지납니다.</p>
       <div class="stepper">
         <ol class="step-tabs" id="stepTabs" role="tablist">
           <li><button class="step-tab" role="tab" data-step="0" aria-selected="true">
@@ -387,7 +386,6 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
         사람이 그 사진과 대조해 확인한 뒤에 지도에 올라갑니다.</p>
       <div class="cta-row">
         <a class="btn" href="/contribute.html">사진 제보하기</a>
-        <a class="btn tint" href="/about.html#s5">사진이 어떻게 읽히는지 보기</a>
       </div>
     </div>
   </section>
@@ -403,8 +401,7 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
       </div>
       <div class="mini-results" id="miniResults"></div>
       <div class="cta-row">
-        <a class="btn" id="miniGo" href="/app.html?budget=8000">이 예산으로 지도 열기</a>
-        <a class="btn tint" href="/about.html">어떻게 만들었나</a>
+        <a class="btn" id="miniGo" href="/app.html?budget=8000">메뉴 찾아보기</a>
       </div>
     </div>
   </section>
@@ -538,32 +535,23 @@ function startAsk(data) {
 function startStepper(data) {
   const tabs = document.getElementById("stepTabs");
   const panel = document.getElementById("stepPanel");
-  const shots = new Set(data.restaurants.map((r) => r.shot_date).filter(Boolean));
   const rows = data.menus.filter(isCleanMenu).slice(0, 6);
 
   const views = [
-    () => `<p class="muted">수집 현황</p>
-      <div class="taglist">
-        <span>식당 ${data.restaurants.length}곳</span>
-        <span>수집일 ${[...shots].sort().join(" · ") || "—"}</span>
-        <span>수집자 ${[...new Set(data.restaurants.map((r) => r.collector).filter(Boolean))].join(", ") || "팀"}</span>
-      </div>
-      <p style="margin-top:var(--s6)">${data.restaurants.map((r) => r.name).join(" · ")}</p>
-      <p class="ask-meta">메뉴판 원본 사진은 팀 결정에 따라 공개하지 않습니다 — 여기 보이는 것은 사진에서 뽑아낸 데이터입니다.</p>`,
-    () => `<p class="muted">Upstage Document Parse 결과 (실제 적재된 행)</p>
+    () => `<p class="muted">지금까지 모은 식당 ${data.restaurants.length}곳</p>
+      <p style="margin-top:var(--s4)">${data.restaurants.map((r) => r.name).join(" · ")}</p>`,
+    () => `<p class="muted">Upstage Document Parse 결과</p>
       <table class="rowlist"><thead><tr><th>식당</th><th>메뉴</th><th>출처</th><th style="text-align:right">가격</th></tr></thead>
       <tbody>${rows.map((m, i) =>
         `<tr style="animation-delay:${i * 80}ms"><td>${m.restaurant_name}</td><td>${menuLabel(m.name)}</td><td>${m.source || "사진파싱"}</td><td class="p">${won(m.price)}</td></tr>`).join("")}
-      </tbody></table>
-      <p class="ask-meta">가격이 0원이거나 10만원을 넘으면 자동으로 "가격확인필요"로 표시하고 사람이 확인합니다.</p>`,
-    () => `<p class="muted">추천 이유는 생성한 모델이 스스로 채점하지 않습니다</p>
+      </tbody></table>`,
+    () => `<p class="muted">추천 이유는 쓴 모델이 스스로 채점하지 않습니다</p>
       <div class="taglist">
-        <span>① solar-pro2 — 전달한 데이터만으로 이유를 씁니다</span>
-        <span>② solar-mini — 그 이유가 데이터에 근거했는지 독립 판정</span>
-        <span>③ 근거 미달이면 데이터 팩트 문장으로 교체</span>
+        <span>① solar-pro2 가 전달받은 데이터만으로 이유를 씁니다</span>
+        <span>② solar-mini 가 그 이유에 근거가 있는지 따로 판정합니다</span>
+        <span>③ 근거가 없으면 데이터 사실 문장으로 바꿉니다</span>
       </div>
-      <p style="margin-top:var(--s6)">그래서 서비스 화면은 판정 결과를 정직하게 알립니다 — 대화창이 <strong>몇 건이 근거 검증을 통과했는지</strong> 말하고, 통과하지 못해 문장이 바뀐 카드에는 <strong>"근거 미달 판정 → 데이터 팩트로 교체"</strong>가 붙습니다.</p>
-      <p class="ask-meta">생성과 검증에 다른 모델을 쓰는 이유: 같은 모델이 자기 답을 채점하면 통과율이 올라가도 그게 근거가 되지는 않습니다.</p>`,
+      <p style="margin-top:var(--s6)">추천 화면은 몇 건이 검증을 통과했는지 알리고, 문장이 바뀐 카드에는 <strong>"근거 미달 → 데이터 사실로 교체"</strong>가 붙습니다.</p>`,
   ];
 
   let timer = null, cur = -1;
