@@ -20,3 +20,48 @@
   addEventListener("resize", sync);
   document.fonts?.ready?.then(sync); // 웹폰트 적용 후 폭이 바뀐다
 })();
+
+/** 로그인 버튼 팝오버 (2026-07-23 — 구 `<dialog class="sheet">` 모달 대체)
+ *
+ *  누를 게 하나뿐인 안내에 화면을 덮는 모달을 띄우면 "뭔가 잘못됐나" 로 읽힌다. 버튼 옆에
+ *  붙는 작은 말풍선이면 충분하다.
+ *
+ *  **마크업을 여기서 만든다.** 헤더는 네 페이지에 복제돼 있어서 손으로 적으면 반드시 갈라진다
+ *  (실제로 contribute.html 은 nav 항목 하나가 통째로 빠져 있었다). 문구가 한 곳에만 있으면
+ *  네 페이지가 같은 말을 하는 것이 보장된다. */
+(() => {
+  const btn = document.getElementById("loginBtn");
+  if (!btn) return;
+
+  const wrap = document.createElement("div");
+  wrap.className = "login-wrap";
+  btn.replaceWith(wrap);
+  wrap.appendChild(btn);
+
+  const onApp = location.pathname.startsWith("/app");
+  const pop = document.createElement("div");
+  pop.className = "pop";
+  pop.hidden = true;
+  pop.innerHTML = `<p>한입지도는 로그인 없이 이용할 수 있어요.</p>`
+    + (onApp
+      ? `<button class="btn sm" type="button" data-close>알겠어요</button>`
+      : `<a class="btn sm" href="/app.html">써보기</a>`);
+  // 페이지가 덧붙일 것이 있으면(app.html 의 "기록 지우기") 그 요소를 옮겨 담는다.
+  // 페이지 마크업에 남겨 두는 이유: 그 페이지의 인라인 스크립트가 파싱 시점에 id 로 찾는데,
+  // nav.js 는 defer 라 나중에 돈다 — 여기서 만들면 그 스크립트가 null 을 잡는다.
+  const extra = document.getElementById("loginPopExtra");
+  if (extra) { extra.hidden = false; pop.appendChild(extra); }
+  wrap.appendChild(pop);
+
+  const close = () => { pop.hidden = true; btn.setAttribute("aria-expanded", "false"); };
+  btn.setAttribute("aria-expanded", "false");
+  btn.addEventListener("click", (e) => {
+    e.stopPropagation();
+    pop.hidden = !pop.hidden;
+    btn.setAttribute("aria-expanded", String(!pop.hidden));
+  });
+  pop.addEventListener("click", (e) => { if (e.target.closest("[data-close]")) close(); });
+  // 바깥을 누르거나 Esc — 말풍선은 닫는 방법이 분명해야 한다.
+  document.addEventListener("click", (e) => { if (!pop.hidden && !wrap.contains(e.target)) close(); });
+  addEventListener("keydown", (e) => { if (e.key === "Escape") close(); });
+})();

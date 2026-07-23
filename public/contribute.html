@@ -79,11 +79,6 @@
   </div>
 </header>
 
-<dialog class="sheet" id="loginDlg">
-  <h3>로그인은 아직 없습니다</h3>
-  <p>제보에 계정이 필요하지 않습니다. 사진만 있으면 됩니다.</p>
-  <button class="btn" id="loginClose" autofocus>알겠습니다</button>
-</dialog>
 
 <main class="container" style="padding-top:var(--s12);padding-bottom:var(--s24)">
   <div class="centered">
@@ -214,9 +209,6 @@
 const $ = (s) => document.querySelector(s);
 let ITEMS = [];
 let PHOTO = null; // 검수 대조용으로 함께 접수하는 축소 사본(dataURL)
-
-$("#loginBtn").addEventListener("click", () => $("#loginDlg").showModal());
-$("#loginClose").addEventListener("click", () => $("#loginDlg").close());
 
 function step(n) {
   document.querySelectorAll("#steps li").forEach((li) => li.classList.toggle("on", Number(li.dataset.s) <= n));
