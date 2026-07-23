@@ -278,11 +278,6 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
   </div>
 </header>
 
-<dialog class="sheet" id="loginDlg">
-  <h3>로그인은 아직 없습니다</h3>
-  <p>한입지도는 로그인 없이 전부 쓸 수 있습니다. 지난 방문의 관심을 이어받아 말하는 <b>기억은 이 브라우저에만 저장됩니다</b> — 서버로 보내 쌓지 않습니다. 추천 순서는 이 기억으로 바뀌지 않습니다. 기기나 브라우저를 바꾸면 기록은 사라집니다.</p>
-  <button class="btn" id="loginClose" autofocus>알겠습니다</button>
-</dialog>
 
 <main>
   <section class="hero">
@@ -437,10 +432,6 @@ h2.big{font-size:clamp(32px,5vw,58px);line-height:1.18}
 </footer>
 
 <script>
-const dlg = document.getElementById("loginDlg");
-document.getElementById("loginBtn").addEventListener("click", () => dlg.showModal());
-document.getElementById("loginClose").addEventListener("click", () => dlg.close());
-
 const won = (n) => n.toLocaleString("ko-KR") + "원";
 
 /* 파싱 노이즈 거르기 — 광고 문구·옵션 행이 섞여 있다.
@@ -480,7 +471,7 @@ fetch("/api/data").then((r) => r.json()).then((d) => {
     document.getElementById("nCaf").textContent = feed.fresh ? "휴무" : "정보 없음";
     document.getElementById("kCaf").textContent = feed.fresh
       ? "오늘의 학식"
-      : `학식 정보 (적재 ${feed.lastDate ?? "없음"}까지)`;
+      : "학식 정보";   // 적재 날짜 괄호는 내부 점검 메모라 뺐다 (2026-07-23 사용자 지시)
   } else {
     document.getElementById("nCaf").textContent = openCafs;
   }

@@ -169,16 +169,8 @@
   </div>
 </header>
 
-<dialog class="sheet" id="loginDlg">
-  <h3>로그인은 아직 없습니다</h3>
-  <p>한입지도는 로그인 없이 전부 쓸 수 있습니다. 지난 방문의 관심을 이어받아 말하는 <b>기억은 이 브라우저에만 저장됩니다</b> — 서버로 보내 쌓지 않습니다. 추천 순서는 이 기억으로 바뀌지 않습니다. 기기나 브라우저를 바꾸면 기록은 사라집니다.</p>
-  <button class="btn" id="loginClose" autofocus>알겠습니다</button>
-  <p class="dlg-foot"><button class="linklike danger" type="button" id="profileClear">이 브라우저에 저장된 기록 지우기</button></p>
-</dialog>
-<script>
-document.getElementById("loginBtn").addEventListener("click", () => document.getElementById("loginDlg").showModal());
-document.getElementById("loginClose").addEventListener("click", () => document.getElementById("loginDlg").close());
-</script>
+<!-- 로그인 팝오버 안의 추가 항목. 마크업이 여기 남는 이유는 nav.js 주석 참조(defer 순서). -->
+<p id="loginPopExtra" class="dlg-foot" hidden><button class="linklike danger" type="button" id="profileClear">이 브라우저에 저장된 기록 지우기</button></p>
 
 <main>
 <section class="console-sec">
@@ -833,7 +825,9 @@ function render() {
   const feed = DATA.cafeteriaFeed ?? {};
   const stale = board.length > 0 && feed.fresh === false;
   $("#cafDate").textContent = stale
-    ? `${DATA.today ?? ""} · 오늘 정보 없음 (적재 ${feed.lastDate ?? "없음"}까지)`
+    // 괄호 안의 적재 날짜는 만든 사람의 점검 메모다 — 읽는 사람에게 필요한 사실은
+    // "오늘 것이 아직 안 들어왔다" 하나뿐이다(2026-07-23 사용자 지시).
+    ? `${DATA.today ?? ""} · 오늘 정보 없음`
     : DATA.today ?? "";
   $("#cafeteriaBlock").innerHTML = board.map((c) => {
     const overBudget = c.open && state.budget && c.price && c.price > state.budget;
