@@ -20,6 +20,7 @@
   .rest > header{display:flex;align-items:center;justify-content:space-between;gap:var(--s4);
                  padding:var(--s4) var(--s6);border-bottom:1px solid var(--border);flex-wrap:wrap}
   .rest h2{font-size:var(--lg)}
+  .bulk{display:flex;gap:var(--s2)}
   .split{display:grid;grid-template-columns:minmax(0,420px) minmax(0,1fr)}
   @media (max-width:900px){.split{grid-template-columns:1fr}}
   .shot{border-right:1px solid var(--border);background:var(--bg);min-height:420px;display:flex;flex-direction:column}
@@ -149,7 +150,16 @@ function render() {
     }).join("");
     return `<section class="rest">
       <header><h2>${escape(meta.name ?? rid)}</h2>
-        <span class="small muted">${rows.length}건 대기</span></header>
+        <span class="small muted">${rows.length}건 대기</span>
+        <span style="flex:1"></span>
+        <!-- 한 식당을 통째로 판정하는 자리. 예시 메뉴판이나 테스트 제보처럼 **가게 전체가
+             서비스에 들어가면 안 되는 경우**가 실제로 있었는데(라이프치히하우스·ㄴㅇㄴ),
+             줄마다 누르면 25번을 눌러야 했다. 누른 결과는 아래 줄 버튼과 같은 대기열에
+             들어가므로 저장 전에 되돌릴 수 있다. -->
+        <span class="bulk">
+          <button class="btn sm ghost" data-bulk="확인" data-rid="${rid}">전부 확인</button>
+          <button class="btn sm ghost" data-bulk="제외" data-rid="${rid}">전부 제외</button>
+        </span></header>
       <div class="split">
         <div class="shot" data-rid="${rid}">${shot}</div>
         <div style="overflow:auto">
@@ -199,6 +209,21 @@ $("#list").addEventListener("click", (e) => {
   if (shotBtn) {
     const box = shotBtn.closest(".shot");
     box.querySelector("iframe").src = `https://drive.google.com/file/d/${shotBtn.dataset.shot}/preview`;
+    return;
+  }
+  /* 식당 단위 일괄 판정 — 그 식당의 모든 줄에 같은 값을 찍는다. */
+  const bulk = e.target.closest("[data-bulk]");
+  if (bulk) {
+    const sec = bulk.closest(".rest");
+    const v = bulk.dataset.bulk;
+    sec.querySelectorAll("tbody tr").forEach((tr) => {
+      const row = Number(tr.dataset.row);
+      pending.set(row, v);
+      tr.querySelectorAll(".acts button").forEach((b) => b.setAttribute("aria-pressed", b.dataset.v === v ? "true" : "false"));
+      tr.classList.remove("done-ok", "done-no");
+      tr.classList.add(v === "확인" ? "done-ok" : "done-no");
+    });
+    syncSave();
     return;
   }
   const btn = e.target.closest(".acts button");
