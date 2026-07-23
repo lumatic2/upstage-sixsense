@@ -72,6 +72,32 @@ export async function loadSheetData() {
   // 제보가 들어오면 [식당] 행이 먼저 생기므로, 이게 없으면 미검수 가게가 목록·지도에 먼저 뜬다.
   const served = new Set(menus.map((m) => m.restaurant_id));
   const restaurants = allRestaurants.filter((r) => served.has(r.id));
+
+  /* 파이프라인 집계 — `/about.html` 이 화면에 적는 숫자의 출처다 (2026-07-24).
+     예전에는 이 수치들을 사람이 재서 HTML 에 박아 넣었고, 그래서 팀이 계속 수집하는 동안
+     문서만 그 자리에 남아 후보 386 vs 실제 579 처럼 두 배 가까이 벌어졌다. 세는 자리를
+     데이터를 읽는 곳으로 옮긴다 — 시트가 바뀌면 화면도 바뀐다.
+     검수 3상태는 `/api/review`(운영자 토큰)로만 볼 수 있었지만, 여기서 세는 것은 **개수뿐**
+     이라 행 내용이 나가지 않는다. 예시·테스트 행(R000·TEST)은 빼고 센다. */
+  const realMenuRows = menu.slice(1).filter((r) => isRealId(r[0]) && (r[2] ?? "").trim());
+  const tally = (col) => realMenuRows.reduce((a, r) => {
+    const v = (r[col] ?? "").trim() || "(미기재)";
+    a[v] = (a[v] || 0) + 1;
+    return a;
+  }, {});
+  const review = tally(5);
+  const stats = {
+    restaurants: restaurants.length,          // 화면에 나가는 식당
+    restaurantsCollected: allRestaurants.length, // 시트에 수집된 식당
+    candidates: realMenuRows.length,          // 파싱이 만든 메뉴 후보(검수 전 전체)
+    confirmed: review["확인"] ?? 0,
+    excluded: review["제외"] ?? 0,
+    pending: (review["대기"] ?? 0) + (review["(미기재)"] ?? 0),
+    served: menus.length,                     // 검수를 통과해 화면에 나가는 메뉴
+    main: menus.filter((m) => !m.isSide).length,
+    side: menus.filter((m) => m.isSide).length,
+    bySource: tally(4),                       // 사진파싱 · 제보 · 직접입력
+  };
   // 시트는 사람과 cron 이 함께 쓰는 공유 문서라 같은 행이 두 번 들어갈 수 있다(실제로 발생).
   // 중복이 남으면 학식 카드의 메뉴가 두 배로 늘어나므로 읽는 쪽에서도 한 번 걸러낸다 —
   // 쓰는 쪽만 고치면 이미 들어간 중복은 그대로 화면에 남는다.
@@ -86,5 +112,5 @@ export async function loadSheetData() {
     cafSeen.add(k);
     return true;
   });
-  return { restaurants, menus, cafeteria };
+  return { restaurants, menus, cafeteria, stats };
 }
