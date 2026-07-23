@@ -36,6 +36,17 @@
 .figure figcaption{font-size:var(--sm);color:var(--muted);padding-top:var(--s2)}
 /* 다이어그램은 잘리면 안 된다 — 사진용 .figure 와 달리 전체가 보여야 내용이 전달된다. */
 .figure.diagram img{height:auto;object-fit:contain;background:var(--bg)}
+/* 흐름도 — 이미지가 아니라 SVG 다. 낱말은 마크업의 <text> 에 있고 색은 전부 토큰이라,
+   용어를 바꾸거나 팔레트를 바꿔도 다시 굽지 않는다. */
+.figure.diagram svg{display:block;width:100%;height:auto;background:var(--bg);padding:var(--s4) 0}
+.dg text{font-size:13px;fill:var(--fg);text-anchor:middle;dominant-baseline:middle}
+.dg .hd{font-size:11px;fill:var(--muted);letter-spacing:.06em}
+.dg rect{fill:var(--surface);stroke:var(--border);stroke-width:1}
+.dg rect.on{stroke:var(--accent)}
+.dg path{fill:none;stroke:var(--border);stroke-width:1.5}
+.dg path.on{stroke:var(--accent)}
+.dg polygon{fill:var(--border)}
+.dg polygon.on{fill:var(--accent)}
 /* 표 다섯 개는 같은 문법이다: [무엇이] · [어떤 값/무엇이 문제] · [그래서 어떻게].
    폭을 내용에 맡기면 표마다 다른 자리에서 줄이 바뀌어, 같은 종류의 표가 서로 다른 물건으로
    보인다(2026-07-23 사용자 지적). 다섯 표의 열 폭을 하나로 고정한다 — 새 표를 넣을 때도
@@ -123,6 +134,17 @@ pre{
 .linklike-more:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
 .stat{font-size:var(--sm);color:var(--muted)}
 .stat.bad{color:var(--accent)}
+/* 예시 메뉴판 버튼 — 썸네일이 보여야 "사진을 넣는 자리"라는 게 설명 없이 읽힌다. */
+.samplebtn{
+  display:inline-flex;align-items:center;gap:var(--s2);padding:var(--s1) var(--s3) var(--s1) var(--s1);
+  background:var(--bg);border:1px solid var(--border);border-radius:var(--r);
+  font:inherit;font-size:var(--sm);color:var(--fg);cursor:pointer;
+  transition:border-color 180ms ease-out;
+}
+.samplebtn img{width:34px;height:34px;object-fit:cover;border-radius:3px;flex:none}
+.samplebtn:hover{border-color:var(--accent)}
+.samplebtn:focus-visible{outline:2px solid var(--accent);outline-offset:2px}
+.samplebtn:disabled{opacity:.5;cursor:not-allowed}
 .prefill{margin:var(--s4) 0 0;padding:0;list-style:none}
 .prefill li{display:flex;gap:var(--s2);align-items:center;padding:2px 0}
 .prefill input{height:34px;padding:0 var(--s2);background:var(--bg);border:1px solid var(--border);border-radius:var(--r);color:inherit;font:inherit;font-size:var(--sm)}
@@ -191,11 +213,51 @@ addEventListener("load", () => {
       <p class="eyebrow">데이터 파이프라인</p>
 
       <h2 id="s1">1. 한눈에 보는 전체 흐름</h2>
-      <p>식당 가격은 웹에 구조화된 형태로 존재하지 않습니다. 메뉴판 사진 안에만 있습니다. 범용 챗봇이 "정확한 가격은 매장에 문의하세요"로 끝나는 지점이 정확히 여기입니다. 읽을 데이터가 없어서가 아니라, <b>데이터가 사진 안에 있어서</b>입니다. 그래서 이 서비스의 출발점은 검색이 아니라 사진 수집입니다.</p>
-      <p>서로 다른 형태의 입력 세 갈래가 각자에게 맞는 처리를 거쳐, <b>사람 검수라는 하나의 문</b>을 통과해야 서비스로 나갑니다. 아래 절들은 이 문장을 근거로 뜯어 보이고 <b>중간중간 실제 API를 지금 이 자리에서 돌려볼 수 있게</b> 해 두었습니다.</p>
+      <p>동네 식당 가격은 웹에 정리돼 있지 않습니다. <b>메뉴판 사진 안에만</b> 있습니다. 챗봇이 "정확한 가격은 매장에 문의하세요"로 끝나는 이유가 이것입니다. 그래서 이 서비스는 검색이 아니라 사진 수집에서 시작합니다.</p>
+      <p>들어오는 것 세 갈래가 각자 다른 처리를 거쳐 <b>사람 검수라는 하나의 문</b>을 통과합니다. 아래 절들은 이걸 하나씩 뜯어 보이고, <b>중간중간 이 자리에서 직접 돌려볼 수 있게</b> 해 두었습니다.</p>
+      <!-- 흐름도는 이미지가 아니라 SVG 다 (2026-07-23). 낱말 하나 고치려고 이미지를 다시
+           굽던 것을 여기서 끝낸다 — 아래 <text> 를 고치면 그게 그대로 화면이다. 색도 토큰을
+           그대로 쓰므로 팔레트가 바뀌면 따라온다(굽는 이미지는 어긋난다). -->
       <figure class="figure diagram">
-        <img src="/img/pipeline-flow.jpg" alt="입력 3종(메뉴판 사진·학식 HTML·주소 텍스트)이 각각 Document Parse·크롤러·지오코딩을 거쳐 사람 검수로 합류한 뒤 한입지도로 나가는 흐름도">
-        <figcaption>입력마다 처리가 다르고, 나가는 문은 하나입니다.</figcaption>
+        <svg viewBox="0 0 660 224" role="img"
+             aria-label="메뉴판 사진·학식 웹페이지·가게 주소가 각각 Document Parse·자동 수집·주소를 좌표로 를 거쳐 사람 검수로 모인 뒤 한입지도로 나가는 흐름도">
+          <g class="dg">
+            <text class="hd" x="86" y="22">들어오는 것</text>
+            <text class="hd" x="266" y="22">처리</text>
+
+            <rect x="16" y="40" width="140" height="42" rx="6"/>
+            <text x="86" y="66">메뉴판 사진</text>
+            <rect x="16" y="104" width="140" height="42" rx="6"/>
+            <text x="86" y="130">학식 웹페이지</text>
+            <rect x="16" y="168" width="140" height="42" rx="6"/>
+            <text x="86" y="194">가게 주소</text>
+
+            <rect x="196" y="40" width="140" height="42" rx="6"/>
+            <text x="266" y="66">Document Parse</text>
+            <rect x="196" y="104" width="140" height="42" rx="6"/>
+            <text x="266" y="130">자동 수집</text>
+            <rect x="196" y="168" width="140" height="42" rx="6"/>
+            <text x="266" y="194">주소 → 지도 위치</text>
+
+            <rect class="on" x="386" y="104" width="120" height="42" rx="6"/>
+            <text x="446" y="130">사람 검수</text>
+            <rect class="on" x="536" y="104" width="108" height="42" rx="6"/>
+            <text x="590" y="130">한입지도</text>
+
+            <!-- 들어오는 것 → 처리 (셋이 나란히) -->
+            <path d="M156 61 H188"/><path d="M156 125 H188"/><path d="M156 189 H188"/>
+            <polygon points="196,61 186,56 186,66"/>
+            <polygon points="196,125 186,120 186,130"/>
+            <polygon points="196,189 186,184 186,194"/>
+            <!-- 셋이 한 줄로 모여 검수로 들어간다 — 화살표가 하나인 것이 "문은 하나"의 그림이다 -->
+            <path d="M336 61 H356 V189 H336"/>
+            <path d="M336 125 H378"/>
+            <polygon points="386,125 376,120 376,130"/>
+            <path class="on" d="M506 125 H528"/>
+            <polygon class="on" points="536,125 526,120 526,130"/>
+          </g>
+        </svg>
+        <figcaption>들어오는 것마다 처리가 다르고, 나가는 문은 하나입니다.</figcaption>
       </figure>
 
       <h2 id="s2">2. 어떻게 만드나</h2>
@@ -230,13 +292,13 @@ addEventListener("load", () => {
       </div>
 
       <h2 id="s3">3. 사람이 마지막 문입니다</h2>
-      <p>이 파이프라인에서 자동과 사람의 경계는 한 곳에 분명히 그어져 있습니다. <b>AI는 후보를 만들고, 사람은 도장을 찍습니다.</b> 도장이 찍힌 것만 화면에 나옵니다. 검수 화면은 원본 사진을 옆에 띄워 두고 한 줄씩 확인·제외를 누르게 돼 있고 값이 틀렸으면 그 자리에서 고칩니다.</p>
+      <p>자동과 사람의 경계는 한 곳에 분명히 그어져 있습니다. <b>AI는 후보를 만들고, 사람은 도장을 찍습니다.</b> 검수 화면은 원본 사진을 옆에 띄워 두고 한 줄씩 확인·제외를 누르게 돼 있습니다. 값이 틀렸으면 그 자리에서 고칩니다.</p>
       <div class="card">
         <b>지금까지 통과한 것과 걸러진 것</b>
         <p class="small">AI가 만든 후보 <b>386개</b> 중 <b>확인 343 · 제외 30 · 대기 13</b>입니다(2026-07-23 직접 세어 본 값). 제외한 30개는 메뉴가 아닌 것을 메뉴로 읽은 것들이었습니다. 영업시간, 가게 연혁, 옵션 가격 같은 것들입니다. <b>사람이 보지 않았다면 이 30개가 그대로 화면에 나갔습니다.</b></p>
       </div>
       <p>제외만으로는 부족한 경우도 있었습니다. 백미향마라탕에서 <code>100g/</code>만 남은 3줄은 못 쓸 값이 아니라 <b>마라탕·마라반·마라샹궈의 이름이 날아간 것</b>이었습니다. 제외밖에 못 했다면 그 가게의 핵심 메뉴가 통째로 사라졌을 겁니다. 그래서 검수에는 확인·제외에 더해 <b>이름·가격 고치기</b>가 있습니다. 대신 아무 값이나 들어가지 않도록 칸마다 허용 범위를 확인합니다.</p>
-      <p>이 문은 한 번 닫히고 끝나지 않습니다. 파싱은 완벽하지 않고 가격은 낡기 때문에, 잘못된 값은 사람이 고치면 <b>다음 조회부터 반영</b>됩니다. 새 가게를 발견하셨다면 <a href="/contribute.html">메뉴판 사진 한 장</a>이면 됩니다. 올린 사진은 AI가 읽고, 사람이 그 사진과 대조해 확인한 뒤에 지도에 올라갑니다. 틀릴 수 있다는 사실을 숨기지 않는 것이 이 파이프라인의 설계입니다.</p>
+      <p>이 문은 한 번 닫히고 끝나지 않습니다. 가격은 낡기 마련이라 잘못된 값은 고치면 <b>다음 조회부터 반영</b>됩니다. 빠진 가게를 보셨다면 <a href="/contribute.html">메뉴판 사진 한 장</a>이면 됩니다.</p>
 
       <div class="evidence">
         <h3>검수를 통과한 데이터 그대로 보기</h3>
@@ -272,14 +334,14 @@ addEventListener("load", () => {
         </tr>
       </table>
 
-      <p>다섯 번째는 <b>추천 이유 그 자체</b>입니다. 이유 문장은 Solar가 씁니다. 다만 생성만 하고 끝내지 않습니다. <b>생성과 검증을 다른 모델이 나눠 맡습니다.</b> 판정을 맡은 모델이 그 문장을 실제 데이터(메뉴·가격·도보 시간)와 대조해, 근거가 없으면 그 문장을 버리고 데이터 사실로 교체합니다. 생성한 모델이 스스로 채점하면 그건 검증이 아닙니다.</p>
+      <p>다섯 번째는 <b>추천 이유 그 자체</b>입니다. 이유 문장은 Solar가 쓰지만 쓰고 끝내지 않습니다. <b>판정은 다른 모델이 맡습니다.</b> 그 문장을 실제 데이터(메뉴·가격·도보 시간)와 대조해, 근거가 없으면 버리고 데이터 사실로 바꿉니다. 쓴 모델이 스스로 채점하면 검증이 아니니까요.</p>
       <div class="card">
         <b>화면에서 보이는 것</b>
-        <p class="small">추천을 마친 대화창이 <b>몇 건이 근거 검증을 통과했는지</b> 알려줍니다. 통과하지 못한 카드에는 "근거 미달 판정 → 데이터 팩트로 교체" 배지가 붙습니다. 통과한 카드에는 배지를 달지 않습니다. 정상이 기본값이라 매 카드에 도장을 찍으면 정작 눈에 띄어야 할 교체 표시가 묻히기 때문입니다. 환각을 막았다는 주장이 아니라, 막는 동작을 그대로 보여주는 방식입니다.</p>
+        <p class="small">추천을 마친 대화창이 <b>몇 건이 검증을 통과했는지</b> 알려줍니다. 통과 못 한 카드에만 "근거 미달 → 데이터 사실로 교체" 배지가 붙습니다. 통과한 카드에 도장을 찍으면 정작 눈에 띄어야 할 교체 표시가 묻힙니다.</p>
       </div>
 
       <h2 id="s5">5. 얼마나 정확한가</h2>
-      <p>메뉴판 사진 5장·72개 항목을 육안 대조로 채점했습니다. <b>55개(76.4%)</b>를 정확히 읽었습니다. 100%인 척하지 않습니다. 나머지를 사람이 잡는 검수 단계가 있어서 이 숫자로도 서비스가 됩니다.</p>
+      <p>메뉴판 사진 5장·72개 항목을 눈으로 대조해 채점했습니다. <b>55개(76.4%)</b>를 정확히 읽었습니다. 100%인 척하지 않습니다 — 나머지를 사람이 잡기 때문에 이 숫자로도 서비스가 됩니다.</p>
       <p>중요한 건 총점이 아니라 <b>어디서 떨어지느냐</b>입니다. 사진 상태별로 나눠 보면 한 변수가 지배합니다.</p>
       <div class="bars">
         <div class="bar">
@@ -295,8 +357,8 @@ addEventListener("load", () => {
           <div class="track"><div class="fill" style="width:20%"></div></div>
         </div>
       </div>
-      <p><b>반사와 원거리는 문제가 아니었습니다.</b> 유리창에 세로로 붙인 시트를 멀리서 반사까지 얹어 찍은 사진이 <b>25개 항목 전부</b> 맞았습니다. 무너지는 건 해상도가 부족할 때뿐이고, 20% 사진의 실패는 원인이 전부 해상도였습니다.</p>
-      <p>그래서 이건 한계 고백이 아니라 <b>설계 근거</b>입니다. 채점에 쓴 사진이 웹에서 모은 축소본이라 실제보다 낮게 나온 값입니다. 제보 화면이 <b>폰으로 찍은 원본</b>을 그대로 받는 이유가 여기 있습니다. 손글씨 첨삭(500원을 지우고 700원을 덧쓴 것) 같은 건 원리상 한계라 검수 단계가 존재하는 이유가 됩니다.</p>
+      <p><b>반사와 거리는 문제가 아니었습니다.</b> 유리창에 붙은 메뉴를 멀리서, 반사까지 얹어 찍은 사진이 <b>25개 항목 전부</b> 맞았습니다. 무너지는 건 해상도가 부족할 때뿐이었습니다.</p>
+      <p>그래서 이건 한계 고백이 아니라 <b>설계 근거</b>입니다. 채점에 쓴 사진이 웹에서 모은 축소본이라 실제보다 낮게 나온 값이고, 제보 화면이 <b>폰으로 찍은 원본</b>을 그대로 받는 이유가 여기 있습니다. 500원을 지우고 700원을 덧쓴 손글씨는 원리상 못 읽습니다 — 검수 단계가 있는 이유입니다.</p>
       <p class="small muted">채점 방법과 사진별 원본 응답은 <a href="https://github.com/lumatic2/upstage-sixsense/blob/master/experiments/parse-poc/accuracy.md">깃허브 저장소</a>에 그대로 남겨 두었습니다.</p>
 
       <div class="panel">
@@ -305,10 +367,15 @@ addEventListener("load", () => {
           <button class="btn sm" id="parseBtn" type="button">파싱</button>
         </div>
         <div class="panel-body">
-          <p class="desc">Upstage Document Parse가 사진에서 읽어낸 메뉴·가격 후보입니다.
-            이 값은 그대로 쓰이지 않습니다. 사람이 원본 사진과 대조해 확인해야 서비스로 나갑니다.
-            손에 사진이 없으면 <a href="/contribute.html">사진 제보</a> 페이지의 예시 메뉴판 3장을 눌러 보세요.</p>
+          <p class="desc">Document Parse가 읽어낸 후보입니다. 사람이 확인해야 서비스로 나갑니다.</p>
           <div class="row">
+            <!-- 사진이 없는 사람(=심사위원 대부분)을 다른 페이지로 보내면 거기서 돌아오지 않는다.
+                 한 장을 여기 두고 누르면 바로 돌게 한다 (2026-07-23 사용자 지시). -->
+            <button class="samplebtn" type="button" id="sampleBtn"
+                    data-sample="/img/samples/sample-menu-printed.jpg">
+              <img src="/img/samples/sample-menu-printed.jpg" alt="" loading="lazy">
+              <span>예시 메뉴판으로 해보기</span>
+            </button>
             <input type="file" id="photo" accept="image/jpeg,image/png,image/webp">
             <span class="stat" id="parseStatus"></span>
           </div>
@@ -317,7 +384,7 @@ addEventListener("load", () => {
       </div>
 
       <h2 id="s6">6. 멈추면 어떻게 되나</h2>
-      <p>파이프라인의 절반은 잘 돌 때의 설계고, 나머지 절반은 <b>멈췄을 때 무엇이 보이느냐</b>입니다. 조용히 잘못된 값을 보여주는 게 가장 나쁩니다.</p>
+      <p>절반은 잘 돌 때의 설계고, 나머지 절반은 <b>멈췄을 때 무엇이 보이느냐</b>입니다. 조용히 잘못된 값을 보여주는 게 가장 나쁩니다.</p>
       <table class="stacked">
         <tr><th>멈추는 곳</th><th>그냥 두면</th><th>지금 하는 일</th></tr>
         <tr>
@@ -337,7 +404,7 @@ addEventListener("load", () => {
         </tr>
       </table>
 
-      <p>이건 가정이 아니라 <b>지금 일어나고 있는 일</b>입니다. 크롤러는 학식당 4곳을 매일 조회하는데 방학이라 운영 중인 곳은 1곳뿐이고, 나머지 3곳은 계속 휴무로 돌아옵니다. 위 구분이 없었다면 <b>크롤러가 죽은 날과 방학인 날이 화면에서 똑같아 보였을 것</b>입니다.</p>
+      <p>가정이 아니라 <b>지금 일어나는 일</b>입니다. 학식당 4곳을 매일 조회하는데 방학이라 문을 연 곳은 1곳뿐입니다. 위 구분이 없었다면 <b>크롤러가 죽은 날과 방학인 날이 화면에서 똑같았을 것</b>입니다.</p>
 
       <p>파이프라인은 그림이 아니라 돌아간 흔적으로 증명됩니다. 2026-07-23에 직접 재본 값입니다.</p>
       <div class="nums">
@@ -350,7 +417,7 @@ addEventListener("load", () => {
       <p>규칙은 말이 아니라 테스트로 고정합니다. 곁들임 판정 41 케이스, 대화에서 조건 뽑기 35 케이스, 추천 칩 18 케이스, 그리고 배포된 사이트를 실제 브라우저로 훑는 16개 점검이 매 배포마다 돕니다.</p>
 
       <h2 id="upstage">7. 어디에 Upstage를 썼나</h2>
-      <p>제품을 하나 고르고 거기에 문제를 맞추지 않았습니다. 파이프라인의 각 지점에서 <b>무엇이 부족한지</b>를 먼저 정하고 그 자리에 맞는 것을 넣었습니다. 그래서 안 쓴 자리도 함께 적습니다.</p>
+      <p>제품을 하나 고르고 거기에 문제를 맞추지 않았습니다. 각 지점에서 <b>무엇이 부족한지</b>를 먼저 정하고 그 자리에 맞는 것을 넣었습니다. 그래서 안 쓴 자리도 함께 적습니다.</p>
       <table class="stacked">
         <tr><th>제품</th><th>쓴 자리</th><th>왜 여기인가</th></tr>
         <tr>
@@ -396,14 +463,9 @@ addEventListener("load", () => {
         </div>
       </div>
 
-      <div class="card">
-        <b>키는 서버에만 있습니다</b>
-        <p class="small">Upstage 호출은 전부 서버 함수(<code>/api/chat</code>·<code>/api/recommend</code>·<code>/api/parse-menu</code>·<code>/api/parse-query</code>·<code>/api/identify</code>)에서 일어납니다. 브라우저는 API 키를 볼 수 없습니다.</p>
-      </div>
-
       <h2 id="s7">8. 로그인이 없는 이유</h2>
-      <p>한입지도는 계정을 만들지 않습니다. 두 번째 방문부터 에이전트가 지난 관심을 이어받아 말하지만("지난번엔 돈까스 찾으셨는데, 오늘도 그쪽으로 볼까요?"), 그 기억은 <b>이 브라우저 안에만</b> 있습니다(<code>localStorage</code>, 관심어 5개·30일). 서버는 요청마다 받아 쓰고 버립니다. 대가는 분명합니다. 기기나 브라우저를 바꾸면 기록은 사라지고, 시크릿 모드에서는 아예 남지 않습니다.</p>
-      <p><b>추천 순서는 이 기억으로 바뀌지 않습니다.</b> 한때는 바꿨습니다. 눌러본 가게의 분류를 세어 같은 계열을 위로 올렸습니다. 그 기능을 걷어냈습니다. 세고 있던 클릭이 눌러도 아무 일이 일어나지 않는 클릭이었기 때문입니다. 사용자는 고른 적이 없는데 우리는 그걸 취향이라 부르고 있었습니다. <b>없는 신호를 재서 순서를 바꾸는 것은, 없는 가격을 지어내는 것과 같은 종류의 일입니다.</b> 그래서 값을 조정하는 대신 그 축을 닫았습니다(<a href="https://github.com/lumatic2/upstage-sixsense/blob/master/docs/adr/0004-personalization.md">ADR-0004</a>).</p>
+      <p>한입지도는 계정을 만들지 않습니다. 두 번째 방문부터 지난 관심을 이어받아 말하지만("지난번엔 돈까스 찾으셨는데, 오늘도 그쪽으로 볼까요?"), 그 기억은 <b>이 브라우저 안에만</b> 있습니다(관심어 5개·30일). 서버는 요청마다 받아 쓰고 버립니다. 대가도 분명합니다 — 기기나 브라우저를 바꾸면 기록은 사라집니다.</p>
+      <p><b>추천 순서는 이 기억으로 바뀌지 않습니다.</b> 한때는 바꿨습니다. 눌러본 가게의 분류를 세어 같은 계열을 위로 올렸는데, 그 기능을 걷어냈습니다. 세고 있던 클릭이 눌러도 아무 일이 안 일어나는 클릭이었기 때문입니다. 사용자는 고른 적이 없는데 우리는 그걸 취향이라 부르고 있었습니다. <b>없는 신호를 재서 순서를 바꾸는 것은, 없는 가격을 지어내는 것과 같은 종류의 일입니다.</b> 그래서 값을 조정하는 대신 그 축을 닫았습니다(<a href="https://github.com/lumatic2/upstage-sixsense/blob/master/docs/adr/0004-personalization.md">ADR-0004</a>).</p>
 
       <div class="cta-row" style="display:flex;gap:var(--s3);margin-top:var(--s8);flex-wrap:wrap">
         <a class="btn" href="/app.html">서비스 써보기</a>
@@ -455,9 +517,25 @@ const $ = (id) => document.getElementById(id);
 const esc = (s) => String(s).replace(/[&<>"]/g, (c) => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;" }[c]));
 
 // ① 사진 → parse-menu
-$("parseBtn").onclick = async () => {
+$("parseBtn").onclick = () => {
   const f = $("photo").files[0];
   if (!f) { $("parseStatus").textContent = "사진을 먼저 고르세요."; return; }
+  parsePhoto(f);
+};
+// 예시 메뉴판 — 가진 사진이 없어도 이 자리에서 바로 돌려볼 수 있어야 한다.
+$("sampleBtn").onclick = async () => {
+  const src = $("sampleBtn").dataset.sample;
+  $("sampleBtn").disabled = true;
+  try {
+    const blob = await (await fetch(src)).blob();
+    await parsePhoto(new File([blob], src.split("/").pop(), { type: blob.type || "image/jpeg" }));
+  } catch {
+    $("parseStatus").className = "stat bad";
+    $("parseStatus").textContent = "예시 사진을 불러오지 못했습니다.";
+  }
+  $("sampleBtn").disabled = false;
+};
+async function parsePhoto(f) {
   $("parseBtn").disabled = true;
   $("parseStatus").className = "stat";
   $("parseStatus").textContent = "Document Parse 호출 중…";
@@ -482,7 +560,7 @@ $("parseBtn").onclick = async () => {
     $("parseStatus").textContent = `실패: ${e.message}`;
   }
   $("parseBtn").disabled = false;
-};
+}
 
 // ② 자연어 → parse-query (성공 시 실데이터 블록 재계산)
 $("queryBtn").onclick = async () => {
