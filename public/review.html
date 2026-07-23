@@ -49,6 +49,14 @@
                background:var(--surface);font:inherit;font-size:13px;cursor:pointer}
   .acts button[aria-pressed="true"][data-v="확인"]{background:var(--accent);color:var(--accent-fg);border-color:transparent}
   .acts button[aria-pressed="true"][data-v="제외"]{background:var(--band-ink);color:var(--band-ink-fg);border-color:transparent}
+  /* 곁들임 분류 — 규칙 자동판정을 힌트로 보여 주고, 틀린 줄만 뒤집게 한다. */
+  .cls{display:flex;align-items:center;gap:6px;white-space:nowrap}
+  .cls .autohint{font-size:11px;color:var(--muted);min-width:64px}
+  tr.is-side .autohint{color:var(--accent)}
+  .cls button{height:26px;padding:0 8px;border-radius:var(--r);border:1px solid var(--border);
+              background:var(--surface);font:inherit;font-size:12px;cursor:pointer}
+  .cls button[aria-pressed="true"]{background:var(--fg);color:var(--surface);border-color:transparent}
+  tr.noted{box-shadow:inset 3px 0 0 var(--accent)}
   .empty{padding:var(--s12);text-align:center;color:var(--muted)}
   .toast{position:fixed;left:50%;bottom:24px;transform:translateX(-50%);background:var(--band-ink);
          color:var(--band-ink-fg);padding:10px 18px;border-radius:var(--r);font-size:var(--sm);display:none}
@@ -95,7 +103,8 @@ let TOKEN = localStorage.getItem("hanip.reviewToken") || "";
 let DATA = null;
 const pending = new Map(); // row → 확인|제외
 const edits = new Map();   // row → { menu?, price? }  (원본과 다를 때만)
-const COL_MENU = 3, COL_PRICE = 4;
+const notes = new Map();   // row → 사이드|한끼|""  (곁들임 override, 원본과 다를 때만)
+const COL_MENU = 3, COL_PRICE = 4, COL_NOTE = 7;
 
 /* 1차 스크리닝 — 사람이 189행을 한 줄씩 훑지 않도록 의심 행을 먼저 띄운다.
    판정이 아니라 "여기부터 보라"는 표시다. 최종 확인/제외는 사람이 사진과 대조해 누른다.
@@ -143,9 +152,16 @@ function render() {
       const why = suspicion(it.menu, it.price);
       if (why.length) susTotal++;
       const price = Number(String(it.price).replace(/[^\d]/g, "") || 0);
-      return `<tr data-row="${it.row}" data-menu0="${escape(it.menu)}" data-price0="${price}" class="${why.length ? "sus" : ""}">
+      // 규칙이 곁들임으로 본 줄은 미리 표시해 둔다 — 검수자는 규칙이 틀린 것만 뒤집으면 된다.
+      const autoLabel = it.autoSide ? "자동: 사이드" : "자동: 본메뉴";
+      return `<tr data-row="${it.row}" data-menu0="${escape(it.menu)}" data-price0="${price}" data-note0="${escape(it.note)}" class="${why.length ? "sus" : ""} ${it.autoSide ? "is-side" : ""}">
         <td><input class="ed menu" value="${escape(it.menu)}" aria-label="메뉴명">${why.length ? `<span class="why">⚑ ${escape(why.join(" · "))}</span>` : ""}</td>
         <td class="price"><input class="ed num" value="${price}" inputmode="numeric" aria-label="가격">원</td>
+        <td><div class="cls">
+          <span class="autohint">${autoLabel}</span>
+          <button data-n="한끼" aria-pressed="${it.note === "한끼"}">본메뉴</button>
+          <button data-n="사이드" aria-pressed="${it.note === "사이드"}">사이드</button>
+        </div></td>
         <td><div class="acts">
           <button data-v="확인" aria-pressed="false">확인</button>
           <button data-v="제외" aria-pressed="false">제외</button>
@@ -167,7 +183,7 @@ function render() {
       <div class="split">
         <div class="shot" data-rid="${rid}">${shot}</div>
         <div style="overflow:auto">
-          <table><thead><tr><th>메뉴명</th><th style="text-align:right">가격</th><th style="width:150px">검수</th></tr></thead>
+          <table><thead><tr><th>메뉴명</th><th style="text-align:right">가격</th><th style="width:150px">분류</th><th style="width:130px">검수</th></tr></thead>
           <tbody>${body}</tbody></table>
         </div>
       </div>
@@ -190,7 +206,7 @@ async function load() {
   if (res.status === 401) throw new Error("토큰이 올바르지 않습니다");
   if (!res.ok) throw new Error((await res.json().catch(() => ({}))).error ?? `HTTP ${res.status}`);
   DATA = await res.json();
-  pending.clear(); edits.clear();
+  pending.clear(); edits.clear(); notes.clear();
   $("#save").disabled = true;
   render();
 }
@@ -227,6 +243,22 @@ $("#list").addEventListener("click", (e) => {
       tr.classList.remove("done-ok", "done-no");
       tr.classList.add(v === "확인" ? "done-ok" : "done-no");
     });
+    syncSave();
+    return;
+  }
+  /* 본메뉴/사이드 override — 규칙(자동)이 틀린 줄만 뒤집는다. 원본 비고와 같아지면
+     저장 목록에서 뺀다(다시 눌러 자동으로 되돌리면 빈 값으로 저장돼 규칙에 맡겨진다). */
+  const clsBtn = e.target.closest(".cls button");
+  if (clsBtn) {
+    const tr = clsBtn.closest("tr");
+    const row = Number(tr.dataset.row);
+    const orig = tr.dataset.note0 || "";
+    const already = clsBtn.getAttribute("aria-pressed") === "true";
+    tr.querySelectorAll(".cls button").forEach((b) => b.setAttribute("aria-pressed", "false"));
+    const val = already ? "" : clsBtn.dataset.n;   // 켜져 있던 걸 다시 누르면 자동으로
+    if (!already) clsBtn.setAttribute("aria-pressed", "true");
+    if (val !== orig) notes.set(row, val); else notes.delete(row);
+    tr.classList.toggle("noted", notes.has(row));
     syncSave();
     return;
   }
@@ -267,7 +299,7 @@ $("#list").addEventListener("input", (e) => {
 });
 
 function syncSave() {
-  const n = pending.size + edits.size;
+  const n = pending.size + edits.size + notes.size;
   $("#save").disabled = n === 0;
   $("#save").textContent = n ? `저장 (${n})` : "저장";
 }
@@ -280,6 +312,7 @@ $("#save").addEventListener("click", async () => {
       ...(e.menu !== undefined ? [{ row, col: COL_MENU, value: e.menu }] : []),
       ...(e.price !== undefined ? [{ row, col: COL_PRICE, value: e.price }] : []),
     ]),
+    ...[...notes.entries()].map(([row, value]) => ({ row, col: DATA.noteCol ?? COL_NOTE, value })),
     ...[...pending.entries()].map(([row, value]) => ({ row, col: DATA.reviewCol, value })),
   ];
   try {

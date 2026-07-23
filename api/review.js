@@ -7,12 +7,16 @@
  *  않고 이 함수 안에만 둔다 — 검수 토큰이 새도 시트 쓰기 권한 자체는 넘어가지 않는다.
  */
 import { listRows, updateCells, sheetWriteReady } from "./_lib/sheet-write.js";
+import { isSideMenu } from "./_lib/side-menu.js";
 
 const MENU_SHEET = "메뉴";
 const REST_SHEET = "식당";
 const ALLOWED = new Set(["확인", "제외", "대기"]);
+// 비고 = 곁들임 판정의 사람 override. "사이드"→강제 곁들임, "한끼"→강제 본메뉴, ""→규칙에 맡김.
+// 규칙(side-menu.js)이 어느 가게에나 통하는 것만 담으므로, 한 가게 사정은 이 열로 뒤집는다.
+const NOTE_ALLOWED = new Set(["", "사이드", "한끼"]);
 // [메뉴] 탭 열 순서: 1 식당ID · 2 식당이름 · 3 메뉴명 · 4 가격(원) · 5 출처 · 6 검수 · 7 비고
-const COL_MENU = 3, COL_PRICE = 4, COL_REVIEW = 6;
+const COL_MENU = 3, COL_PRICE = 4, COL_REVIEW = 6, COL_NOTE = 7;
 const MAX_PRICE = 200_000;
 
 /** 검수는 확인/제외만으로 끝나지 않는다 — 파싱 파편이 정답을 담고 있을 때가 있다.
@@ -30,6 +34,7 @@ function invalid(u) {
     const n = Number(u.value);
     return Number.isInteger(n) && n >= 0 && n <= MAX_PRICE ? null : "price range";
   }
+  if (u.col === COL_NOTE) return NOTE_ALLOWED.has(String(u.value ?? "").trim()) ? null : "note value";
   return "col not editable";
 }
 
@@ -65,16 +70,22 @@ export default async function handler(req, res) {
       }
 
       const h = menu.header;
-      const items = menu.items.map((r) => ({
-        row: r.row,
-        restaurantId: String(r.values[0] ?? "").trim(),
-        restaurant: r.values[1],
-        menu: r.values[h.indexOf("메뉴명")],
-        price: r.values[h.indexOf("가격(원)")],
-        source: r.values[h.indexOf("출처")],
-        review: r.values[h.indexOf("검수")],
-      }));
-      return res.status(200).json({ reviewCol: h.indexOf("검수") + 1, items, photos });
+      const iMenu = h.indexOf("메뉴명"), iNote = h.indexOf("비고");
+      const items = menu.items.map((r) => {
+        const name = r.values[iMenu];
+        return {
+          row: r.row,
+          restaurantId: String(r.values[0] ?? "").trim(),
+          restaurant: r.values[1],
+          menu: name,
+          price: r.values[h.indexOf("가격(원)")],
+          source: r.values[h.indexOf("출처")],
+          review: r.values[h.indexOf("검수")],
+          note: String(r.values[iNote] ?? "").trim(),          // 사람 override 현재값
+          autoSide: isSideMenu({ name, note: "" }),            // 규칙만으로 본 판정(override 무시)
+        };
+      });
+      return res.status(200).json({ reviewCol: h.indexOf("검수") + 1, noteCol: iNote + 1, items, photos });
     }
 
     if (req.method === "POST") {
