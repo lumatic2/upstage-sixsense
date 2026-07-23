@@ -1,5 +1,6 @@
 /** POST /api/parse-query — 자연어 검색 질의 → {budget, walkMax, tags} 구조화.
- *  1차 Solar(solar-mini, json_schema 구조화 출력) → 실패/타임아웃(기본 2초) 시 정규식 폴백.
+ *  1차 Solar(solar-pro2, json_schema 구조화 출력) → 실패/타임아웃(기본 2초) 시 정규식 폴백.
+ *  (머리말이 `solar-mini` 로 남아 있었으나 실제 호출은 pro2 다 — 아래 model 줄의 주석 참고.)
  *  폴백 정규식은 hanipmap app.js 의 parseBudget/parseWalkMax 이식 — 데모 중 외부 장애에도 검색 불사.
  *  (TRD §5.10. 키는 서버 전용 UPSTAGE_API_KEY — 키 부재 시에도 폴백으로 200.)
  *  요청: { query: "8천원 이하 도보 5분 혼밥" }
