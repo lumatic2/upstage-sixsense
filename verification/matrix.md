@@ -18,7 +18,7 @@
 | # | command | expected | observed (2026-07-19) | evidence |
 |---|---|---|---|---|
 | 6 | `POST /api/recommend {budget:8000,tags:[혼밥]}` | Top3 + 실데이터 근거 이유 | picks 3, 이유 3건 solar 생성 | curl 실측 |
-| 7 | 위에서 근거 판정 | solar 이유마다 grounded 판정, notGrounded→템플릿 교체 | 3/3 grounded (판정자=solar-mini, 생성과 분리) | curl 실측 + `docs/presentation/upstage-depth-memo.md` |
+| 7 | 위에서 근거 판정 | solar 이유마다 grounded 판정, notGrounded→템플릿 교체 | 3/3 grounded (판정자=solar-mini, 생성과 분리) | curl 실측 + `docs/presentation/slides-script.md` §예상 Q&A(정직성 각주) |
 | 8 | 키 없는 환경에서 `/api/recommend` | Solar 불가 시 템플릿 이유로 폴백 (500 금지) | HTTP 200, reasonSource=template | 로컬 핸들러 실측 |
 | 9 | `POST /api/recommend {walkMax:5}` (전 후보 초과) | 빈 결과 대신 가까운 순 완화 + walkRelaxed 플래그 | walkRelaxed=true, 3건 반환 | curl 실측 |
 | 10 | `node scripts/demo-smoke.mjs` | 심사 시연 시나리오 전 항목 PASS, 콘솔 red 0 | (실행 결과를 아래 "smoke 기록"에 append) | `verification/screenshots/smoke-final.png` |

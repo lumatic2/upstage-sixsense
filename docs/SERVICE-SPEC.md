@@ -4,7 +4,7 @@
 > **무엇을**: 이 서비스가 무엇이고, 어떻게 만들었고, 어떤 숫자를 댈 수 있는지.
 > **언제 기준**: 2026-07-24 실측. 숫자는 전부 재서 적었고 §8에 측정 방법을 남겼다.
 > 이 숫자들은 이제 `/about.html`·랜딩에 **자동 표시**된다(시트가 바뀌면 화면도 바뀜, 수동 갱신 불필요).
-> 슬라이드 구조안은 별도 문서 → [`docs/presentation/slides-outline.md`](presentation/slides-outline.md).
+> 발표 스크립트(PDF 14장 기준)는 별도 문서 → [`docs/presentation/slides-script.md`](presentation/slides-script.md).
 > 시연 영상 촬영 순서 → [`docs/presentation/demo-walkthrough.md`](presentation/demo-walkthrough.md).
 
 - 라이브: <https://sixsense.askewly.com>
@@ -278,11 +278,12 @@
 
 ## 13. 발표 준비물 (별도 문서)
 
-- **슬라이드 구조안**(16장·장별 주제·시간·근거 자료·발표 원칙·예상 질문) → [`docs/presentation/slides-outline.md`](presentation/slides-outline.md)
-- **시연 영상 촬영 순서**(5스텝·화면별 멈춤 초·배지 주의) → [`docs/presentation/demo-walkthrough.md`](presentation/demo-walkthrough.md)
-- **심사 루브릭 + 항목별 우리 대응**(총 100점) → [`docs/presentation/rubric.md`](presentation/rubric.md)
+- **발표 스크립트**(「식스센스 발표.pdf」 14장 기준·장별 멘트·시간 배분·예상 Q&A) → [`docs/presentation/slides-script.md`](presentation/slides-script.md)
+- **시연 영상 촬영 순서**(5스텝·화면별 멈춤 초·배지 주의·직전 점검) → [`docs/presentation/demo-walkthrough.md`](presentation/demo-walkthrough.md)
+- **심사 루브릭 + 항목별 우리 대응**(총 100점, PDF쪽 매핑) → [`docs/presentation/rubric.md`](presentation/rubric.md)
+- **당일 운영 전략**(발표 순서 분석·역할 분담·동료평가) → [`docs/presentation/demoday-strategy.md`](presentation/demoday-strategy.md)
 
-두 문서 모두 이 스펙(§1~§12)의 숫자·주장에서 뽑았다. **슬라이드에 올릴 숫자는 항상 §8을 정본으로** 한다.
+모두 이 스펙(§1~§12)의 숫자·주장에서 뽑았다. **슬라이드에 올릴 숫자는 항상 §8을 정본으로** 한다.
 
 ---
 

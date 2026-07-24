@@ -74,6 +74,23 @@
 - [ ] 스텝 4의 **4개 지점**(흐름도·정확도·Upstage 표·검증 예시)에서 멈췄는가
 - [ ] 검수 화면에서 실제 값을 바꾸지 않았는가
 
+## 발표 직전 점검 (30초)
+
+```bash
+curl -s https://sixsense.askewly.com/verify.html -o /dev/null -w "%{http_code}\n"
+node -e "fetch('https://sixsense.askewly.com/api/parse-query',{method:'POST',headers:{'content-type':'application/json'},body:JSON.stringify({query:'8천원 이하 혼밥'})}).then(r=>r.json()).then(j=>console.log(JSON.stringify(j)))"
+```
+
+⚠ **Windows curl 로 한글 body 를 보내지 말 것** — cp949 로 전송돼 Solar 가 빈 질의로 해석한다
+(2026-07-17 리허설·2026-07-24 재확인, 두 번 다 실제 오경보를 만들었다). 점검은 Node fetch 나 브라우저로.
+
+## 폴백 원칙 — 장애도 시연의 일부다
+
+- Upstage 의존 단계(검색·제보 파싱)마다 폴백이 설계돼 있다. Solar 가 죽으면 정규식 경로로 검색이
+  계속 되고 `source:"regex-fallback"` 이 그대로 보인다 — 막히면 숨기지 말고 **"폴백 설계" 서사로 전환**한다.
+- 전체 라이브 불능 대비: E2E 스크린샷·응답 JSON 이 레포에 박제돼 있다
+  (`docs/research/2026-07-17-m3-e2e.md`, `experiments/parse-poc/`). 시연 영상 자체도 백업이다.
+
 ## 자주 나오는 오해
 
 | 오해 | 사실 |
