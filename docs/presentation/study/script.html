@@ -1,0 +1,344 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>한입지도 — 발표 스크립트</title>
+<style>
+  :root{
+    --ink:#1b1e23; --ink-2:#4a4f57; --ink-3:#767b84;
+    --paper:#ffffff; --panel:#f5f6f8; --panel-2:#eef0f3;
+    --line:#e3e6eb; --line-2:#c9ced7;
+    --accent:#0f766e; --accent-soft:#e7f2f0; --accent-ink:#0b544e; --accent-line:#cfe4e0;
+    --mine:#7c3a12; --mine-soft:#fbf1e7; --mine-line:#e8cdb2; --kim:#59606a;
+    --warn:#a1560a; --warn-soft:#fbf1e3; --warn-line:#e7cfa6;
+    --hl:#fdf0d9; --row:#fbfaf6;
+  }
+  *{box-sizing:border-box;}
+  @page{ size:A4; margin:16mm 16mm 14mm 16mm; }
+  html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+    font-size:10.4pt; line-height:1.62;
+    word-break:keep-all; line-break:strict; letter-spacing:-0.1px;
+  }
+  h1,h2,h3{ margin:0; text-wrap:balance; }
+  p{ margin:0 0 6px; color:var(--ink-2); }
+  strong{ color:var(--ink); font-weight:700; }
+  code{ font-family:Consolas,monospace; font-size:9.4pt; background:var(--panel-2); padding:1px 5px; border-radius:4px; color:var(--ink-2); }
+
+  .cover{ padding:0 0 13px; border-bottom:2px solid var(--ink); margin-bottom:16px; }
+  .kicker{ font-size:9.4pt; letter-spacing:2px; color:var(--accent); font-weight:700; text-transform:uppercase; }
+  .cover h1{ font-size:26pt; line-height:1.14; margin:8px 0 6px; letter-spacing:-0.5px; }
+  .cover .sub{ font-size:11pt; color:var(--ink-2); margin:0; }
+
+  .legend{ display:flex; gap:8px; margin:12px 0 4px; font-size:8.4pt; }
+  .lg{ padding:2px 9px; border-radius:20px; font-weight:700; }
+  .lg.mine{ background:var(--mine-soft); color:var(--mine); border:1px solid var(--mine-line); }
+  .lg.kim{ background:var(--panel); color:var(--ink-2); border:1px solid var(--line-2); }
+
+  .sec-head{ display:flex; align-items:baseline; gap:10px; margin:0 0 8px;
+             padding-bottom:5px; border-bottom:1px solid var(--line-2); page-break-after:avoid; }
+  .sec-num{ font-size:10.4pt; font-weight:800; color:var(--accent); }
+  h2{ font-size:14pt; letter-spacing:-0.3px; }
+
+  /* timing table */
+  table{ width:100%; border-collapse:collapse; margin:8px 0; font-size:9.4pt; page-break-inside:avoid; }
+  th{ text-align:left; background:var(--panel-2); padding:5px 8px; border-bottom:1.5px solid var(--line-2); font-weight:700; color:var(--ink); }
+  td{ padding:5px 8px; border-bottom:1px solid var(--line); color:var(--ink-2); vertical-align:top; }
+  td strong{ color:var(--ink); }
+  tr{ page-break-inside:avoid; }
+  .star-row td{ background:var(--row); }
+
+  /* slide blocks */
+  .slide{ border:1px solid var(--line-2); border-radius:10px; margin:9px 0; overflow:hidden; page-break-inside:avoid; }
+  .slide.mine{ border-color:var(--mine-line); }
+  .slide-head{ display:flex; align-items:center; gap:9px; padding:7px 13px; background:var(--panel); border-bottom:1px solid var(--line); }
+  .slide.mine .slide-head{ background:var(--mine-soft); border-bottom-color:var(--mine-line); }
+  .snum{ font-size:11pt; font-weight:800; color:var(--accent); min-width:22px; }
+  .slide.mine .snum{ color:var(--mine); }
+  .stitle{ font-size:11pt; font-weight:700; color:var(--ink); flex:1; }
+  .stime{ font-size:8.4pt; color:var(--ink-3); font-weight:700; }
+  .who{ font-size:8.4pt; font-weight:700; padding:1px 7px; border-radius:20px; }
+  .who.mine{ background:var(--mine); color:var(--paper); }
+  .who.kim{ background:var(--kim); color:var(--paper); }
+  .slide-body{ padding:9px 13px; }
+  .gist{ font-size:9.4pt; color:var(--ink-3); margin:0 0 7px; }
+  .gist b{ color:var(--ink-2); }
+  .say{ font-size:11pt; line-height:1.66; color:var(--ink); border-left:3px solid var(--accent);
+        padding:2px 0 2px 12px; margin:0; }
+  .slide.mine .say{ border-left-color:var(--mine); }
+  .say .hl{ background:var(--hl); font-weight:700; padding:0 2px; border-radius:3px; }
+
+  .accent-panel{ background:var(--accent-soft); border:1px solid var(--accent-line); border-radius:9px; padding:10px 13px; margin:9px 0; page-break-inside:avoid; }
+  .warn-panel{ background:var(--warn-soft); border:1px solid var(--warn-line); border-radius:9px; padding:10px 13px; margin:9px 0; page-break-inside:avoid; }
+  .warn-panel .t{ font-weight:700; color:var(--warn); margin-bottom:3px; font-size:10.4pt; }
+  .big-close{ background:var(--mine-soft); border:1.5px solid var(--mine-line); border-radius:11px; padding:13px 16px; margin:10px 0; page-break-inside:avoid; }
+  .big-close .t{ font-size:9.4pt; font-weight:700; color:var(--mine); letter-spacing:1px; text-transform:uppercase; margin-bottom:5px; }
+  .big-close p{ font-size:14pt; line-height:1.5; color:var(--ink); font-weight:700; margin:0; }
+
+  ul{ margin:5px 0 7px; padding-left:18px; }
+  li{ margin:3px 0; color:var(--ink-2); }
+  li strong{ color:var(--ink); }
+  .page-break{ page-break-before:always; }
+  .footnote{ font-size:8.4pt; color:var(--ink-3); border-top:1px solid var(--line); padding-top:6px; margin-top:12px; }
+  .qa .q{ font-weight:700; color:var(--ink); }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="kicker">TEAM SIXSENSE · 발표 스크립트 (암기·리허설용)</div>
+  <h1>한입지도 — 발표 대본 14장</h1>
+  <p class="sub">발표 7분(시연 포함) + 질의응답 5분 · <strong>6:40 컷 목표</strong> · 리허설 7/25(토) 11:00 · 발표 8번(예상 13:34~13:46)</p>
+  <div class="legend">
+    <span class="lg kim">1~6쪽 · 김민서 (2:40)</span>
+    <span class="lg mine">7~14쪽 · 전유성 (4:00, 시연·클로징·Q&amp;A)</span>
+  </div>
+</div>
+
+<!-- 시간 배분 -->
+<section>
+  <div class="sec-head"><span class="sec-num">◷</span><h2>시간 배분 (합계 ≈ 6:50)</h2></div>
+  <table>
+    <tr><th style="width:8%">쪽</th><th>슬라이드</th><th style="width:12%">시간</th><th style="width:14%">담당</th><th>비고</th></tr>
+    <tr><td>1</td><td>표지</td><td>0:10</td><td>김민서</td><td>배고픔 훅</td></tr>
+    <tr><td>2</td><td>01 문제 정의·타깃</td><td>0:35</td><td>김민서</td><td></td></tr>
+    <tr><td>3</td><td>02 해법 (vs LLM)</td><td>0:35</td><td>김민서</td><td></td></tr>
+    <tr><td>4</td><td>03 화면 구성</td><td>0:10</td><td>김민서</td><td>스킵 후보</td></tr>
+    <tr class="star-row"><td>5</td><td>04 파이프라인 ★</td><td>0:55</td><td>김민서</td><td>20점 · 안 줄임</td></tr>
+    <tr><td>6</td><td>05 데이터 구조 <b>→ 교대</b></td><td>0:15</td><td>김민서</td><td>끝에 전유성으로</td></tr>
+    <tr class="star-row"><td>7</td><td>06 Upstage 4자리 ★</td><td>0:40</td><td>전유성</td><td>20점</td></tr>
+    <tr class="star-row"><td>8</td><td>07 환각 방지 4겹 ★</td><td>0:50</td><td>전유성</td><td>차별성</td></tr>
+    <tr class="star-row"><td>9</td><td>08 정확도·재현성 ★</td><td>0:45</td><td>전유성</td><td>15점</td></tr>
+    <tr class="star-row"><td>10</td><td>09 시행착오 ★</td><td>0:25</td><td>전유성</td><td></td></tr>
+    <tr><td>11</td><td>10 시연 (라이브)</td><td>1:10</td><td>전유성</td><td>코스 A+B</td></tr>
+    <tr><td>12</td><td>11 기술 스택</td><td>0:10</td><td>전유성</td><td>스킵 후보</td></tr>
+    <tr><td>13</td><td>12 한계·확장 + 클로징</td><td>0:30</td><td>전유성</td><td>클로징 암기</td></tr>
+    <tr><td>14</td><td>Q&amp;A</td><td>—</td><td>전유성 리드</td><td></td></tr>
+  </table>
+  <p style="font-size:9.4pt;color:var(--ink-3);">시간이 밀리면 <strong>4·6·12쪽에서만</strong> 줄인다. ★ 슬라이드는 절대 안 줄인다.</p>
+</section>
+
+<!-- 김민서 파트 요약 -->
+<section>
+  <div class="sec-head"><span class="sec-num">1–6</span><h2>김민서 파트 (전유성은 교대 타이밍만 숙지)</h2></div>
+
+  <div class="slide">
+    <div class="slide-head"><span class="snum">1</span><span class="stitle">표지 · 오프닝 훅</span><span class="stime">0:10</span><span class="who kim">김민서</span></div>
+    <div class="slide-body">
+      <p class="say">"점심 안 드셨죠? 저희도 못 먹었습니다. 여러분의 지갑 사정 안에서 오늘 뭘 먹을지 — <span class="hl">식스센스</span>가 정해드립니다."</p>
+      <p class="gist" style="margin-top:6px;"><b>주의:</b> 발표 장소는 자연과학캠(수원), 서비스 범위는 명륜캠 → "지금 여기서 쓰세요" 금물. 배고픔 공감까지만, "이 캠퍼스"는 13쪽 확장에서 회수.</p>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-head"><span class="snum">2</span><span class="stitle">01 문제 정의·타깃</span><span class="stime">0:35</span><span class="who kim">김민서</span></div>
+    <div class="slide-body">
+      <p class="say">"타깃은 명확합니다 — 명륜캠 학생, 하루 두 번 '얼마 있는데 뭐 먹지'를 반복하는 사람. 지도 앱은 위치는 찾아주지만 메뉴·가격이 빠진 곳이 많고, 블로그엔 같은 짜장면이 6천원·7천원으로 같이 떠서 <span class="hl">어느 게 지금 가격인지 알 수가 없죠.</span> 학식은 또 학교 사이트를 따로 열어야 하고. 핵심 문제는 — 믿을 수 있는 메뉴·가격 정보가 한곳에 모여 있지 않다."</p>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-head"><span class="snum">3</span><span class="stitle">02 해법 (vs 범용 LLM)</span><span class="stime">0:35</span><span class="who kim">김민서</span></div>
+    <div class="slide-body">
+      <p class="say">"ChatGPT에 물으면 '정확한 가격은 매장에 문의하세요'라고 답합니다. 모델이 멍청해서가 아니라 <span class="hl">믿고 읽을 데이터가 없기 때문</span>. 확실한 근거는 가게 벽 메뉴판 사진뿐이죠. 그래서 저희는 데이터를 <span class="hl">직접 만들었습니다</span> — 사진을 Document Parse로 읽고, 사람이 검수한 가격만 올립니다. 범용 LLM은 답을 지어내고, 한입지도는 검수된 데이터에서 답을 찾습니다."</p>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-head"><span class="snum">4</span><span class="stitle">03 화면 구성</span><span class="stime">0:10</span><span class="who kim">김민서</span></div>
+    <div class="slide-body">
+      <p class="say">"화면은 다섯 개 — 찾는 화면 둘, <span class="hl">데이터를 만들고 검증하는 화면이 셋</span>입니다. 뒤에서 보여드립니다."</p>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-head"><span class="snum">5</span><span class="stitle">04 데이터 파이프라인 ★ 20점</span><span class="stime">0:55</span><span class="who kim">김민서</span></div>
+    <div class="slide-body">
+      <p class="say">"데이터가 들어오는 길이 세 갈래인데 각기 다른 처리를 받습니다. 비정형인 메뉴판 사진은 Document Parse로 읽고, 학식은 매일 아침 6시 10분 자동 크롤링, 주소는 카카오 API로 좌표를 얻어 도보 시간을 계산합니다. 그리고 세 갈래가 전부 <span class="hl">사람 검수라는 하나의 문</span>을 지납니다. 확인 도장을 찍은 행만 서비스에 나가죠. 하나 더 — <span class="hl">학식에는 Document Parse를 일부러 안 썼습니다.</span> 이미 표로 정리된 HTML이라 파싱을 끼우면 비용은 늘고 정확도는 떨어집니다. 도구는 목적에 맞을 때만 씁니다."</p>
+    </div>
+  </div>
+
+  <div class="slide">
+    <div class="slide-head"><span class="snum">6</span><span class="stitle">05 데이터 구조 · 교대</span><span class="stime">0:15</span><span class="who kim">김민서</span></div>
+    <div class="slide-body">
+      <p class="say">"데이터는 구글 시트 세 탭입니다. 중요한 건 <span class="hl">모든 행이 출처·수집자·촬영일·검수 상태를 들고 다닌다</span>는 것 — 어떤 가격이 떴을 때 어느 사진에서 왔고 누가 언제 확인했는지 추적됩니다."</p>
+      <div class="warn-panel" style="margin-top:8px;">
+        <div class="t">▶ 교대 멘트 (김민서 → 전유성) — 리허설에서 한 번 맞춘다</div>
+        <p style="margin:0;font-size:10.4pt;">김민서: <strong>"이 데이터 위에서 Upstage 제품이 어떻게 쓰였는지는, 파이프라인을 설계한 전유성이 이어서 설명드리겠습니다."</strong> → 전유성 7쪽부터. 말 겹치지 않게.</p>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- 전유성 파트 -->
+<section class="page-break">
+  <div class="sec-head"><span class="sec-num">7–14</span><h2>전유성 파트 — 여기부터 내 대본 (암기)</h2></div>
+
+  <div class="slide mine">
+    <div class="slide-head"><span class="snum">7</span><span class="stitle">06 Upstage 적용 4자리 ★ 20점</span><span class="stime">0:40</span><span class="who mine">전유성</span></div>
+    <div class="slide-body">
+      <p class="gist"><b>핵심:</b> 들어올 때 2(Parse·pro2 식별) + 나갈 때 2(pro2 구조화·이유 / mini 채점). 생성·검증 다른 모델.</p>
+      <p class="say">"Upstage 제품이 네 자리에서 각자 다른 일을 합니다. 데이터가 들어올 때 둘 — Document Parse가 메뉴판을 읽고, Solar-pro2가 제보 사진에서 가게 이름을 찾아냅니다. 사용자에게 나갈 때 둘 — Solar-pro2가 자연어를 구조화하고 추천 이유를 쓰면, <span class="hl">Solar-mini가 그 이유를 실제 데이터와 대조해 채점합니다.</span> 쓴 모델이 자기 답안을 채점하지 않도록 생성과 검증을 다른 모델로 분리했습니다. 참고로 Upstage가 최근 내세우는 말이 <span class="hl">'모델이 아니라 문서 구조화가 병목'</span>인데, 저희 파이프라인이 그 말을 메뉴판 사진에서 실물로 증명한 셈입니다."</p>
+    </div>
+  </div>
+
+  <div class="slide mine">
+    <div class="slide-head"><span class="snum">8</span><span class="stitle">07 환각 방지 4겹 ★ 차별성</span><span class="stime">0:50</span><span class="who mine">전유성</span></div>
+    <div class="slide-body">
+      <p class="gist"><b>4겹:</b> ①검수 게이트 ②근거 판정(다른 모델) ③기억 검증(마라탕버거) ④추천 칩 검증. 원칙 하나 = 근거 없으면 버린다.</p>
+      <p class="say">"이 서비스의 차별성은 한 문장입니다 — <span class="hl">근거 없는 말을 내보내지 않는다.</span> 장치가 네 겹입니다. 사람이 확인한 데이터만 쓰는 검수 게이트. 모델이 쓴 추천 이유를 다른 모델이 대조해 근거가 없으면 그 문장을 버리고 데이터 팩트로 갈아끼우는 근거 판정. 사용자가 '마라탕버거' 같은 없는 메뉴를 말하면 기억에서 폐기하는 기억 검증. 그리고 '도보 3분 안으로' 같은 제안을 띄우기 전에 실제 결과가 나오는지 먼저 세어보는 추천 검증. 넷 다 원칙은 같습니다 — <span class="hl">근거가 없으면 문장을 버립니다.</span>"</p>
+    </div>
+  </div>
+
+  <div class="slide mine">
+    <div class="slide-head"><span class="snum">9</span><span class="stitle">08 정확도·재현성 ★ 15점</span><span class="stime">0:45</span><span class="who mine">전유성</span></div>
+    <div class="slide-body">
+      <p class="gist"><b>핵심:</b> 76.4% 평균 · 지배변수 = 해상도(100% vs 20%) · 응답 박제 → 재호출 없이 0→62.5→76.4% · $0.08.</p>
+      <p class="say">"정확하게 재봤습니다. 평균 76.4%인데, 평균보다 중요한 건 <span class="hl">무엇이 정확도를 가르느냐</span>입니다. 인쇄체에 해상도가 충분하면 100%, 저해상 흐림이면 20% — 지배 변수는 해상도 하나였습니다. 그래서 저해상 사진은 사람 검수가 잡는 구조로 만들었습니다. 그리고 재현성 — API 응답 원본을 저장해두고, <span class="hl">재호출 없이 후처리 규칙만 고쳐가며 0%에서 62.5%, 76.4%로</span> 올렸습니다. 같은 실험을 언제든 다시 돌릴 수 있고, 비용은 전부 합쳐 8센트였습니다."</p>
+    </div>
+  </div>
+
+  <div class="slide mine">
+    <div class="slide-head"><span class="snum">10</span><span class="stitle">09 시행착오 ★</span><span class="stime">0:25</span><span class="who mine">전유성</span></div>
+    <div class="slide-body">
+      <p class="say">"실제로 겪은 사고 셋만 보여드립니다. Document Parse가 메뉴판을 <span class="hl">막대그래프로 오인</span>해 'item_01 12.5'가 나온 적이 있습니다 — 차트 판정이면 폐기하는 규칙을 넣었습니다. '7.0'이라 적힌 가격은 7천원으로 환산하고, 공기밥 천원이 '예산 안의 메뉴'로 뜨던 문제는 본메뉴·사이드 판정 규칙으로 잡았습니다. 원칙은 하나 — <span class="hl">어느 식당에나 통하는 건 규칙으로, 한 가게 사정은 비고로.</span>"</p>
+    </div>
+  </div>
+
+  <div class="slide mine">
+    <div class="slide-head"><span class="snum">11</span><span class="stitle">10 시연 (라이브 기본)</span><span class="stime">1:10</span><span class="who mine">전유성</span></div>
+    <div class="slide-body">
+      <p class="gist"><b>운영:</b> 라이브 URL 직접 조작(sixsense.askewly.com). 영상은 페이지 안 뜰 때만 백업. 상세 대본은 아래 §시연.</p>
+      <p class="say">"직접 보시죠. '8천원 이하 10분 거리 혼밥'이라고 치면 — 조건이 구조화되고, 실데이터에서 고른 추천 세 곳이 지도 핀과 함께 뜹니다. 추천 이유 아래 이 줄 보이시죠 — <span class="hl">'다른 모델이 데이터와 대조해 근거 검증을 통과했습니다.'</span> 아까 말씀드린 4겹이 실제로 돌고 있다는 표시입니다. 그리고 메뉴판 사진을 한 장 올리면 그 자리에서 파싱돼 검수 대기줄에 들어갑니다. 지금까지 <span class="hl">50곳, 후보 719개, 검수 통과 580개, 대기 0</span>입니다."</p>
+    </div>
+  </div>
+
+  <div class="slide mine">
+    <div class="slide-head"><span class="snum">12</span><span class="stitle">11 기술 스택</span><span class="stime">0:10</span><span class="who mine">전유성</span></div>
+    <div class="slide-body">
+      <p class="say">"스택은 화면에 있는 대로입니다. 한 줄만 — 프레임워크 자랑보다 <span class="hl">검수하는 사람이 일하기 좋은 구조</span>를 골랐습니다. 시트가 곧 검수 화면입니다."</p>
+    </div>
+  </div>
+
+  <div class="slide mine">
+    <div class="slide-head"><span class="snum">13</span><span class="stitle">12 한계·확장 + 클로징</span><span class="stime">0:30</span><span class="who mine">전유성</span></div>
+    <div class="slide-body">
+      <p class="say">"한계도 정직하게 말씀드립니다. 저해상과 손글씨에 약하고, 그래서 사람 검수를 필수로 뒀습니다. 범위는 아직 명륜캠 50곳. 하지만 이 파이프라인은 <span class="hl">지역을 모릅니다</span> — 사진과 검수 인력만 있으면 어디서든 돕니다. 확장 1순위는 <span class="hl">바로 지금 우리가 서 있는 이 자연과학캠퍼스</span>입니다."</p>
+      <div class="big-close">
+        <div class="t">클로징 — 토씨까지 외운다 (휴식 직전, 마지막 한 문장이 기억에 남는다)</div>
+        <p>"ChatGPT는 '매장에 문의하세요'라고 답합니다.<br>저희는 매장에 가서, 사진을 찍고, 데이터를 만들었습니다."</p>
+      </div>
+      <p class="gist" style="margin-top:5px;">→ "들어주셔서 감사합니다."</p>
+    </div>
+  </div>
+</section>
+
+<!-- 시연 대본 -->
+<section class="page-break">
+  <div class="sec-head"><span class="sec-num">▶</span><h2>라이브 시연 대본 (11쪽 슬롯 · 약 75~90초)</h2></div>
+  <div class="warn-panel">
+    <div class="t">원칙 — 랜덤 클릭 금지</div>
+    <p style="margin:0;font-size:9.4pt;">심사 55점이 데이터 처리·Upstage에 걸려 있다. 그냥 클릭하면 "지도 앱"으로 보인다. <strong>근거가 화면에 남는 순서</strong>로만 움직인다. 반드시 <code>https://sixsense.askewly.com</code> (localhost 금지).</p>
+  </div>
+
+  <h3 style="font-size:11pt;margin:10px 0 4px;color:var(--accent-ink);">코스 A — 검색→추천→근거 (약 45초, 절대 생략 불가)</h3>
+  <table>
+    <tr><th style="width:22%">동작</th><th>말</th></tr>
+    <tr><td><strong>1.</strong> <code>/app.html</code> 탭. 입력: <strong>8천원 이하 10분 거리 혼밥</strong></td><td>"실제로 물어보겠습니다. 8천원 이하, 10분 거리, 혼밥."</td></tr>
+    <tr><td><strong>2.</strong> 조건 칩이 뜨면 한 박자</td><td>"방금 Solar가 문장을 예산 8천원·도보 10분·혼밥 태그로 구조화했습니다."</td></tr>
+    <tr><td><strong>3.</strong> 추천 카드 3장 + 지도 핀. 이유 한 문장 읽기</td><td>"이유가 전부 실데이터(메뉴·가격·도보)입니다."</td></tr>
+    <tr><td><strong>4.</strong> <strong>요약줄을 가리키고 2초 멈춤</strong> ← 근거 검증의 항상 보이는 증거</td><td>"추천 이유는 다른 모델이 데이터와 대조해 N건이 근거 검증을 통과했습니다."</td></tr>
+  </table>
+
+  <h3 style="font-size:11pt;margin:10px 0 4px;color:var(--accent-ink);">코스 B — 파이프라인 증거 (약 30초)</h3>
+  <table>
+    <tr><th style="width:22%">동작</th><th>말</th></tr>
+    <tr><td><strong>5.</strong> <code>/about.html</code> 탭. 흐름도로 스크롤</td><td>"입력 3갈래가 사람 검수 한 문을 지나 서비스로 갑니다."</td></tr>
+    <tr><td><strong>6.</strong> 3단계 근거 검증 예시(초안→판정→교체)</td><td>"근거 없는 문장이 실제로 이렇게 버려지고 데이터 사실로 교체됩니다."</td></tr>
+    <tr><td><strong>7.</strong> 클로징으로 전환</td><td>"방금 보신 게 전부 라이브입니다. 지금 여러분 폰으로도 됩니다."</td></tr>
+  </table>
+
+  <h3 style="font-size:11pt;margin:10px 0 4px;color:var(--ink-3);">코스 C — 시간 남을 때만 (각 +15초) / Q&amp;A "진짜 되냐" 나오면 꺼낸다</h3>
+  <ul>
+    <li><strong>제보 입구:</strong> <code>/contribute.html</code> 예시 사진 클릭 → "사진 한 장이면 Document Parse가 그 자리에서 읽고 검수 대기줄로."</li>
+    <li><strong>실행 블록:</strong> <code>/about.html</code> 실행 블록 클릭 → "스크린샷이 아니라 진짜 API가 지금 돕니다."</li>
+  </ul>
+
+  <div class="warn-panel">
+    <div class="t">막혔을 때 — 전환은 5초 안에 판단 (새로고침으로 20초 버리는 게 최악)</div>
+    <table style="margin:5px 0 0;">
+      <tr><th style="width:32%">상황</th><th>행동 · 말</th></tr>
+      <tr><td>Solar 타임아웃(느림)</td><td>그대로 진행 — "지금 폴백 경로로 동작 중입니다. 외부 장애에도 검색은 죽지 않게 설계했습니다."</td></tr>
+      <tr><td>페이지 자체가 안 뜸</td><td>백업 영상 탭으로 즉시 — "현장 네트워크가 불안해 녹화본으로 보여드립니다. 제출 Live URL에서 그대로 재현됩니다."</td></tr>
+      <tr><td>추천이 이상하게 나옴</td><td>당황 말고 요약줄로 — 근거 요약줄은 항상 뜬다. 검증 서사로 연결.</td></tr>
+    </table>
+  </div>
+</section>
+
+<!-- 배점 지도 -->
+<section class="page-break">
+  <div class="sec-head"><span class="sec-num">◆</span><h2>배점 지도 — 어느 슬라이드가 몇 점을 버나 (총 100)</h2></div>
+  <p style="font-size:9.4pt;color:var(--ink-3);margin-bottom:6px;">데이터 처리 35 + Upstage 20 = <strong>55점</strong>에 발표 시간 절반 이상. ★ = 안 줄이는 슬라이드.</p>
+  <table>
+    <tr><th style="width:44%">심사 기준</th><th style="width:12%">배점</th><th>슬라이드</th></tr>
+    <tr class="star-row"><td><strong>정보 처리 파이프라인 설계·관리</strong></td><td><strong>20</strong></td><td>5·6쪽 ★</td></tr>
+    <tr class="star-row"><td><strong>정보 처리의 깊이·정교성</strong></td><td><strong>15</strong></td><td>8·9·10쪽 ★</td></tr>
+    <tr class="star-row"><td><strong>목적 적합 Upstage 적용 + 기여도</strong></td><td><strong>10+10</strong></td><td>7·9쪽 ★</td></tr>
+    <tr><td>실용성·논리·확장성 (Service Impact)</td><td>10+5+5</td><td>11·2·3·13쪽</td></tr>
+    <tr><td>차별성 + 문제 정의</td><td>5+5</td><td>3·8·2쪽</td></tr>
+    <tr><td>발표 전달력 + 자료 완성도</td><td>5+10</td><td>발표 전체·14장</td></tr>
+  </table>
+  <div class="accent-panel">
+    <p style="margin:0 0 5px;font-size:9.4pt;">승부처: <strong>"그냥 ChatGPT에 물어보면 되지 않나?"</strong>에 실물로 답. 억지 API 금지 — <strong>"학식엔 Document Parse 안 씀"</strong>이 오히려 점수(<strong>심사위원 = Upstage 현직자, 킥오프에서 확정</strong>). 상세 방어 = 마스터 가이드 §13.</p>
+    <p style="margin:0;font-size:9.4pt;">운영진 기대 깊이 3축(킥오프 p108)에 우리 답 매핑 — 발표에 이 단어를 그대로: <strong>데이터 융합</strong>(입력 3갈래 교차) · <strong>Action 기능</strong>(50곳 비교·추천·이유 자동작성) · <strong>복합 구조 해석</strong>(메뉴판 이미지→구조화, 차트오인·소수표기가 증거).</p>
+  </div>
+</section>
+
+<!-- Q&A -->
+<section class="page-break">
+  <div class="sec-head"><span class="sec-num">?</span><h2>질의응답 5분 — 전유성 리드 (상세 방어는 마스터 가이드 §11)</h2></div>
+  <table>
+    <tr><th style="width:34%">질문</th><th>답 (한 줄 요지)</th></tr>
+    <tr class="star-row"><td><strong>"그냥 ChatGPT랑 뭐가 다르죠?" ★</strong></td><td>범용은 오늘 학식 모르고 가격은 출처·시점 뒤섞인 값. 우리는 1차 소스만 — 오늘 크롤링 HTML + 사람 승인 데이터, 행마다 출처·촬영일·검수자.</td></tr>
+    <tr class="star-row"><td><strong>"요즘 ChatGPT 웹검색으로 찾잖아요?" ★</strong></td><td>한 가게는 찾는다. 근데 6천/7천 공존 — 어느 게 지금 값인지 판별 근거가 검색엔 없다. 50곳 예산 필터 질의는 실시간 검색으로 안 된다.</td></tr>
+    <tr><td>"정확도 76%면 낮지 않나요?"</td><td>그래서 사람 검수 필수. 인쇄체·고해상이면 100%. 무엇이 정확도를 흔드는지(해상도) 알아낸 게 결과.</td></tr>
+    <tr><td>"거지맵이랑 뭐가 달라요?"</td><td>표면은 닮음. 차이는 데이터 생산 — 그쪽 수동 타이핑, 우리 사진→Parse→프리필. 학식 크롤링·상황 자연어 검색은 우리만.</td></tr>
+    <tr><td>"파싱 틀리면? 데이터 오염은?"</td><td>전량 자동 반영 안 함. 파싱은 후보까지, 운영자 승인 거쳐야 노출. 자동 경계를 실측으로 그음.</td></tr>
+    <tr><td>"왜 학식엔 Parse 안 썼나요?"</td><td>이미 구조화 HTML. 억지 적용은 감점. 비정형=Parse, 정형=크롤러 — 이 구분이 우리 설계.</td></tr>
+    <tr class="star-row"><td><strong>"전용 Groundedness 모델인가요?" ★정직성</strong></td><td>아니다. 전용 모델 제공 종료(<code>/v1/models</code> 실측). 같은 계약을 분리된 solar-mini 판정자로. "제품 3종"이 아니라 "Solar 생성·검증 2역할".</td></tr>
+    <tr><td>"Solar 느리거나 죽으면?"</td><td>0.7~1.3초, 타임아웃 시 정규식 폴백. <code>source</code> 필드로 경로 투명. mini→pro2 채택도 실측.</td></tr>
+    <tr><td>"왜 DB 대신 시트?"</td><td>팀 4명 협업이라. 계정·어드민 없이 누구나 고침. 700행엔 시트가 최소 비용, 커지면 DB로(읽기 경로 하나라 교체 쉬움).</td></tr>
+    <tr class="star-row"><td><strong>"왜 Parse만? Extract·Classify는?" ★현직자</strong></td><td>메뉴판은 Parse 좌표+텍스트로 충분. Extract가 할 필드 정리는 <strong>도메인 특화 후처리 규칙</strong>으로 직접(7.0→7,000·곁들임 63케이스·차트 폐기) — 더 정확·비용 0. "필요 없어서 우리가 더 정확히" 프레임.</td></tr>
+    <tr><td>"킥오프의 Supabase·Next.js는 왜 안?"</td><td>문제 크기에 맞춰 고름. 5화면·얕은 상태라 프레임워크 비용 회수 안 됨. 시트가 곧 어드민(팀 협업·검수). 커지면 옮기면 됨.</td></tr>
+  </table>
+  <div class="warn-panel">
+    <div class="t">답 못 할 질문이 나오면</div>
+    <p style="margin:0;font-size:9.4pt;">지어내지 않는다. <strong>"정직한 한계" 프레임</strong> — "그건 아직 안 했다 / 지금은 여기까지가 실측이다." 없는 걸 있다고 하는 순간 나머지 답까지 의심받는다.</p>
+  </div>
+  <div class="accent-panel">
+    <p style="margin:0;font-size:9.4pt;"><strong>Q&amp;A 분담:</strong> 파이프라인·Upstage·아키텍처 → 전유성 / 데이터 수집 현장(촬영·검수 경험) → 수집 담당 팀원.</p>
+  </div>
+</section>
+
+<!-- 발표 직전 체크 -->
+<section>
+  <div class="sec-head"><span class="sec-num">✓</span><h2>발표 직전 체크 · 발표 원칙</h2></div>
+  <ul>
+    <li><strong>시연 기기:</strong> 탭 3개 미리 열어 로드 완료 — ① <code>/app.html</code>(지도 타일까지) ② <code>/about.html</code> ③ 백업 영상. 핫스팟 켜고 연결 테스트.</li>
+    <li><strong>발표는 반드시 PDF로</strong> — PPTX 재수출 금지(폰트·시트 자동번호 깨짐 실측).</li>
+    <li><strong>숫자는 전부 SPEC §8</strong> — 슬라이드·화면·입에서 나오는 숫자가 같아야 한다 (50·719·580·76.4%).</li>
+    <li><strong>"안 한 것"을 말한다</strong> — 학식 파싱 안 씀, 순서 개인화 걷어냄. 다 쓰는 것보다 가려 쓴 게 세다.</li>
+    <li><strong>첫 30초에 결론부터</strong> — 심사위원 7팀 연속 청취 후 피로 중반부. 배경 설명으로 시작하면 묻힌다.</li>
+    <li><strong>데모 후:</strong> REVIEW_TOKEN(데모용 4자리) → 긴 값 원복 (Vercel env, 값은 팀 채널 참고).</li>
+  </ul>
+</section>
+
+<div class="footnote">
+  정본: <code>docs/presentation/slides-script.md</code> · 시연 <code>demo-walkthrough.md</code> · 당일 운영 <code>demoday-strategy.md</code>.
+  이 대본은 「식스센스 발표.pdf」 14장 기준. 숫자·주장의 정본은 <code>docs/SERVICE-SPEC.md</code> §8. · TEAM SIXSENSE
+</div>
+
+</body>
+</html>

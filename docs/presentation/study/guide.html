@@ -1,0 +1,546 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+<meta charset="UTF-8">
+<title>한입지도 — 서비스 마스터 가이드</title>
+<style>
+  :root{
+    --ink:#1b1e23; --ink-2:#4a4f57; --ink-3:#767b84;
+    --paper:#ffffff; --panel:#f5f6f8; --panel-2:#eef0f3;
+    --line:#e3e6eb; --line-2:#c9ced7;
+    --accent:#0f766e; --accent-soft:#e7f2f0; --accent-ink:#0b544e; --accent-line:#cfe4e0;
+    --warn:#a1560a; --warn-soft:#fbf1e3; --warn-line:#e7cfa6; --no:#9a2b2b;
+  }
+  *{box-sizing:border-box;}
+  @page{ size:A4; margin:17mm 16mm 15mm 16mm; }
+  html{ -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  body{
+    margin:0; color:var(--ink); background:var(--paper);
+    font-family:"Malgun Gothic","맑은 고딕",system-ui,sans-serif;
+    font-size:10.4pt; line-height:1.68;
+    word-break:keep-all; line-break:strict; letter-spacing:-0.1px;
+  }
+  h1,h2,h3{ margin:0; text-wrap:balance; }
+  p{ margin:0 0 7px; color:var(--ink-2); }
+  strong{ color:var(--ink); font-weight:700; }
+  em{ font-style:normal; color:var(--accent-ink); font-weight:600; }
+  code{ font-family:"Consolas",monospace; font-size:9.4pt; background:var(--panel-2);
+        padding:1px 5px; border-radius:4px; color:var(--ink-2); }
+
+  /* ---- cover ---- */
+  .cover{ padding:0 0 14px; border-bottom:2px solid var(--ink); margin-bottom:18px; }
+  .kicker{ font-size:9.4pt; letter-spacing:2px; color:var(--accent); font-weight:700; text-transform:uppercase; }
+  .cover h1{ font-size:26pt; line-height:1.15; margin:8px 0 6px; letter-spacing:-0.5px; }
+  .cover .sub{ font-size:11pt; color:var(--ink-2); margin:0; }
+  .cover .meta{ margin-top:12px; font-size:9.4pt; color:var(--ink-3); display:flex; gap:18px; flex-wrap:wrap; }
+
+  /* ---- section ---- */
+  section{ margin:0 0 16px; }
+  .sec-head{ display:flex; align-items:baseline; gap:10px; margin:0 0 9px;
+             padding-bottom:5px; border-bottom:1px solid var(--line-2); page-break-after:avoid; }
+  .sec-num{ font-size:10.4pt; font-weight:800; color:var(--accent); min-width:22px; }
+  h2{ font-size:14pt; letter-spacing:-0.3px; }
+  h3{ font-size:11pt; margin:12px 0 5px; color:var(--ink); }
+  .lead{ font-size:11pt; color:var(--ink); }
+
+  /* ---- panels ---- */
+  .panel{ background:var(--panel); border:1px solid var(--line);
+          border-radius:9px; padding:11px 14px; margin:9px 0; page-break-inside:avoid; }
+  .accent-panel{ background:var(--accent-soft); border:1px solid var(--accent-line); border-radius:9px;
+                 padding:11px 14px; margin:9px 0; page-break-inside:avoid; }
+  .accent-panel .t{ font-weight:700; color:var(--accent-ink); margin-bottom:3px; }
+  .warn-panel{ background:var(--warn-soft); border:1px solid var(--warn-line); border-radius:9px;
+               padding:11px 14px; margin:9px 0; page-break-inside:avoid; }
+  .warn-panel .t{ font-weight:700; color:var(--warn); margin-bottom:3px; font-size:10.4pt; }
+
+  /* ---- tables ---- */
+  table{ width:100%; border-collapse:collapse; margin:9px 0; font-size:9.4pt; page-break-inside:avoid; }
+  th{ text-align:left; background:var(--panel-2); color:var(--ink); font-weight:700;
+      padding:6px 9px; border-bottom:1.5px solid var(--line-2); }
+  td{ padding:6px 9px; border-bottom:1px solid var(--line); color:var(--ink-2); vertical-align:top; }
+  td strong{ color:var(--ink); }
+  tr{ page-break-inside:avoid; }
+
+  /* ---- number cards ---- */
+  .nums{ display:grid; grid-template-columns:repeat(4,1fr); gap:8px; margin:10px 0; }
+  .nc{ background:var(--panel); border:1px solid var(--line); border-radius:9px;
+       padding:9px 10px; page-break-inside:avoid; }
+  .nc .v{ font-size:17pt; font-weight:800; color:var(--accent-ink); line-height:1.1; letter-spacing:-0.5px; }
+  .nc .l{ font-size:8.4pt; color:var(--ink-3); margin-top:3px; }
+
+  ul{ margin:5px 0 8px; padding-left:18px; }
+  li{ margin:3px 0; color:var(--ink-2); }
+  li strong{ color:var(--ink); }
+
+  /* ---- Q&A cards ---- */
+  .qa{ border:1px solid var(--line-2); border-radius:10px; margin:11px 0; overflow:hidden; page-break-inside:avoid; }
+  .qa .q{ background:var(--panel-2); padding:8px 13px; font-weight:700; color:var(--ink); font-size:11pt; }
+  .qa .q .star{ color:var(--warn); font-size:9.4pt; margin-left:4px; }
+  .qa .body{ padding:9px 13px; }
+  .qa .row{ display:grid; grid-template-columns:64px 1fr; gap:8px; margin:5px 0; align-items:start; }
+  .qa .tag{ font-size:8.4pt; font-weight:700; padding:2px 0; }
+  .qa .tag.trap{ color:var(--warn); }
+  .qa .tag.ans{ color:var(--accent-ink); }
+  .qa .tag.no{ color:var(--no); }
+  .qa .rowtext{ font-size:9.4pt; color:var(--ink-2); }
+  .qa .rowtext strong{ color:var(--ink); }
+
+  .pill{ display:inline-block; background:var(--accent-soft); color:var(--accent-ink);
+         font-size:8.4pt; font-weight:700; padding:1px 8px; border-radius:20px; }
+  .page-break{ page-break-before:always; }
+  .footnote{ font-size:8.4pt; color:var(--ink-3); border-top:1px solid var(--line); padding-top:6px; margin-top:14px; }
+</style>
+</head>
+<body>
+
+<div class="cover">
+  <div class="kicker">TEAM SIXSENSE · 데모데이 공부용</div>
+  <h1>한입지도 — 서비스 마스터 가이드</h1>
+  <p class="sub">예산 안에서 오늘 뭘 먹을지, 검증된 데이터로 정해주는 서비스. 이 문서 하나로 서비스 전부와 적대적 심사 질문을 방어한다.</p>
+  <div class="meta">
+    <span>LIVE · sixsense.askewly.com</span>
+    <span>CODE · github.com/lumatic2/upstage-sixsense</span>
+    <span>기준 · 2026-07-24 실측</span>
+  </div>
+</div>
+
+<!-- 0. 30초 피치 -->
+<section>
+  <div class="sec-head"><span class="sec-num">00</span><h2>30초 안에 이 서비스를 설명한다면</h2></div>
+  <div class="accent-panel">
+    <p class="lead" style="margin:0;"><strong>성균관대 명륜캠퍼스 주변에서, 오늘 가진 예산으로 먹을 수 있는 곳을 알려주는 서비스다.</strong>
+    동네 식당의 가격은 웹에서 믿을 수가 없다 — 소스마다 값이 다르고 언제 값인지도 없다. 그래서 우리는
+    <em>메뉴판 사진을 직접 찍어 Upstage로 읽고, 사람이 검수한 가격만</em> 데이터로 만들었다. 그 위에서 예산·도보 시간으로 검색하고,
+    모델이 쓴 추천 이유는 <em>다른 모델이 데이터와 대조해 검증</em>한다. 범용 챗봇은 답을 <strong>지어내고</strong>, 한입지도는 검수된 데이터에서 답을 <strong>찾는다.</strong></p>
+  </div>
+  <p style="font-size:9.4pt;color:var(--ink-3);margin-top:6px;">이 한 단락이 발표의 전부다. 아래는 이걸 심사 질문 앞에서 지켜내기 위한 살들이다.</p>
+</section>
+
+<!-- 1. 암기 숫자 -->
+<section>
+  <div class="sec-head"><span class="sec-num">01</span><h2>먼저 외울 숫자 (입에서 같은 값이 나와야 한다)</h2></div>
+  <div class="nums">
+    <div class="nc"><div class="v">50곳</div><div class="l">검수 통과 식당 (수집 총 53)</div></div>
+    <div class="nc"><div class="v">719개</div><div class="l">파싱이 만든 메뉴 후보</div></div>
+    <div class="nc"><div class="v">580개</div><div class="l">검수 통과·화면에 나가는 메뉴</div></div>
+    <div class="nc"><div class="v">0건</div><div class="l">검수 대기 (밀린 것 없음)</div></div>
+    <div class="nc"><div class="v">76.4%</div><div class="l">파싱 정확도 (사진5·메뉴72 채점)</div></div>
+    <div class="nc"><div class="v">4곳</div><div class="l">매일 크롤링하는 학식당</div></div>
+    <div class="nc"><div class="v">$0.08</div><div class="l">정확도 측정 전체 비용 (8회 호출)</div></div>
+    <div class="nc"><div class="v">4자리</div><div class="l">Upstage 제품이 일하는 위치</div></div>
+  </div>
+  <table>
+    <tr><th>더 물어보면 나오는 값</th><th>답</th></tr>
+    <tr><td>검수 3상태</td><td>확인 <strong>580</strong> · 제외 <strong>139</strong> · 대기 <strong>0</strong> (합 719)</td></tr>
+    <tr><td>화면에 나가는 메뉴 분해</td><td>본메뉴 <strong>428</strong> · 곁들임 <strong>152</strong></td></tr>
+    <tr><td>본메뉴 가격</td><td>중앙값 <strong>12,000원</strong> (2,500 ~ 75,000원)</td></tr>
+    <tr><td>정확도 향상 궤적</td><td>0% → 62.5% → 76.4% (<strong>API 재호출 없이</strong> 후처리 규칙만 2번 수정)</td></tr>
+    <tr><td>사진 상태별 정확도</td><td>인쇄체·고해상 <strong>100%</strong> / 손글씨 64% / 저해상 20%</td></tr>
+    <tr><td>Solar 응답 속도</td><td>실측 <strong>0.7~1.3초</strong>, 타임아웃 시 정규식 폴백</td></tr>
+  </table>
+  <div class="warn-panel">
+    <div class="t">숫자 규칙 — 절대 어기지 말 것</div>
+    <p style="margin:0 0 5px;font-size:9.4pt;">슬라이드·화면(<code>/about.html</code> 자동 표시)·내 입에서 나오는 숫자가 <strong>전부 같아야 한다.</strong>
+    헷갈리면 <strong>50 · 719 · 580 · 76.4%</strong> 이 네 개만 확실히 붙잡는다.</p>
+    <p style="margin:0;font-size:9.4pt;">⚠ <strong>후보 719는 라이브에서 늘 수 있다</strong> — 제보가 계속 들어와 어젯밤 기준 시트는 ~734. 슬라이드·입은 <strong>719로 통일</strong>하되, 심사위원이 <code>/about.html</code>에서 더 큰 수를 봐도 당황 말 것("후보는 제보로 늘고, <strong>검수 통과 580·대기 0</strong>이 고정 앵커"). 리허설에서 라이브 값 1회 확인.</p>
+  </div>
+</section>
+
+<!-- 2. 문제 정의 -->
+<section class="page-break">
+  <div class="sec-head"><span class="sec-num">02</span><h2>문제 정의 — 여기서 프레임을 틀리면 다 무너진다</h2></div>
+  <p><strong>타깃:</strong> 성균관대 명륜캠퍼스 학생. 점심·저녁마다 "얼마 있는데 뭐 먹지"를 하루 두 번 반복하는 사람.</p>
+  <p><strong>문제:</strong> 동네 식당의 메뉴·가격은 <strong>웹에서 믿을 수가 없다.</strong> 블로그·리뷰에 가격이 있긴 한데
+  소스마다 값이 다르고 <strong>언제 값인지가 없다.</strong> 실측 예: 세아 짜장면이 다이닝코드엔 6,000원, 지난달 방문 블로그엔 7,000원.
+  지도 앱엔 상호·위치만 있다. 지금 가격의 유일한 근거는 <em>가게 벽에 붙은 메뉴판 사진</em>이다.</p>
+  <p>그래서 ChatGPT에 "명륜동에서 8천원으로 뭐 먹지"라고 물으면 이렇게 끝난다 — <strong>"정확한 가격은 매장에 문의하세요."</strong>
+  이건 모델이 부족해서가 아니라 <em>믿고 읽을 데이터가 없어서</em>다. <strong>문제는 모델이 아니라 데이터 쪽에 있다.</strong></p>
+
+  <div class="warn-panel">
+    <div class="t">★ 정확한 프레임 — 이 표현만 쓴다</div>
+    <p style="margin:0 0 5px;font-size:9.4pt;">"웹에 가격이 <strong>없다</strong>"고 말하면 심사위원이 바로 반박한다("검색하면 나오는데요?"). 실제로 검색하면 나온다.</p>
+    <p style="margin:0;font-size:9.4pt;">✔ 올바른 주장 두 개: ① 가격이 없는 게 아니라 <strong>어느 게 지금 값인지 판별이 안 된다</strong>(6,000 vs 7,000 공존).
+    ② <strong>예산으로 50곳을 필터·비교하는 질의는 실시간 검색으로 안 된다</strong> — 구조화된 데이터가 있어야 한다. 그게 우리가 만든 것.</p>
+  </div>
+</section>
+
+<!-- 3. 해법 vs LLM -->
+<section>
+  <div class="sec-head"><span class="sec-num">03</span><h2>해법 — 데이터를 직접 만든다 (vs 범용 LLM)</h2></div>
+  <p>메뉴판 사진을 모아 Upstage Document Parse로 읽고, <strong>사람이 검수한 것만</strong> 서비스에 올린다. 그 위에서 예산·도보 시간으로 검색한다.
+  이게 범용 챗봇이 구조적으로 못 하는 일을 하는 방식이다.</p>
+  <table>
+    <tr><th style="width:22%">항목</th><th>범용 LLM</th><th>한입지도</th></tr>
+    <tr><td><strong>가격 출처</strong></td><td>학습 데이터 (시점 불명)</td><td>메뉴판 사진 + 촬영일 + 검수자</td></tr>
+    <tr><td><strong>없는 정보</strong></td><td>그럴듯하게 지어냄</td><td>빈칸으로 둠</td></tr>
+    <tr><td><strong>검증</strong></td><td>없음</td><td>다른 모델이 근거 판정</td></tr>
+    <tr><td><strong>예산 검색</strong></td><td>문장으로만</td><td>실제 가격 데이터로 필터</td></tr>
+  </table>
+  <div class="accent-panel">
+    <p style="margin:0;"><strong>한 문장 차별성:</strong> 범용 LLM은 답을 <em>지어내고</em>, 한입지도는 검수된 데이터에서 답을 <em>찾는다.</em></p>
+  </div>
+</section>
+
+<!-- 4. 파이프라인 -->
+<section>
+  <div class="sec-head"><span class="sec-num">04</span><h2>데이터 파이프라인 <span class="pill">배점 20점 · 최대 무게</span></h2></div>
+  <p class="lead"><strong>핵심 주장: 입력은 세 갈래인데, 나가는 문은 하나다.</strong> 어느 경로로 들어왔든 <em>사람이 확인한 것만</em> 화면에 나간다.</p>
+  <div class="panel" style="font-family:Consolas,monospace;font-size:9.4pt;line-height:1.5;color:var(--ink);">
+    메뉴판 사진 &nbsp;→&nbsp; Upstage Document Parse &nbsp;┐<br>
+    학식 웹페이지 →&nbsp; 매일 06:10 자동 크롤링 &nbsp;&nbsp;&nbsp;├→&nbsp; <b style="color:var(--accent-ink)">사람 검수</b> &nbsp;→&nbsp; 한입지도<br>
+    가게 주소 &nbsp;&nbsp;&nbsp;→&nbsp; 주소 → 카카오 좌표 변환 &nbsp;┘
+  </div>
+  <h3>단계별 (5단계)</h3>
+  <table>
+    <tr><th style="width:16%">단계</th><th>하는 일</th></tr>
+    <tr><td><strong>① 수집</strong></td><td>명륜동·혜화 식당을 직접 돌며 메뉴판 촬영. 출처와 촬영일을 함께 저장.</td></tr>
+    <tr><td><strong>② 파싱</strong></td><td>Document Parse에 <code>ocr=force</code>, <code>coordinates=true</code>로 요청 → 메뉴명·가격 추출.</td></tr>
+    <tr><td><strong>③ 검수</strong></td><td>사람이 원본 사진과 한 줄씩 대조. <strong>검수=확인 인 행만 노출.</strong> 이 게이트는 API 레벨이라 우회 경로가 없다.</td></tr>
+    <tr><td><strong>④ 보강</strong></td><td>주소로 좌표를 채우고(도보 계산용), 학식은 매일 06:10 크롤링(vercel cron).</td></tr>
+    <tr><td><strong>⑤ 서비스</strong></td><td>예산·도보·태그로 필터 → Solar가 추천 이유 생성 → 다른 모델이 근거 판정.</td></tr>
+  </table>
+  <div class="accent-panel">
+    <div class="t">왜 학식은 파싱하지 않나 (반드시 알아둘 것)</div>
+    <p style="margin:0;">학교 식단은 <strong>이미 표로 정리된 HTML</strong>이다. 여기 사진 파싱을 얹으면 비용은 늘고 정확도는 떨어진다.
+    <em>비정형=Parse, 정형=크롤러</em> — 이 구분 자체가 우리의 Upstage 활용 설계다. "쓸 수 있다고 다 쓰지 않았다"가 오히려 점수다.</p>
+  </div>
+</section>
+
+<!-- 5. Upstage -->
+<section class="page-break">
+  <div class="sec-head"><span class="sec-num">05</span><h2>Upstage 적용 <span class="pill">배점 20점</span></h2></div>
+  <p><strong>네 자리에서 쓴다. 데이터가 들어올 때 둘, 사용자에게 나갈 때 둘.</strong></p>
+  <table>
+    <tr><th style="width:26%">제품 · 위치</th><th>무슨 일</th><th style="width:30%">왜 이 모델</th></tr>
+    <tr><td><strong>Document Parse</strong><br><span style="font-size:8.4pt;color:var(--ink-3)">들어올 때</span></td>
+        <td>메뉴판 사진에서 메뉴명·가격을 읽음 (<code>ocr=force</code>, <code>coordinates=true</code>)</td>
+        <td>지금 가격의 근거는 메뉴판 사진뿐 — 웹 가격은 소스마다 어긋남</td></tr>
+    <tr><td><strong>Solar solar-pro2</strong><br><span style="font-size:8.4pt;color:var(--ink-3)">들어올 때</span></td>
+        <td>제보 사진에서 가게 이름을 찾음</td>
+        <td>사람이 타이핑할 칸을 줄임. 이름 없으면 <strong>빈칸</strong>을 돌려주게 못 박음</td></tr>
+    <tr><td><strong>Solar solar-pro2</strong><br><span style="font-size:8.4pt;color:var(--ink-3)">나갈 때</span></td>
+        <td>사용자 문장에서 예산·도보·태그 추출 + 추천 이유 작성 (한 번의 왕복, 구조화 출력)</td>
+        <td>"둘이서 2만원"→1인 1만원 나눗셈을 solar-mini는 틀림</td></tr>
+    <tr><td><strong>Solar solar-mini</strong><br><span style="font-size:8.4pt;color:var(--ink-3)">나갈 때</span></td>
+        <td>pro2가 쓴 추천 이유를 데이터와 대조해 채점</td>
+        <td>쓴 모델이 스스로 채점하면 검증이 아니라서 <strong>다른 모델</strong>에 맡김</td></tr>
+  </table>
+  <h3>구조화 출력 예시 (외워두면 시연·질문에 강함)</h3>
+  <div class="panel" style="font-family:Consolas,monospace;font-size:8.4pt;line-height:1.5;">
+    입력: <b>"8천원 이하 10분 거리 이내 혼밥"</b><br>
+    출력: { "budget": 8000, "walkMax": 10, "tags": ["혼밥"],<br>
+    &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;"reason": "8천원 이하 예산, 10분 이내 거리, 혼밥 태그 조건 명시됨", "source": "solar" }
+  </div>
+  <div class="warn-panel">
+    <div class="t">★ 정직성 각주 — 이걸 모르면 함정 질문에 무너진다</div>
+    <p style="margin:0;font-size:9.4pt;">"전용 Groundedness Check 모델을 쓴 거냐?" → <strong>아니다.</strong> 전용 모델은 2026-07 현재 계정 모델 목록에서 제공 종료됐다(<code>/v1/models</code> 실측).
+    같은 계약(context-answer 판정)을 <strong>생성과 분리된 solar-mini 판정자</strong>로 구현했다.
+    정확한 서사는 "제품 3종"이 아니라 <em>"Solar를 생성·검증 2역할로 분리 활용"</em>이다.</p>
+  </div>
+  <div class="accent-panel">
+    <p style="margin:0 0 5px;">Upstage 공식 서사 = <strong>"모델이 아니라 문서 구조화가 병목"</strong>이다. 우리 파이프라인이 그 말을 메뉴판 사진에서 <em>실물로 증명</em>했다 (슬라이드 6에서 한 문장으로 명시).</p>
+    <p style="margin:0;">Upstage가 내세우는 또 하나 = <strong>"할루시네이션 없는 정확성(Precision)"</strong>(킥오프 p17). 우리 <em>환각 4겹 + 사람 검수 + 근거 판정</em>이 이 서사와 1:1이다 — "구조화가 병목"에 이 <strong>정확성 앵글</strong>을 한 문장 더 붙이면 Upstage 기여도 점수에 직결.</p>
+  </div>
+</section>
+
+<!-- 6. 환각 방지 -->
+<section>
+  <div class="sec-head"><span class="sec-num">06</span><h2>환각을 막는 4겹 <span class="pill">차별성의 핵심</span></h2></div>
+  <p class="lead">이 서비스의 주장은 하나다 — <strong>"모델이 말한 것을 데이터가 검증한다."</strong> 원칙은 넷 다 같다: <em>근거가 없으면 문장을 버린다.</em></p>
+  <table>
+    <tr><th style="width:24%">겹</th><th>하는 일</th></tr>
+    <tr><td><strong>① 검수 게이트</strong><br>AI는 후보, 사람이 통과</td><td>검수=확인이 아닌 행은 API가 안 내보낸다. 제보로 들어온 것도 예외 없다.</td></tr>
+    <tr><td><strong>② 근거 판정</strong><br>생성·검증 다른 모델</td><td>pro2가 이유를 쓰면 mini가 실제 메뉴·가격·도보와 대조해 <code>grounded / notGrounded / notSure</code> 판정. 근거 없으면 데이터 사실 문장으로 교체.</td></tr>
+    <tr><td><strong>③ 기억 검증</strong><br>없는 낱말 폐기</td><td>"마라탕버거"를 검색해도 기억 안 함. <strong>데이터 안에 실제로 있는 낱말만</strong> 남기고, 꺼낼 때 또 대조.</td></tr>
+    <tr><td><strong>④ 추천 칩 검증</strong><br>빈 결과 제안 금지</td><td>"도보 3분 안" 같은 후속 제안 전에, 그 조건으로 실제 결과가 나오는지 먼저 센다.</td></tr>
+  </table>
+  <div class="warn-panel">
+    <div class="t">★ 시연 주의 — "교체 배지"는 거의 안 뜬다 (당황 금지)</div>
+    <p style="margin:0;font-size:9.4pt;">생성 프롬프트가 애초에 근거 없는 표현(맛·평판·분위기)을 못 쓰게 막아서 <strong>대부분 통과한다</strong>(2026-07-24 실측: 15개 추천 전부 grounded, 교체 0건).
+    배지 안 뜨는 게 <em>통제가 잘 됐다는 증거</em>다. 억지로 띄우려 하지 말 것. <strong>항상 보이는 근거 증거 = 추천 요약줄</strong>
+    ("추천 이유는 다른 모델이 데이터와 대조해 N건이 근거 검증을 통과했습니다"). "교체 장면"이 꼭 필요하면 <code>/about.html</code> 3단계 예시(초안→판정→교체)를 쓴다.</p>
+  </div>
+</section>
+
+<!-- 7. 정확도 -->
+<section class="page-break">
+  <div class="sec-head"><span class="sec-num">07</span><h2>정확도와 재현성 <span class="pill">깊이 15점</span></h2></div>
+  <p>사진 5장·72개 메뉴를 사람이 채점한 결과 <strong>55개 정확 = 76.4%</strong>. 하지만 <em>정확도 숫자보다 무엇이 정확도를 흔드는지 알아낸 것</em>이 이 실험의 진짜 결과다.</p>
+  <table>
+    <tr><th>사진 상태</th><th style="width:26%">정확도</th><th>의미</th></tr>
+    <tr><td>인쇄체 · 해상도 충분 (2장)</td><td><strong>100%</strong> (37/37)</td><td>조건만 맞으면 완벽</td></tr>
+    <tr><td>표기 변형 · 손글씨 (2장)</td><td>64.0% (16/25)</td><td>중간</td></tr>
+    <tr><td>저해상 흐림 (1장)</td><td>20.0% (2/10)</td><td>여기서만 무너진다</td></tr>
+  </table>
+  <div class="accent-panel">
+    <p style="margin:0 0 5px;"><strong>지배 변수는 해상도 하나였다.</strong> 반사·거리는 문제가 아니었다 — 유리창에 붙은 메뉴를 멀리서 반사까지 얹어 찍은 사진이 25개 항목 전부 맞았다.</p>
+    <p style="margin:0;">→ 그래서 수집 지침이 "잘 찍어 달라"가 아니라 <em>"해상도만 확보하면 된다"</em>가 됐고, 저해상은 <em>사람 검수가 잡는</em> 구조로 만들었다.</p>
+  </div>
+  <h3>재현성 — 이게 "깊이" 점수의 핵심</h3>
+  <p>정확도 측정에 Document Parse <strong>8회 호출, 약 $0.08.</strong> 그때 받은 <strong>응답 원본 5건을 파일로 박제</strong>해서,
+  후처리 규칙을 고칠 때마다 API를 다시 부르지 않고 같은 응답으로 재채점했다. 이 방식으로 <strong>API 재호출 없이 규칙만 두 번 고쳐 0% → 62.5% → 76.4%</strong>로 올렸다.</p>
+  <div class="panel">
+    <p style="margin:0;font-size:9.4pt;"><strong>1차 0건의 진실:</strong> 3장이 0건이었던 건 Document Parse 실패가 <em>아니라 우리 후처리 결함</em>이었다.
+    OCR 텍스트가 <code>&lt;figure&gt;&lt;img alt="..."&gt;</code> 속성으로 오는데 초기 추출기가 태그를 통째로 버렸다. <strong>alt 승격</strong> 후 전 장의 텍스트를 확보했다.</p>
+  </div>
+</section>
+
+<!-- 8. 시행착오 -->
+<section>
+  <div class="sec-head"><span class="sec-num">08</span><h2>시행착오 5선 — "깊이"를 증명하는 재료</h2></div>
+  <table>
+    <tr><th style="width:26%">걸린 것</th><th>어떻게 했나</th></tr>
+    <tr><td><strong>곁들임 메뉴</strong><br>공기밥 1,000원이 "8천원 이하" 통과시킴</td><td>메뉴마다 본메뉴/곁들임 판정 → 예산 판정·개수 세기 모두 <strong>본메뉴로만</strong>. 규칙은 63개 케이스로 고정.</td></tr>
+    <tr><td><strong>천원단위 소수 표기</strong><br>가격을 7.0·1.5로 적는 식당</td><td>1,000배 환산. OCR 공백 천단위(<code>4 000</code>, <code>21 ,000</code>)도 같은 자리에서 흡수.</td></tr>
+    <tr><td><strong>메뉴판을 그래프로 읽음</strong><br>"item_01 12,500원"이 화면에 나감</td><td>Document Parse가 차트로 오인해 뱉은 빈칸 이름을 <strong>받는 자리에서 폐기.</strong> 우리 버그가 아니라 읽어온 결과에 섞인 것이라 받는 쪽에서 막는 게 맞다.</td></tr>
+    <tr><td><strong>LLM 기억 오염</strong><br>"마라탕버거"를 관심어로 저장</td><td>기억할 낱말을 실제 메뉴·식당 이름과 대조해 통과한 것만 남김. 꺼낼 때 또 대조.</td></tr>
+    <tr><td><strong>추천 이유의 근거</strong><br>Solar가 쓴 이유에 없는 말이 섞임</td><td>실제 데이터와 한 줄씩 대조. 대조는 <strong>다른 모델</strong>이 맡고, 근거 없으면 데이터 사실로 교체.</td></tr>
+  </table>
+  <div class="accent-panel">
+    <p style="margin:0;"><strong>곁들임 판정의 설계 원칙</strong>(디테일 물으면): 규칙엔 <em>어느 가게에나 통하는 것만</em> 담고(술·만두류·<code>100g</code> 단가·반접시),
+    한 가게 사정은 <em>시트 비고 열로 뒤집는다</em>(모듬튀김 1인, Green Salad). "튀김 1인"을 규칙에 넣었으면 다른 가게 본메뉴까지 끌려갔다.</p>
+  </div>
+</section>
+
+<!-- 9. 데이터 구조 & 스택 -->
+<section class="page-break">
+  <div class="sec-head"><span class="sec-num">09</span><h2>데이터 구조 · 기술 스택 · 장애 대응</h2></div>
+  <h3>데이터 구조 — 정본은 구글 시트 하나 (DB 안 씀)</h3>
+  <p>별도 DB 없이 <strong>구글 스프레드시트 3탭.</strong> 팀원 누구나 열어서 고치고, 검수도 시트에서 한다.</p>
+  <ul>
+    <li><strong>식당 (11열):</strong> 식당ID·이름·카테고리·주소·위도·경도·태그·메뉴판 사진 링크·수집자·촬영일·상태</li>
+    <li><strong>메뉴 (7열):</strong> 식당ID·이름·메뉴명·가격·<strong>출처</strong>(사진파싱/제보/직접입력)·<strong>검수</strong>(확인/제외/대기)·<strong>비고</strong>(사이드/한끼)</li>
+    <li><strong>학식:</strong> 크롤러가 매일 채움. <em>마지막 들어온 날짜</em>를 함께 내보내 "오늘 휴무"와 "정보 없음"을 구별.</li>
+  </ul>
+  <h3>기술 스택</h3>
+  <table>
+    <tr><th style="width:26%">층</th><th>선택 · 이유</th></tr>
+    <tr><td>프론트</td><td><strong>바닐라 JS</strong> (빌드 없음) — 화면 5개·얕은 상태. 프레임워크 비용이 회수 안 됨</td></tr>
+    <tr><td>지도</td><td><strong>Kakao Maps</strong> (ADR-0002)</td></tr>
+    <tr><td>데이터</td><td><strong>구글 시트 단일</strong> — 팀원이 바로 열어 고치고 검수도 여기서 (ADR-0005)</td></tr>
+    <tr><td>서버</td><td><strong>Vercel serverless</strong> — API 키를 서버에만. 클라이언트 노출 없음</td></tr>
+    <tr><td>AI</td><td><strong>Upstage Document Parse + Solar</strong></td></tr>
+  </table>
+  <h3>장애 대응 — 하나가 죽어도 서비스는 돈다</h3>
+  <table>
+    <tr><th style="width:26%">멈추는 곳</th><th>대응</th></tr>
+    <tr><td>학식 크롤러</td><td>마지막 입력 날짜를 함께 보내 오늘보다 이르면 <strong>"정보 없음"</strong> (휴무와 구별)</td></tr>
+    <tr><td>Document Parse</td><td>제보 OCR 실패 시 <strong>직접 입력</strong>으로 흐름 이어감</td></tr>
+    <tr><td>Solar</td><td>이유 생성 실패 시 <strong>데이터 템플릿 이유로 폴백</strong>. 추천 루프는 안 죽는다</td></tr>
+    <tr><td>기능 격리</td><td>추천이 안 되어도 <strong>지도·학식은 보인다</strong></td></tr>
+  </table>
+  <div class="panel">
+    <p style="margin:0;font-size:9.4pt;"><strong>검증(매 배포마다):</strong> 곁들임 판정 63케이스 · 조건 추출 35 · 추천 칩 검증 18 · 배포 사이트 실브라우저 훑기 16(smoke).
+    결함을 일부러 주입해 smoke가 실제 FAIL 하는 것까지 확인(허수 테스트 방지). 정본 = <code>verification/matrix.md</code>.</p>
+  </div>
+</section>
+
+<!-- 10. 한계 -->
+<section>
+  <div class="sec-head"><span class="sec-num">10</span><h2>한계 — 물으면 정직하게 (숨기면 더 약해진다)</h2></div>
+  <table>
+    <tr><th style="width:30%">한계</th><th>우리 대응</th></tr>
+    <tr><td>정확도 76.4%</td><td>저해상에서 크게 떨어짐 → <strong>사람 검수를 필수 단계로</strong></td></tr>
+    <tr><td>손글씨 첨삭</td><td>5,000을 지우고 7,000 덧쓴 메뉴판은 실패 (인정)</td></tr>
+    <tr><td>범위 = 명륜캠 50곳</td><td>확장은 같은 파이프라인을 다른 동네에 (아직 안 함, 다음 후보 = 자연과학캠)</td></tr>
+    <tr><td>로그인 없음</td><td>기기 바꾸면 기억 안 이어짐 — <strong>의도된 선택</strong> (ADR-0004)</td></tr>
+    <tr><td>가격 = 촬영 시점 값</td><td>촬영일을 함께 저장하고 오래된 것부터 다시 확인</td></tr>
+  </table>
+  <div class="accent-panel">
+    <p style="margin:0;">한계를 말하는 것 자체가 무기다 — <strong>"안 한 것"을 말하면 신뢰가 오른다.</strong> 학식 파싱 안 씀 · 순서 개인화 걷어냄 · 전량 자동 반영 안 함. 다 쓰는 것보다 <em>가려 쓴 게 세다.</em></p>
+  </div>
+</section>
+
+<!-- 11. 전체 플로우 지도 -->
+<section class="page-break">
+  <div class="sec-head"><span class="sec-num">11</span><h2>화면·API 전체 플로우 지도 (모르는 흐름이 없게)</h2></div>
+  <p>공개 화면 4 + 비공개 검수 1 + cron 1. 각 화면은 <strong>심사위원의 질문 하나</strong>에 답한다.</p>
+  <table>
+    <tr><th style="width:20%">화면</th><th>답하는 질문</th><th style="width:30%">부르는 API</th></tr>
+    <tr><td><strong>/</strong> 랜딩</td><td>이게 뭐고 왜 필요한가</td><td><code>config</code> · <code>data</code></td></tr>
+    <tr><td><strong>/app.html</strong> 메뉴 찾기</td><td>예산 넣으면 진짜 정해주나</td><td><code>chat</code> · <code>recommend</code> · <code>parse-query</code>(폴백) · <code>data</code></td></tr>
+    <tr><td><strong>/contribute.html</strong> 사진 제보</td><td>데이터는 어디서 오나 (내가 직접)</td><td><code>parse-menu</code>(Doc Parse) · <code>identify</code>(Solar) · <code>contribute</code></td></tr>
+    <tr><td><strong>/about.html</strong> 파이프라인</td><td>왜 ChatGPT가 아닌가 + 지금 진짜인가</td><td>실행 블록 4개 (실제 API 호출)</td></tr>
+    <tr><td><strong>/review.html</strong> 검수 <span style="font-size:8.4pt;color:var(--ink-3)">(비공개)</span></td><td>AI가 뽑은 걸 사람이 승인</td><td><code>review</code> (<code>REVIEW_TOKEN</code>)</td></tr>
+    <tr><td><strong>cron</strong> 학식 크롤</td><td>매일 06:10 학식 자동 수집</td><td><code>cron/crawl-cafeteria</code></td></tr>
+  </table>
+  <div class="accent-panel">
+    <div class="t">검색 경로 — 세 API가 하는 일이 다르다 (헷갈리면 안 됨)</div>
+    <p style="margin:0;font-size:9.4pt;">① <strong><code>/api/chat</code></strong> = 1차 검색. solar-pro2가 문장을 조건으로 구조화 + 대화 답변 + <strong>제안 칩</strong>(서버가 실데이터로 검증한 것만).
+    ② <strong><code>/api/recommend</code></strong> = Top3 추천. Solar가 이유 쓰고 <strong>solar-mini가 근거 판정.</strong>
+    ③ <strong><code>/api/parse-query</code></strong> = <strong>폴백.</strong> chat이 죽으면 정규식으로 조건만 뽑아 검색을 살린다(<code>source</code> 필드로 경로 표시).</p>
+  </div>
+  <h3>제보 파이프라인 6단계 (검수 주체 = 운영진)</h3>
+  <div class="panel" style="font-family:Consolas,monospace;font-size:9.4pt;line-height:1.55;color:var(--ink);">
+    ① contribute &nbsp;&nbsp;메뉴판 사진 + 식당명 입력<br>
+    ② parse-menu &nbsp;&nbsp;Document Parse → {메뉴,가격} 후보<br>
+    ③ 브라우저 &nbsp;&nbsp;&nbsp;&nbsp;파싱 결과 읽기 전용 확인<br>
+    ④ contribute &nbsp;&nbsp;시트 append · 검수="대기"<br>
+    ⑤ review &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;<b style="color:var(--accent-ink)">운영진이 사진 원본과 대조 → 확인/제외 ← 사람</b><br>
+    ⑥ 서비스 &nbsp;&nbsp;&nbsp;&nbsp;&nbsp;검수="확인" 행만 노출
+  </div>
+  <div class="warn-panel">
+    <div class="t">★ 중복 제보 처리 — "공개 제보면 데이터 오염되지 않나?"의 답</div>
+    <p style="margin:0;font-size:9.4pt;">공개 제보라 같은 메뉴가 반복 들어온다. 접수(<code>contribute</code>)가 그 가게의 기존 행 + 이번 배치를 대조해 나눈다:
+    <strong>같은 이름 + 같은 가격 → 검수 "중복"</strong>(서비스·대기열에서 빠지되 흔적은 남김) ·
+    <strong>같은 이름 + 다른 가격 → "대기"</strong>(가격이 바뀐 것일 수 있어 사람이 최신을 정함, 검수화면에 <code>⟳ 기존 확인가 N원</code> 배지) ·
+    새 이름 → "대기". "중복"은 <code>검수=확인</code> 게이트를 못 넘어 서비스에 안 나온다.</p>
+  </div>
+</section>
+
+<!-- 12. 루브릭 -->
+<section class="page-break">
+  <div class="sec-head"><span class="sec-num">12</span><h2>심사 루브릭 100점 + 우리 답 + 증거</h2></div>
+  <p><strong>데이터 처리 35점(파이프라인 20 + 깊이 15) + Upstage 20점 = 55점</strong>에 발표 시간의 절반 이상을 쓴다. UI 완성도는 직접 배점 0 — Impact·발표로만 간접.</p>
+  <table>
+    <tr><th style="width:30%">심사 기준</th><th style="width:10%">배점</th><th>우리 답 · 증거</th></tr>
+    <tr><td>범용 LLM 대비 차별성</td><td><strong>5</strong></td><td>vs표(3쪽)·환각 4겹(8쪽). "웹 가격은 판별 불가, 우리가 근거 데이터를 만듦"</td></tr>
+    <tr><td>문제 정의 구체성·타깃</td><td><strong>5</strong></td><td>명륜캠 학생, 하루 두 번 (2쪽)</td></tr>
+    <tr class="star-row" style="background:var(--accent-soft)"><td><strong>정보 처리 파이프라인 설계·관리</strong></td><td><strong>20</strong></td><td>입력 3갈래→검수 한 문→서비스, 모든 행이 출처·검수·촬영일 보유 (5·6쪽 / <code>/about.html</code> 흐름도 + 시트 실물)</td></tr>
+    <tr class="star-row" style="background:var(--accent-soft)"><td><strong>정보 처리의 깊이·정교성</strong></td><td><strong>15</strong></td><td>환각 4겹·정확도 해석(해상도 지배변수)·시행착오 (8·9·10쪽 / <code>verification/matrix.md</code>)</td></tr>
+    <tr class="star-row" style="background:var(--accent-soft)"><td><strong>목적에 적합한 Upstage 적용</strong></td><td><strong>10</strong></td><td>4자리 표 + <strong>"학식엔 안 씀"</strong>(가려 쓴 판단) (7쪽)</td></tr>
+    <tr class="star-row" style="background:var(--accent-soft)"><td><strong>기술 적용 결과의 기여도</strong></td><td><strong>10</strong></td><td>모델 선택 실측(mini 환각→pro2)·응답 박제 재현성 0%→62.5%→76.4%</td></tr>
+    <tr><td>실용성·활용 가능성</td><td><strong>10</strong></td><td>라이브 시연 (11쪽 / sixsense.askewly.com)</td></tr>
+    <tr><td>서비스 논리의 타당성</td><td><strong>5</strong></td><td>문제→해법→검증 일관 (2·3쪽)</td></tr>
+    <tr><td>임팩트·확장성</td><td><strong>5</strong></td><td>같은 파이프라인, 자연과학캠 확장 (13쪽)</td></tr>
+    <tr><td>발표 전달력·태도</td><td><strong>5</strong></td><td>리허설·분담 (7/25 11:00)</td></tr>
+    <tr><td>발표 자료 논리·완성도</td><td><strong>10</strong></td><td>14장 전체 (문제→해법→파이프라인→검증→실측→시연→한계)</td></tr>
+  </table>
+  <div class="accent-panel">
+    <p style="margin:0;">승부처 한 줄: <strong>"그냥 ChatGPT에 물어보면 되지 않나?"</strong>에 실물(사진 유래 가격·당일 학식·근거 검증)로 답한다. 파랑 강조 4행 = 55점, 여기가 전부다.</p>
+  </div>
+
+  <h3>운영진이 말한 "기대 깊이" 3축에 우리 답 맞추기 (킥오프 p108)</h3>
+  <p style="font-size:9.4pt;">새로 하는 게 아니라, <strong>이미 하는 걸 채점 어휘로 라벨</strong>하는 것. 발표·Q&amp;A에서 이 세 단어를 그대로 쓰면 심사 체크리스트에 정확히 걸린다.</p>
+  <table>
+    <tr><th style="width:26%">운영진 기대 축</th><th>우리가 이미 하는 것</th></tr>
+    <tr><td><strong>데이터 융합</strong><br>여러 소스 교차·종합</td><td>입력 3갈래(메뉴판 가격 + 학식 HTML + 주소·도보)를 <strong>한 검색 인터페이스로 교차</strong></td></tr>
+    <tr><td><strong>Action 기능</strong><br>조회·요약 넘어 비교·추천·자동작성</td><td>예산으로 <strong>50곳 비교 + 추천 + 추천이유 자동작성</strong></td></tr>
+    <tr><td><strong>복합 구조 해석</strong><br>표·수식·이미지 포함</td><td>메뉴판 이미지→구조화. <strong>차트 오인·천원단위 소수</strong> 사고가 그 정교함의 증거</td></tr>
+  </table>
+</section>
+
+<!-- 13. 적대적 Q&A -->
+<section class="page-break">
+  <div class="sec-head"><span class="sec-num">13</span><h2>적대적 Q&amp;A 방어 — 심사위원이 파고들 지점</h2></div>
+  <p style="margin-bottom:8px;">각 카드: <span style="color:var(--warn);font-weight:700">함정</span>이 무엇이고, <span style="color:var(--accent-ink);font-weight:700">답</span>은 무엇이며, <span style="color:var(--no);font-weight:700">금지</span>는 무엇인지. ★ = 반드시 나온다.</p>
+  <div class="warn-panel">
+    <div class="t">★ 전제 — 심사위원은 Upstage 현직 엔지니어다 (킥오프에서 확정)</div>
+    <p style="margin:0;font-size:9.4pt;">킥오프 자료가 <em>"심사는 업스테이지 현직자분들을 모셨습니다"</em>라고 명시했다(추정 아님). 그래서 <strong>억지로 끼운 API는 즉시 들킨다</strong> — 반대로 우리의 <strong>"학식엔 Parse 안 씀"·정직성 각주(Groundedness 전용모델 종료)가 오히려 가점</strong>이다. 부풀리지 말고, 가려 쓴 판단을 자신 있게 말한다.</p>
+  </div>
+
+  <div class="qa">
+    <div class="q">"그냥 ChatGPT랑 뭐가 다르죠?"<span class="star">★ 승부처</span></div>
+    <div class="body">
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">범용 챗봇은 <strong>오늘자 학식을 모르고</strong>, 가격은 찾아도 출처·시점이 뒤섞인 값을 준다(같은 집이 소스마다 6천/7천). 우리는 1차 소스만 — 학식은 <strong>오늘 크롤링한 HTML</strong>, 가격은 파싱 후 <strong>사람이 승인한</strong> 데이터. 행마다 출처·촬영일·검수자가 붙고, 모델이 한 말은 다른 모델이 데이터와 대조한다.</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"요즘 ChatGPT는 웹검색으로 가격 찾잖아요?"<span class="star">★ 대비 필수</span></div>
+    <div class="body">
+      <div class="row"><div class="tag trap">함정</div><div class="rowtext">"웹에 가격 없다"고 했다가 반박당하는 지점.</div></div>
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">맞다, <strong>한 가게는 찾는다.</strong> 그런데 실제로 검색해 보면 같은 짜장면이 다이닝코드 6,000원·블로그 7,000원 — <strong>어느 게 지금 값인지 판별할 근거가 검색엔 없다.</strong> 우리는 촬영일 붙은 사진이 근거고, 바뀌면 제보→검수로 갱신. 그리고 <strong>"8천원 이하 되는 곳 전부"처럼 50곳을 필터·비교하는 질의는 실시간 검색으로 안 된다</strong> — 구조화 데이터가 있어야 한다.</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"정확도 76%면 낮지 않나요?"</div>
+    <div class="body">
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">그래서 <strong>사람 검수를 필수로</strong> 뒀다. 76.4%는 평균이고 인쇄체·해상도 충분이면 <strong>100%</strong>. <strong>무엇이 정확도를 흔드는지(해상도) 알아낸 것</strong>이 이 실험의 결과다.</div></div>
+      <div class="row"><div class="tag no">금지</div><div class="rowtext">"곧 올라갈 거예요" 식 변명 금지. 검수로 잡는 구조라고 답한다.</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"거지맵이랑 뭐가 다른가요?" (숨기지 않는다)</div>
+    <div class="body">
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">표면은 닮았다(예산 필터+대학가). 차이는 <strong>데이터 생산 방식</strong> — 그쪽은 사용자가 손으로 타이핑, 우리는 사진 1장→Document Parse→프리필($0.01/장, 76.4%). <strong>학식 자동 크롤링</strong>과 상황 자연어 검색("과선배가 사는 날")도 우리만 있다.</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"파싱이 틀리면? 데이터 오염은?"</div>
+    <div class="body">
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">전량 자동 반영을 <strong>안 한다.</strong> 파싱은 후보 프리필까지만, <strong>운영자 승인</strong>을 거쳐야 서비스에 나간다. 저해상 가격 오독(7.0→17.0) 실사례를 확보했고, 어디까지 자동인지의 경계를 <em>감이 아니라 실측으로</em> 그었다.</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"공개 제보면 아무나 넣는데 데이터 오염 안 되나요?"<span class="star">★ 파고들기 쉬움</span></div>
+    <div class="body">
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">두 겹으로 막는다. ① 제보는 전부 <strong>검수="대기"</strong>로 들어와 운영자 승인 전엔 서비스에 안 나온다. ② 접수 단계가 같은 가게 기존 행과 대조해 <strong>같은 이름+같은 가격은 "중복"</strong>으로 자동 격리(서비스 제외), <strong>같은 이름+다른 가격은 "대기"</strong>로 남겨 사람이 최신 가격을 정한다. 흔적은 <code>출처="제보"</code>로 남아 롤백도 된다.</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"왜 학식엔 Document Parse를 안 썼나요?"</div>
+    <div class="body">
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">학식은 이미 <strong>구조화된 HTML</strong>. 문서 파서를 끼우는 건 요건용 억지 적용이고 "목적에 적합한 제품 적용"에 반한다. <strong>비정형=Parse, 정형=크롤러</strong> — 이 구분 자체가 우리의 Upstage 활용 설계다.</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"전용 Groundedness Check 모델을 쓴 건가요?"<span class="star">★ 정직성</span></div>
+    <div class="body">
+      <div class="row"><div class="tag trap">함정</div><div class="rowtext">"제품 3종 썼다"고 부풀리면 바로 들킨다 (심사석에 Upstage 엔지니어 있다고 가정).</div></div>
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">전용 모델은 2026-07 현재 계정 모델 목록에서 <strong>제공 종료</strong>(<code>/v1/models</code> 실측). 같은 계약(context-answer 판정)을 <strong>생성과 분리된 solar-mini 판정자</strong>로 구현했다. 정확한 서사 = "Solar를 생성·검증 2역할로 활용".</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"Solar가 느리거나 죽으면?"</div>
+    <div class="body">
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">실측 <strong>0.7~1.3초</strong>, 타임아웃 시 <strong>정규식 폴백</strong> — 검색은 외부 장애와 무관하게 항상 동작하고 <code>source</code> 필드로 경로를 투명하게 남긴다. 모델 선정도 실측: solar-mini는 예산 환각·인원 나눗셈 실패를 보여 pro2를 채택했다.</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"근거 검증이 실제로 뭘 걸러냈나요?"</div>
+    <div class="body">
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">생성 프롬프트가 근거 없는 표현을 애초에 막아 <strong>대부분 통과</strong>한다 — 검증은 그 통과를 <em>증명하는</em> 장치다. 프롬프트를 풀면 solar-mini가 맛·평판 문장을 잡아 데이터 팩트로 교체한다(<code>/about.html</code> 3단계 예시에 항상 그려져 있음).</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"왜 DB 대신 시트인가요?"</div>
+    <div class="body">
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">데이터 수집·보강이 <strong>팀원 4명의 협업</strong>이라서다. 시트는 계정·어드민 없이 누구나 열어 고치고 예외 처리(비고 열)까지 그 자리에서 된다. 검수 페이지도 시트를 정본으로 읽고 쓰는 창일 뿐. 지금 규모(700여 행)엔 시트가 운영 비용 최소, 커지면 DB로 옮기면 된다 — <strong>읽기 경로가 한 곳이라 교체도 쉽다</strong>(ADR-0005).</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"확장 가능한가요?" / "이게 진짜 도나요?"</div>
+    <div class="body">
+      <div class="row"><div class="tag ans">답</div><div class="rowtext"><strong>확장:</strong> 구조가 이식 단위다 — 학식 크롤러(대학별 URL 교체)·메뉴판 파싱(지역 무관)·예산 질의(공통). 자연과학캠이 다음 후보. <strong>진짜 도냐:</strong> 라이브에서 바로 보여준다(<code>/about.html</code> 실행 블록이 실제 API를 그 자리에서 호출). 정본 = <code>verification/matrix.md</code>.</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"왜 Parse만? Classify·Extract는 안 썼나요?"<span class="star">★ 현직자 예상</span></div>
+    <div class="body">
+      <div class="row"><div class="tag trap">함정</div><div class="rowtext">"Extract 쓸 줄 몰라서"로 들리면 감점. "필요 없어서, 우리가 더 정확히 했다" 프레임으로.</div></div>
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">메뉴판은 Parse의 <strong>좌표+텍스트만으로 충분</strong>하다. Extract가 할 '필드 추출'(가격·메뉴명 정리)은 우리가 <strong>도메인 특화 후처리 규칙</strong>으로 직접 했다 — Parse가 준 날것을 <em>메뉴판이라는 우리 문제에만 맞춘 규칙 코드</em>로 다듬는 단계다(<code>7.0→7,000</code> 환산 · <code>4 000</code> 공백 흡수 · 공기밥=곁들임 63케이스 · 차트 오인 빈칸 폐기). 범용 추출 모델보다 이 도메인에선 우리 규칙이 더 정확·투명하고 비용 0. 학식과 같은 <strong>목적 적합성</strong> 판단.</div></div>
+    </div>
+  </div>
+
+  <div class="qa">
+    <div class="q">"킥오프에서 배운 Supabase·Next.js는 왜 안 썼나요?"</div>
+    <div class="body">
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">배운 걸 못 쓴 게 아니라 <strong>문제 크기에 맞춰 골랐다.</strong> 화면 5개·얕은 상태라 프레임워크 밀키트 비용이 회수 안 된다. 데이터는 팀 4명 협업·검수라 <strong>시트가 곧 어드민</strong>(계정·어드민 도구 없이 누구나 고침). 규모 커지면 DB로 옮기면 된다 — 읽기 경로가 한 곳이라 교체도 쉽다(ADR-0005).</div></div>
+    </div>
+  </div>
+
+  <div class="warn-panel">
+    <div class="t">답 못 할 질문이 나오면</div>
+    <p style="margin:0;font-size:9.4pt;">지어내지 않는다. <strong>"정직한 한계" 프레임</strong>으로 받는다 — "그건 아직 안 했다 / 지금은 여기까지가 실측이다." 없는 걸 있다고 하는 순간 나머지 답까지 의심받는다.</p>
+  </div>
+</section>
+
+<div class="footnote">
+  정본: <code>docs/SERVICE-SPEC.md</code> (§1~§12). 숫자는 항상 §8 기준. 발표 멘트는 <code>docs/presentation/slides-script.md</code>.
+  이 문서는 2026-07-24 실측을 발표 공부용으로 재구성한 것. · TEAM SIXSENSE
+</div>
+
+</body>
+</html>
