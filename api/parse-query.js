@@ -29,7 +29,7 @@ const RESPONSE_FORMAT = {
 };
 
 const SYSTEM_PROMPT =
-  "성균관대 명륜캠퍼스 주변 식당 검색 질의를 구조화한다. 규칙: budget=1인 예산 상한(원). 질의에 금액이 없으면 반드시 -1 (추측 금지). '2만원으로 둘이'처럼 인원이 있으면 1인분으로 나눈다. walkMax=도보 상한(분), 없으면 -1. 거리(m)는 80m=1분 환산. tags 는 다음 중에서만 고른다: 혼밥,단체,회식,격식,해장,야식,24시,가성비,양많음,데이트,시험기간 (격식=교수님·과선배·어른과 식사). reason 은 해석 근거 한 문장. JSON 만 출력.";
+  "성균관대 명륜캠퍼스 주변 식당 검색 질의를 구조화한다. 규칙: budget=1인 예산 상한(원). 질의에 금액이 없으면 반드시 -1 (추측 금지). '2만원으로 둘이'처럼 인원이 있으면 1인분으로 나눈다. walkMax=도보 상한(분), 없으면 -1. 거리(m)는 80m=1분 환산. tags 는 다음 중에서만 고른다: 혼밥,단체,회식,격식,해장,야식,24시,가성비,양많음,데이트,시험기간,초밥,김밥,쌀국수,치킨,생선,돈카츠 (격식=교수님·과선배·어른과 식사). reason 은 해석 근거 한 문장. JSON 만 출력.";
 
 // ── hanipmap app.js 이식 (정규식 폴백) ──
 import { extractConditions, parseAmount } from "./chat.js";
@@ -52,7 +52,7 @@ function parseWalkMax(text) {
 }
 function regexFallback(query) {
   // 태그 해석은 Solar 몫 — 폴백은 데모 데이터에 있는 대표 키워드만 직매칭
-  const tags = ["혼밥", "단체", "해장", "야식", "24시", "가성비"].filter((t) => query.includes(t));
+  const tags = ["혼밥", "단체", "회식", "데이트", "해장", "야식", "24시", "가성비", "시험기간", "초밥", "김밥", "쌀국수", "치킨", "생선", "돈카츠"].filter((t) => query.includes(t));
   // 금액·거리는 /api/chat 과 같은 추출기를 쓴다. 여기만 옛 parseBudget 을 두면 "오천원"·"만 오천원"
   // 같은 표기에서 두 엔드포인트가 서로 다른 답을 낸다.
   const c = extractConditions(query);
