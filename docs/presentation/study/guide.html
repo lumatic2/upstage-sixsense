@@ -132,7 +132,7 @@
   <table>
     <tr><th>더 물어보면 나오는 값</th><th>답</th></tr>
     <tr><td>검수 3상태</td><td>확인 <strong>580</strong> · 제외 <strong>139</strong> · 대기 <strong>0</strong> (합 719)</td></tr>
-    <tr><td>화면에 나가는 메뉴 분해</td><td>본메뉴 <strong>428</strong> · 곁들임 <strong>152</strong></td></tr>
+    <tr><td>화면에 나가는 메뉴 분해</td><td>본메뉴 <strong>428</strong> · 사이드 <strong>152</strong></td></tr>
     <tr><td>본메뉴 가격</td><td>중앙값 <strong>12,000원</strong> (2,500 ~ 75,000원)</td></tr>
     <tr><td>정확도 향상 궤적</td><td>0% → 62.5% → 76.4% (<strong>API 재호출 없이</strong> 후처리 규칙만 2번 수정)</td></tr>
     <tr><td>사진 상태별 정확도</td><td>인쇄체·고해상 <strong>100%</strong> / 손글씨 64% / 저해상 20%</td></tr>
@@ -238,21 +238,21 @@
     정확한 서사는 "제품 3종"이 아니라 <em>"Solar를 생성·검증 2역할로 분리 활용"</em>이다.</p>
   </div>
   <div class="accent-panel">
-    <p style="margin:0 0 5px;">Upstage 공식 서사 = <strong>"모델이 아니라 문서 구조화가 병목"</strong>이다. 우리 파이프라인이 그 말을 메뉴판 사진에서 <em>실물로 증명</em>했다 (슬라이드 6에서 한 문장으로 명시).</p>
-    <p style="margin:0;">Upstage가 내세우는 또 하나 = <strong>"할루시네이션 없는 정확성(Precision)"</strong>(킥오프 p17). 우리 <em>환각 4겹 + 사람 검수 + 근거 판정</em>이 이 서사와 1:1이다 — "구조화가 병목"에 이 <strong>정확성 앵글</strong>을 한 문장 더 붙이면 Upstage 기여도 점수에 직결.</p>
+    <p style="margin:0 0 6px;">Upstage 공식 서사 ① = <strong>"모델이 아니라 문서 구조화가 병목"</strong>. 풀어 쓰면 — 기업이 AI를 문서에 쓸 때 진짜 어려운 건 <em>똑똑한 모델</em>이 아니라, 어지러운 문서(사진·스캔·PDF)를 <em>AI가 쓸 수 있는 깨끗한 데이터로 바꾸는 일</em>이라는 뜻이다. 우리는 그 어려운 지점(메뉴판 사진→가격 데이터)을 실물로 해냈다.</p>
+    <p style="margin:0;">Upstage 공식 서사 ② = <strong>"할루시네이션 없는 정확성(Precision)"</strong>(킥오프 p17). 우리 <em>환각 방지 4겹(사람 검수·근거 판정 포함)</em>이 이 가치와 <strong>그대로 겹친다.</strong> 발표에서 "Upstage가 파는 건 정확성 — 여기 우리 정확성 장치가 있다"로 연결하면 Upstage 기여도 점수에 직결.</p>
   </div>
 </section>
 
 <!-- 6. 환각 방지 -->
 <section>
   <div class="sec-head"><span class="sec-num">06</span><h2>환각을 막는 4겹 <span class="pill">차별성의 핵심</span></h2></div>
-  <p class="lead">이 서비스의 주장은 하나다 — <strong>"모델이 말한 것을 데이터가 검증한다."</strong> 원칙은 넷 다 같다: <em>근거가 없으면 문장을 버린다.</em></p>
+  <p class="lead">이 서비스의 주장은 하나다 — <strong>"모델이 말한 것을 데이터가 검증한다."</strong> 원칙은 넷 다 같다: <em>근거가 없으면 그 문장을 채택하지 않는다.</em></p>
   <table>
     <tr><th style="width:24%">겹</th><th>하는 일</th></tr>
     <tr><td><strong>① 검수 게이트</strong><br>AI는 후보, 사람이 통과</td><td>검수=확인이 아닌 행은 API가 안 내보낸다. 제보로 들어온 것도 예외 없다.</td></tr>
-    <tr><td><strong>② 근거 판정</strong><br>생성·검증 다른 모델</td><td>pro2가 이유를 쓰면 mini가 실제 메뉴·가격·도보와 대조해 <code>grounded / notGrounded / notSure</code> 판정. 근거 없으면 데이터 사실 문장으로 교체.</td></tr>
-    <tr><td><strong>③ 기억 검증</strong><br>없는 낱말 폐기</td><td>"마라탕버거"를 검색해도 기억 안 함. <strong>데이터 안에 실제로 있는 낱말만</strong> 남기고, 꺼낼 때 또 대조.</td></tr>
-    <tr><td><strong>④ 추천 칩 검증</strong><br>빈 결과 제안 금지</td><td>"도보 3분 안" 같은 후속 제안 전에, 그 조건으로 실제 결과가 나오는지 먼저 센다.</td></tr>
+    <tr><td><strong>② 근거 판정</strong><br>생성·검증 다른 모델</td><td>pro2가 이유를 쓰면 mini가 실제 메뉴·가격·도보와 대조해 <code>grounded / notGrounded / notSure</code> 판정. 근거가 없으면 그 문장을 채택하지 않고 데이터 사실 문장으로 바꾼다.</td></tr>
+    <tr><td><strong>③ 기억 검증</strong><br>없는 낱말 버림</td><td>"마라탕버거"를 검색해도 기억 안 함. <strong>데이터 안에 실제로 있는 낱말만</strong> 남기고, 꺼낼 때 또 대조.</td></tr>
+    <tr><td><strong>④ 추천 칩 검증</strong><br>빈 결과 제안 금지</td><td>추천 아래 "도보 3분 안", "예산 1만원" 같은 <strong>후속 제안 버튼(칩)</strong>을 띄우기 전에, 서버가 그 조건으로 <strong>실제 검색을 한 번 돌려</strong> 결과가 1곳이라도 나오는지 확인한다. 빈 화면으로 보내는 칩은 안 띄운다(<code>chips.js</code>).</td></tr>
   </table>
   <div class="warn-panel">
     <div class="t">★ 시연 주의 — "교체 배지"는 거의 안 뜬다 (당황 금지)</div>
@@ -277,8 +277,9 @@
     <p style="margin:0;">→ 그래서 수집 지침이 "잘 찍어 달라"가 아니라 <em>"해상도만 확보하면 된다"</em>가 됐고, 저해상은 <em>사람 검수가 잡는</em> 구조로 만들었다.</p>
   </div>
   <h3>재현성 — 이게 "깊이" 점수의 핵심</h3>
-  <p>정확도 측정에 Document Parse <strong>8회 호출, 약 $0.08.</strong> 그때 받은 <strong>응답 원본 5건을 파일로 박제</strong>해서,
-  후처리 규칙을 고칠 때마다 API를 다시 부르지 않고 같은 응답으로 재채점했다. 이 방식으로 <strong>API 재호출 없이 규칙만 두 번 고쳐 0% → 62.5% → 76.4%</strong>로 올렸다.</p>
+  <p>정확도 측정에 Document Parse를 <strong>8번 호출</strong>했고 비용은 <strong>약 $0.08.</strong> 이때 <strong>Parse가 돌려준 원본 응답(JSON) 5건을 파일로 저장해 뒀다.</strong>
+  덕분에 우리 처리 코드를 고칠 때마다 API를 다시 부를 필요 없이 <em>저장해 둔 같은 응답으로 다시 채점</em>할 수 있었다 — 돈도 안 들고, 새로 부르면 결과가 조금씩 달라질 위험도 없다.
+  실제로 이 방식으로 <strong>API를 한 번도 다시 부르지 않고 우리 코드만 두 번 고쳐 0% → 62.5% → 76.4%</strong>로 올렸다.</p>
   <div class="panel">
     <p style="margin:0;font-size:9.4pt;"><strong>1차 0건의 진실:</strong> 3장이 0건이었던 건 Document Parse 실패가 <em>아니라 우리 후처리 결함</em>이었다.
     OCR 텍스트가 <code>&lt;figure&gt;&lt;img alt="..."&gt;</code> 속성으로 오는데 초기 추출기가 태그를 통째로 버렸다. <strong>alt 승격</strong> 후 전 장의 텍스트를 확보했다.</p>
@@ -290,15 +291,17 @@
   <div class="sec-head"><span class="sec-num">08</span><h2>시행착오 5선 — "깊이"를 증명하는 재료</h2></div>
   <table>
     <tr><th style="width:26%">걸린 것</th><th>어떻게 했나</th></tr>
-    <tr><td><strong>곁들임 메뉴</strong><br>공기밥 1,000원이 "8천원 이하" 통과시킴</td><td>메뉴마다 본메뉴/곁들임 판정 → 예산 판정·개수 세기 모두 <strong>본메뉴로만</strong>. 규칙은 63개 케이스로 고정.</td></tr>
+    <tr><td><strong>사이드 메뉴</strong><br>공기밥 1,000원이 "8천원 이하"를 통과시킴</td><td>메뉴마다 본메뉴/사이드를 판정해 예산 판정·개수 세기를 모두 <strong>본메뉴로만</strong>. 자동 규칙 63케이스 + 사람이 예외만 뒤집음(아래 설명).</td></tr>
     <tr><td><strong>천원단위 소수 표기</strong><br>가격을 7.0·1.5로 적는 식당</td><td>1,000배 환산. OCR 공백 천단위(<code>4 000</code>, <code>21 ,000</code>)도 같은 자리에서 흡수.</td></tr>
-    <tr><td><strong>메뉴판을 그래프로 읽음</strong><br>"item_01 12,500원"이 화면에 나감</td><td>Document Parse가 차트로 오인해 뱉은 빈칸 이름을 <strong>받는 자리에서 폐기.</strong> 우리 버그가 아니라 읽어온 결과에 섞인 것이라 받는 쪽에서 막는 게 맞다.</td></tr>
+    <tr><td><strong>메뉴판을 그래프로 오인</strong><br>"item_01 12,500원"이 화면에 나감</td><td>Parse가 그 구역을 <strong>"차트"로 표시</strong>하고 메뉴 이름을 <code>item_01</code> 같은 <strong>기계 자동 이름</strong>으로 붙였다. 우리 코드가 이 두 신호(차트 표시 + item_NN 이름)를 알아보고 그 줄을 걸러 시트에 넣지 않는다.</td></tr>
     <tr><td><strong>LLM 기억 오염</strong><br>"마라탕버거"를 관심어로 저장</td><td>기억할 낱말을 실제 메뉴·식당 이름과 대조해 통과한 것만 남김. 꺼낼 때 또 대조.</td></tr>
     <tr><td><strong>추천 이유의 근거</strong><br>Solar가 쓴 이유에 없는 말이 섞임</td><td>실제 데이터와 한 줄씩 대조. 대조는 <strong>다른 모델</strong>이 맡고, 근거 없으면 데이터 사실로 교체.</td></tr>
   </table>
   <div class="accent-panel">
-    <p style="margin:0;"><strong>곁들임 판정의 설계 원칙</strong>(디테일 물으면): 규칙엔 <em>어느 가게에나 통하는 것만</em> 담고(술·만두류·<code>100g</code> 단가·반접시),
-    한 가게 사정은 <em>시트 비고 열로 뒤집는다</em>(모듬튀김 1인, Green Salad). "튀김 1인"을 규칙에 넣었으면 다른 가게 본메뉴까지 끌려갔다.</p>
+    <p style="margin:0;"><strong>사이드 판정은 "자동 + 사람" 2단이다</strong>(사람이 전부 손으로 뺀 게 아니다):
+    ① <strong>자동 규칙</strong>(<code>side-menu.js</code>, 63케이스)이 <em>어느 가게에나 사이드인 것</em>을 먼저 걸러낸다 — 술·만두류·공기밥·<code>100g</code> 단가 표기·반접시.
+    ② 그 규칙이 <strong>틀린 줄만</strong>, 검수하는 사람이 시트 <code>비고</code> 열로 뒤집는다 — 예: '모듬튀김 1인'(같은 집에 온전한 게 따로 있음), 'Green Salad'(같은 집 'Steak Salad'는 한 끼).
+    원칙: <em>어느 가게에나 통하는 것만 규칙에, 한 가게만의 예외는 사람이.</em> '튀김 1인'을 규칙에 넣었다면 다른 가게 본메뉴까지 잘못 끌려갔을 것.</p>
   </div>
 </section>
 
@@ -330,7 +333,7 @@
     <tr><td>기능 격리</td><td>추천이 안 되어도 <strong>지도·학식은 보인다</strong></td></tr>
   </table>
   <div class="panel">
-    <p style="margin:0;font-size:9.4pt;"><strong>검증(매 배포마다):</strong> 곁들임 판정 63케이스 · 조건 추출 35 · 추천 칩 검증 18 · 배포 사이트 실브라우저 훑기 16(smoke).
+    <p style="margin:0;font-size:9.4pt;"><strong>검증(매 배포마다):</strong> 사이드 판정 63케이스 · 조건 추출 35 · 추천 칩 검증 18 · 배포 사이트 실브라우저 훑기 16(smoke).
     결함을 일부러 주입해 smoke가 실제 FAIL 하는 것까지 확인(허수 테스트 방지). 정본 = <code>verification/matrix.md</code>.</p>
   </div>
 </section>
@@ -366,9 +369,9 @@
   </table>
   <div class="accent-panel">
     <div class="t">검색 경로 — 세 API가 하는 일이 다르다 (헷갈리면 안 됨)</div>
-    <p style="margin:0;font-size:9.4pt;">① <strong><code>/api/chat</code></strong> = 1차 검색. solar-pro2가 문장을 조건으로 구조화 + 대화 답변 + <strong>제안 칩</strong>(서버가 실데이터로 검증한 것만).
-    ② <strong><code>/api/recommend</code></strong> = Top3 추천. Solar가 이유 쓰고 <strong>solar-mini가 근거 판정.</strong>
-    ③ <strong><code>/api/parse-query</code></strong> = <strong>폴백.</strong> chat이 죽으면 정규식으로 조건만 뽑아 검색을 살린다(<code>source</code> 필드로 경로 표시).</p>
+    <p style="margin:0;font-size:9.4pt;">① <strong><code>/api/chat</code></strong> = 문장을 넣으면 <strong>가장 먼저 부르는 검색 두뇌.</strong> solar-pro2가 문장을 조건(예산·도보·태그)으로 바꾸고, 대화 답변과 후속 제안 칩을 만든다.
+    ② <strong><code>/api/recommend</code></strong> = 그 조건으로 실데이터에서 <strong>Top3를 고르고</strong>, Solar가 추천 이유를 쓰면 <strong>solar-mini가 데이터와 대조해 채점</strong>한다.
+    ③ <strong><code>/api/parse-query</code></strong> = <strong>비상용(폴백).</strong> chat이 느리거나 죽으면 AI 없이 정규식(패턴 매칭)으로 조건만 뽑아 검색을 살린다. 어느 길로 갔는지는 <code>source</code> 필드에 남는다.</p>
   </div>
   <h3>제보 파이프라인 6단계 (검수 주체 = 운영진)</h3>
   <div class="panel" style="font-family:Consolas,monospace;font-size:9.4pt;line-height:1.55;color:var(--ink);">
@@ -399,7 +402,7 @@
     <tr class="star-row" style="background:var(--accent-soft)"><td><strong>정보 처리 파이프라인 설계·관리</strong></td><td><strong>20</strong></td><td>입력 3갈래→검수 한 문→서비스, 모든 행이 출처·검수·촬영일 보유 (5·6쪽 / <code>/about.html</code> 흐름도 + 시트 실물)</td></tr>
     <tr class="star-row" style="background:var(--accent-soft)"><td><strong>정보 처리의 깊이·정교성</strong></td><td><strong>15</strong></td><td>환각 4겹·정확도 해석(해상도 지배변수)·시행착오 (8·9·10쪽 / <code>verification/matrix.md</code>)</td></tr>
     <tr class="star-row" style="background:var(--accent-soft)"><td><strong>목적에 적합한 Upstage 적용</strong></td><td><strong>10</strong></td><td>4자리 표 + <strong>"학식엔 안 씀"</strong>(가려 쓴 판단) (7쪽)</td></tr>
-    <tr class="star-row" style="background:var(--accent-soft)"><td><strong>기술 적용 결과의 기여도</strong></td><td><strong>10</strong></td><td>모델 선택 실측(mini 환각→pro2)·응답 박제 재현성 0%→62.5%→76.4%</td></tr>
+    <tr class="star-row" style="background:var(--accent-soft)"><td><strong>기술 적용 결과의 기여도</strong></td><td><strong>10</strong></td><td>모델 선택 실측(mini 환각→pro2)·응답 보관 재현성 0%→62.5%→76.4%</td></tr>
     <tr><td>실용성·활용 가능성</td><td><strong>10</strong></td><td>라이브 시연 (11쪽 / sixsense.askewly.com)</td></tr>
     <tr><td>서비스 논리의 타당성</td><td><strong>5</strong></td><td>문제→해법→검증 일관 (2·3쪽)</td></tr>
     <tr><td>임팩트·확장성</td><td><strong>5</strong></td><td>같은 파이프라인, 자연과학캠 확장 (13쪽)</td></tr>
@@ -520,7 +523,7 @@
     <div class="q">"왜 Parse만? Classify·Extract는 안 썼나요?"<span class="star">★ 현직자 예상</span></div>
     <div class="body">
       <div class="row"><div class="tag trap">함정</div><div class="rowtext">"Extract 쓸 줄 몰라서"로 들리면 감점. "필요 없어서, 우리가 더 정확히 했다" 프레임으로.</div></div>
-      <div class="row"><div class="tag ans">답</div><div class="rowtext">메뉴판은 Parse의 <strong>좌표+텍스트만으로 충분</strong>하다. Extract가 할 '필드 추출'(가격·메뉴명 정리)은 우리가 <strong>도메인 특화 후처리 규칙</strong>으로 직접 했다 — Parse가 준 날것을 <em>메뉴판이라는 우리 문제에만 맞춘 규칙 코드</em>로 다듬는 단계다(<code>7.0→7,000</code> 환산 · <code>4 000</code> 공백 흡수 · 공기밥=곁들임 63케이스 · 차트 오인 빈칸 폐기). 범용 추출 모델보다 이 도메인에선 우리 규칙이 더 정확·투명하고 비용 0. 학식과 같은 <strong>목적 적합성</strong> 판단.</div></div>
+      <div class="row"><div class="tag ans">답</div><div class="rowtext">메뉴판은 Parse의 <strong>좌표+텍스트만으로 충분</strong>하다. Extract가 할 '필드 추출'(가격·메뉴명 정리)은 우리가 <strong>도메인 특화 후처리 규칙</strong>으로 직접 했다 — Parse가 준 날것을 <em>메뉴판이라는 우리 문제에만 맞춘 규칙 코드</em>로 다듬는 단계다(<code>7.0→7,000</code> 환산 · <code>4 000</code> 공백 흡수 · 공기밥=사이드 63케이스 · 차트 오인 줄 걸러냄). 범용 추출 모델보다 이 도메인에선 우리 규칙이 더 정확·투명하고 비용 0. 학식과 같은 <strong>목적 적합성</strong> 판단.</div></div>
     </div>
   </div>
 

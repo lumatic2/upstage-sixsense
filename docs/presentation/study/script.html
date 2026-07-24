@@ -187,15 +187,15 @@
   <div class="slide mine">
     <div class="slide-head"><span class="snum">8</span><span class="stitle">07 환각 방지 4겹 ★ 차별성</span><span class="stime">0:50</span><span class="who mine">전유성</span></div>
     <div class="slide-body">
-      <p class="gist"><b>4겹:</b> ①검수 게이트 ②근거 판정(다른 모델) ③기억 검증(마라탕버거) ④추천 칩 검증. 원칙 하나 = 근거 없으면 버린다.</p>
-      <p class="say">"이 서비스의 차별성은 한 문장입니다 — <span class="hl">근거 없는 말을 내보내지 않는다.</span> 장치가 네 겹입니다. 사람이 확인한 데이터만 쓰는 검수 게이트. 모델이 쓴 추천 이유를 다른 모델이 대조해 근거가 없으면 그 문장을 버리고 데이터 팩트로 갈아끼우는 근거 판정. 사용자가 '마라탕버거' 같은 없는 메뉴를 말하면 기억에서 폐기하는 기억 검증. 그리고 '도보 3분 안으로' 같은 제안을 띄우기 전에 실제 결과가 나오는지 먼저 세어보는 추천 검증. 넷 다 원칙은 같습니다 — <span class="hl">근거가 없으면 문장을 버립니다.</span>"</p>
+      <p class="gist"><b>4겹:</b> ①검수 게이트 ②근거 판정(다른 모델) ③기억 검증(마라탕버거) ④추천 칩 검증. 원칙 하나 = 근거 없으면 채택 안 함.</p>
+      <p class="say">"이 서비스의 차별성은 한 문장입니다 — <span class="hl">근거 없는 말을 내보내지 않는다.</span> 장치가 네 겹입니다. 사람이 확인한 데이터만 쓰는 검수 게이트. 모델이 쓴 추천 이유를 다른 모델이 대조해 근거가 없으면 그 문장을 채택하지 않고 데이터 팩트로 갈아끼우는 근거 판정. 사용자가 '마라탕버거' 같은 없는 메뉴를 말하면 기억에서 지우는 기억 검증. 그리고 '도보 3분 안으로' 같은 제안을 띄우기 전에 실제 결과가 나오는지 먼저 세어보는 추천 검증. 넷 다 원칙은 같습니다 — <span class="hl">근거가 없으면 그 문장을 채택하지 않습니다.</span>"</p>
     </div>
   </div>
 
   <div class="slide mine">
     <div class="slide-head"><span class="snum">9</span><span class="stitle">08 정확도·재현성 ★ 15점</span><span class="stime">0:45</span><span class="who mine">전유성</span></div>
     <div class="slide-body">
-      <p class="gist"><b>핵심:</b> 76.4% 평균 · 지배변수 = 해상도(100% vs 20%) · 응답 박제 → 재호출 없이 0→62.5→76.4% · $0.08.</p>
+      <p class="gist"><b>핵심:</b> 76.4% 평균 · 지배변수 = 해상도(100% vs 20%) · 원본 응답 저장 → 재호출 없이 0→62.5→76.4% · $0.08.</p>
       <p class="say">"정확하게 재봤습니다. 평균 76.4%인데, 평균보다 중요한 건 <span class="hl">무엇이 정확도를 가르느냐</span>입니다. 인쇄체에 해상도가 충분하면 100%, 저해상 흐림이면 20% — 지배 변수는 해상도 하나였습니다. 그래서 저해상 사진은 사람 검수가 잡는 구조로 만들었습니다. 그리고 재현성 — API 응답 원본을 저장해두고, <span class="hl">재호출 없이 후처리 규칙만 고쳐가며 0%에서 62.5%, 76.4%로</span> 올렸습니다. 같은 실험을 언제든 다시 돌릴 수 있고, 비용은 전부 합쳐 8센트였습니다."</p>
     </div>
   </div>
@@ -310,7 +310,7 @@
     <tr class="star-row"><td><strong>"전용 Groundedness 모델인가요?" ★정직성</strong></td><td>아니다. 전용 모델 제공 종료(<code>/v1/models</code> 실측). 같은 계약을 분리된 solar-mini 판정자로. "제품 3종"이 아니라 "Solar 생성·검증 2역할".</td></tr>
     <tr><td>"Solar 느리거나 죽으면?"</td><td>0.7~1.3초, 타임아웃 시 정규식 폴백. <code>source</code> 필드로 경로 투명. mini→pro2 채택도 실측.</td></tr>
     <tr><td>"왜 DB 대신 시트?"</td><td>팀 4명 협업이라. 계정·어드민 없이 누구나 고침. 700행엔 시트가 최소 비용, 커지면 DB로(읽기 경로 하나라 교체 쉬움).</td></tr>
-    <tr class="star-row"><td><strong>"왜 Parse만? Extract·Classify는?" ★현직자</strong></td><td>메뉴판은 Parse 좌표+텍스트로 충분. Extract가 할 필드 정리는 <strong>도메인 특화 후처리 규칙</strong>으로 직접(7.0→7,000·곁들임 63케이스·차트 폐기) — 더 정확·비용 0. "필요 없어서 우리가 더 정확히" 프레임.</td></tr>
+    <tr class="star-row"><td><strong>"왜 Parse만? Extract·Classify는?" ★현직자</strong></td><td>메뉴판은 Parse 좌표+텍스트로 충분. Extract가 할 필드 정리는 <strong>도메인 특화 후처리 규칙</strong>으로 직접(7.0→7,000·사이드 63케이스·차트 줄 걸러냄) — 더 정확·비용 0. "필요 없어서 우리가 더 정확히" 프레임.</td></tr>
     <tr><td>"킥오프의 Supabase·Next.js는 왜 안?"</td><td>문제 크기에 맞춰 고름. 5화면·얕은 상태라 프레임워크 비용 회수 안 됨. 시트가 곧 어드민(팀 협업·검수). 커지면 옮기면 됨.</td></tr>
   </table>
   <div class="warn-panel">
