@@ -109,12 +109,18 @@ export default async function handler(req, res) {
     else { walkRelaxed = true; candidates.sort((a, b) => (a.walkMin ?? 99) - (b.walkMin ?? 99)); }
   }
 
-  // 랭킹: 태그 일치 > 예산 내 메뉴 수 > 도보 시간. 이 셋이 전부다 —
+  // 랭킹: 태그 일치 > 예산 활용도 > 예산 내 메뉴 수 > 도보 시간.
   // 사용자가 말한 조건만으로 순서가 정해지므로 "왜 이 집이 위인가"에 항상 답할 수 있다.
-  // (계수: 메뉴 수 1개 = 10점, 도보 1분 = 1점 → 도보(최대 99)가 메뉴 수를 못 뒤집는다.)
+  // (계수: 활용도 1.0 = 300점, 메뉴 수 1개 = 10점, 도보 1분 = 1점 → 도보(최대 99)가 메뉴 수를 못 뒤집는다.)
   const tagSet = new Set(tags);
+  // 예산 활용도: 이 집에서 예산으로 먹을 수 있는 가장 비싼 한 끼가 예산에 가까울수록 가점.
+  // 예산을 알차게 쓰는 집(=상위 식당)을 위로 — 예산을 높게 부르면 저가 분식이 메뉴 수만으로
+  // 상단을 차지하던 문제를 고친다(2026-07-25 사용자 확정). 예산은 사용자가 준 명시 조건이라
+  // ADR-0004(명시 조건만으로 정렬)와 어긋나지 않는다. budget=null 이면 0 → 기존 순서 유지.
+  // menus 는 예산 내 오름차순이라 마지막 원소가 예산 내 최고가다.
+  const util = (p) => (budget ? p.menus[p.menus.length - 1].price / budget : 0);
   // 메뉴 수는 본메뉴만 센다 — 음료 목록이 긴 집이 선택지 많은 집으로 둔갑하지 않도록.
-  const score = (p) => p.tags.filter((t) => tagSet.has(t)).length * 1000 + Math.min(p.mainCount, 30) * 10 - (p.walkMin ?? 99);
+  const score = (p) => p.tags.filter((t) => tagSet.has(t)).length * 1000 + util(p) * 300 + Math.min(p.mainCount, 30) * 10 - (p.walkMin ?? 99);
   candidates.sort((a, b) => score(b) - score(a));
   const picks = candidates.slice(0, 3);
 
