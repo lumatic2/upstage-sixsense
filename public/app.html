@@ -288,7 +288,7 @@ $("#profileClear").onclick = (e) => {
 const blankProfile = () => ({ v: 1, foods: [], last: null, n: 0 });
 function noteConditions(s) {
   const p = loadProfile() ?? blankProfile();
-  p.last = { budget: s.budget, walkMax: s.walkMax, tags: s.tags };
+  p.last = { budget: s.budget, walkMax: s.walkMax, tags: s.tags, category: s.category };
   saveProfile(p);
 }
 
@@ -318,7 +318,7 @@ function forgetProfile() {
 
 let DATA = { restaurants: [], menus: [], cafeteria: [] };
 let MAP = null, MARKERS = [];
-let state = { budget: null, walkMax: null, tags: [] };
+let state = { budget: null, walkMax: null, tags: [], category: null };
 /* 검색 뒤 지도에 남길 식당 id 집합. `null` = 아직 검색 안 함(전체 표시).
    검색을 하고도 전부 찍혀 있으면 "골라줬다"가 화면에서 안 보인다 — 카드는 3곳인데 지도는
    23개가 꽂혀 있었다(사용자 지적 2026-07-22). 빈 Set 은 "조건에 맞는 곳 0" 이라는 사실이므로
@@ -383,7 +383,7 @@ function greetRevisit() {
   el.querySelector('[data-act="cond"]')?.addEventListener("click", () => {
     el.querySelector(".cb-act").remove();
     bubble("user", esc(cond));
-    state = { budget: last.budget ?? null, walkMax: last.walkMax ?? null, tags: last.tags ?? [] };
+    state = { budget: last.budget ?? null, walkMax: last.walkMax ?? null, tags: last.tags ?? [], category: last.category ?? null };
     $("#parsed").textContent = `조건: ${cond}`;
     render(); renderMarkers(); loadPicks();
   });
@@ -400,7 +400,7 @@ function applyUrlQuery() {
   const q = u.get("q"), b = Number(u.get("budget"));
   if (q) $("#q").value = q;
   if (b > 0) {
-    state = { budget: b, walkMax: null, tags: [] };
+    state = { budget: b, walkMax: null, tags: [], category: null };
     $("#parsed").textContent = `조건: 예산 ${b.toLocaleString()}원 이하`;
     render(); renderMarkers(); loadPicks();
   } else if (q) {
@@ -564,6 +564,7 @@ function condText(s) {
   const bits = [];
   if (s.budget) bits.push(`예산 ${won(s.budget)} 이하`);
   if (s.walkMax) bits.push(`도보 ${s.walkMax}분`);
+  if (s.category) bits.push(s.category);
   if (s.tags?.length) bits.push(s.tags.join("·"));
   return bits.join(" · ");
 }
@@ -596,15 +597,16 @@ async function ask({ q = null, budget = null, conditions = null }) {
       wait.textContent = r.reply;
       history.push({ role: "assistant", text: r.reply });
       state = r.conditions
-        ? { budget: r.conditions.budget ?? null, walkMax: r.conditions.walkMax ?? null, tags: r.conditions.tags ?? [] }
-        : { budget: null, walkMax: null, tags: [] };
+        ? { budget: r.conditions.budget ?? null, walkMax: r.conditions.walkMax ?? null, tags: r.conditions.tags ?? [], category: r.conditions.category ?? null }
+        : { budget: null, walkMax: null, tags: [], category: null };
       searched = Boolean(r.search);
       noteFoods(r.foods);   // 서버가 데이터로 검증한 것만 들어온다
       sugChips(r.chips, wait);
     } else if (conditions) {
       // 칩으로 들어온 턴은 조건이 이미 검증돼 있다 — Solar 가 죽어도 그 조건으로 그냥 간다.
       wait.className = "cb ai";
-      state = { budget: conditions.budget ?? null, walkMax: conditions.walkMax ?? null, tags: conditions.tags ?? [] };
+      // 칩은 category 를 실어 보내지 않는다 — 직전 분류 조건을 이어받아 "일식" 필터가 칩 클릭에 풀리지 않게 한다.
+      state = { budget: conditions.budget ?? null, walkMax: conditions.walkMax ?? null, tags: conditions.tags ?? [], category: conditions.category ?? state.category ?? null };
       wait.textContent = condText(state) ? `${condText(state)} 조건으로 찾아볼게요.` : "찾아볼게요.";
     } else {
       // /api/chat 자체가 죽어도 검색은 되게 — 기존 구조화 경로로 떨어진다.
@@ -614,15 +616,15 @@ async function ask({ q = null, budget = null, conditions = null }) {
           method: "POST", headers: { "content-type": "application/json" },
           body: JSON.stringify({ query: q }),
         })).json();
-        state = { budget: p.budget ?? null, walkMax: p.walkMax ?? null, tags: p.tags ?? [] };
+        state = { budget: p.budget ?? null, walkMax: p.walkMax ?? null, tags: p.tags ?? [], category: p.category ?? null };
         wait.textContent = condText(state) ? `${condText(state)} 조건으로 찾아볼게요.` : "조건을 읽지 못해 전체를 보여드립니다.";
       } catch {
-        state = { budget: null, walkMax: null, tags: [] };
+        state = { budget: null, walkMax: null, tags: [], category: null };
         wait.textContent = "조건 해석에 실패해 전체를 보여드립니다.";
       }
     }
   } else {
-    state = { budget, walkMax: null, tags: [] };
+    state = { budget, walkMax: null, tags: [], category: null };
   }
 
   $("#parsed").textContent = condText(state) ? `조건: ${condText(state)}` : "";
@@ -712,7 +714,7 @@ async function loadPicks(wait = null, { record = true } = {}) {
   try {
     const d = await (await fetch("/api/recommend", {
       method: "POST", headers: { "content-type": "application/json" },
-      body: JSON.stringify({ budget: state.budget, walkMax: state.walkMax, tags: state.tags }),
+      body: JSON.stringify({ budget: state.budget, walkMax: state.walkMax, tags: state.tags, category: state.category }),
     })).json();
     if (record) noteConditions(state);
     // 지도를 추천한 곳만 남긴다 — 카드와 마커가 같은 것을 가리켜야 "골라줬다"가 보인다.
@@ -798,7 +800,7 @@ function emptyState() {
 document.addEventListener("click", (e) => {
   const btn = e.target.closest("[data-raise]");
   if (!btn) return;
-  state = { budget: btn.dataset.raise ? Number(btn.dataset.raise) : null, walkMax: null, tags: [] };
+  state = { budget: btn.dataset.raise ? Number(btn.dataset.raise) : null, walkMax: null, tags: [], category: state.category ?? null };
   $("#parsed").textContent = state.budget ? `조건: 예산 ${state.budget.toLocaleString()}원 이하` : "";
   render(); renderMarkers(); loadPicks();
 });

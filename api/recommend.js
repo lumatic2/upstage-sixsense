@@ -74,7 +74,7 @@ async function solarReasons(picks, conditions, key) {
 export default async function handler(req, res) {
   res.setHeader("access-control-allow-origin", "*");
   if (req.method !== "POST") return res.status(405).json({ error: "POST only", code: "method_not_allowed" });
-  const { budget = null, walkMax = null, tags = [] } = req.body ?? {};
+  const { budget = null, walkMax = null, tags = [], category = null } = req.body ?? {};
   let data;
   try { data = await loadSheetData(); }
   catch { return res.status(200).json({ picks: [], cafeteria: null, error: "data unavailable" }); }
@@ -90,6 +90,10 @@ export default async function handler(req, res) {
     // 카페·디저트는 "오늘 뭘 먹지" 의 후보가 아니다(2026-07-23 사용자 확정). 음료만 곁들임으로
     // 빼면 디저트 몇 개로 한 끼 집들과 나란히 서는데, 애초에 끼니를 고르는 자리가 아니다.
     .filter((r) => !/카페|디저트/.test(r.category ?? ""))
+    // 사용자가 업종(일식·한식 등)을 지정하면 그 분류만 남긴다 — 태그(혼밥·초밥)와 달리
+    // 가점이 아니라 필터다("가점이지 필터가 아니다" 재검토, 2026-07-25). 시트 분류값이
+    // "일식/스시"처럼 합성이라 substring 으로 맞춘다. category=null 이면 전체 통과.
+    .filter((r) => !category || (r.category ?? "").includes(category))
     .map((r) => {
     const menus = data.menus
       .filter((m) => m.restaurant_id === r.id && !m.isSide && (!budget || m.price <= budget))
@@ -139,7 +143,7 @@ export default async function handler(req, res) {
   const caf = cafRow ? { ...cafRow, cafeteria: officialName(cafRow.cafeteria) ?? cafRow.cafeteria } : null;
   if (caf) caf.place = CAFETERIAS.find((c) => c.name === caf.cafeteria)?.place ?? null;
 
-  const conditions = { budget, walkMax, tags };
+  const conditions = { budget, walkMax, tags, category };
   let reasonSource = "template";
   let reasonMap = new Map();
   const key = process.env.UPSTAGE_API_KEY;

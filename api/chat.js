@@ -107,7 +107,20 @@ export function extractConditions(message) {
       }
       return false;
     });
-  return { budget, walkMax, tags };
+  // 음식 분류(category)는 태그와 별개다 — 태그는 상황·메뉴(혼밥·초밥), 분류는 업종(일식·한식).
+  // 시트 분류값이 "일식/스시"처럼 합성이라 substring 으로 잡고, 태그와 같은 어절-앞머리 규칙으로
+  // 합성어 뒤꼬리("재일식품"의 일식)를 버린다. 한 가게는 한 업종이라 먼저 걸린 하나만 쓴다.
+  const category = ["한식", "중식", "일식", "양식", "분식", "아시안"]
+    .find((c) => {
+      let i = s.indexOf(c);
+      while (i !== -1) {
+        const prev = i > 0 ? s.charCodeAt(i - 1) : 0;
+        if (!(prev >= 0xac00 && prev <= 0xd7a3)) return true;
+        i = s.indexOf(c, i + 1);
+      }
+      return false;
+    }) ?? null;
+  return { budget, walkMax, tags, category };
 }
 
 /** Solar 가 죽어도 대화가 멈추지 않게 — 위 추출값으로 검색은 걸리게 한다. */
@@ -118,7 +131,7 @@ function regexFallback(message) {
       ? `${c.budget.toLocaleString()}원 기준으로 찾아볼게요.`
       : "조건을 정확히 읽지 못했어요. 가진 데이터 안에서 찾아볼게요.",
     conditions: c,
-    search: Boolean(c.budget || c.walkMax || c.tags.length),
+    search: Boolean(c.budget || c.walkMax || c.tags.length || c.category),
     source: "fallback",
   };
 }
@@ -294,8 +307,8 @@ export default async function handler(req, res) {
     // 조건은 **코드 추출만** 쓴다. 모델 값을 폴백으로 두었더니 숫자가 하나도 없는 오타 입력
     // ("망원 이하로 찾아줘")에 8,000원 같은 그럴듯한 금액을 지어냈다(2026-07-21 3차 검증).
     // 없는 조건은 없다고 두는 편이 지어낸 조건으로 검색하는 것보다 낫다.
-    const { budget, walkMax, tags } = code0;
-    const search = Boolean(budget || walkMax || tags.length);
+    const { budget, walkMax, tags, category } = code0;
+    const search = Boolean(budget || walkMax || tags.length || category);
 
     // 검색을 안 거는 턴에서는 말과 화면이 어긋날 수 있는 두 가지를 지운다:
     //  ① "N원 이하…" — 사용자가 금액을 말한 적 없는데 모델이 지어낸 예산 문장
@@ -315,7 +328,7 @@ export default async function handler(req, res) {
 
     return res.status(200).json({
       reply: reply || "다시 한 번 말씀해 주시겠어요?",
-      conditions: search ? { budget, walkMax, tags } : null,
+      conditions: search ? { budget, walkMax, tags, category } : null,
       search,
       chips,
       // 이번 턴에서 데이터 대조를 통과한 관심어. 저장은 브라우저가 한다.

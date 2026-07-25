@@ -51,17 +51,27 @@ const CASES = [
   ["생선구이 먹고싶어", null, null, ["생선"]],
   ["치킨 먹고싶어", null, null, ["치킨"]],
   ["8천원 이하 혼밥 초밥", 8000, null, ["혼밥", "초밥"]],
+  // 분류(category) — 태그와 별개. 5번째 원소로 기대 분류(없으면 생략=null).
+  ["15000원 이하 일식", 15000, null, [], "일식"],
+  ["일식 먹고싶어", null, null, [], "일식"],
+  ["1만원 한식", 10000, null, [], "한식"],
+  ["도보 5분 중식", null, 5, [], "중식"],
+  ["양식 데이트", null, null, ["데이트"], "양식"],
+  ["분식 혼밥 5천원", 5000, null, ["혼밥"], "분식"],
+  // 어절 앞머리만 — 합성어 뒤꼬리("재일식품")는 분류로 잡지 않는다
+  ["재일식품 문의", null, null, [], null],
 ];
 
 let fail = 0;
-for (const [input, budget, walkMax, tags] of CASES) {
+for (const [input, budget, walkMax, tags, category = null] of CASES) {
   const c = extractConditions(input);
   const ok = c.budget === budget && c.walkMax === walkMax
-    && JSON.stringify(c.tags) === JSON.stringify(tags);
+    && JSON.stringify(c.tags) === JSON.stringify(tags)
+    && (c.category ?? null) === category;
   if (!ok) {
     console.error(`FAIL  ${input}`);
-    console.error(`      기대 budget=${budget} walk=${walkMax} tags=${JSON.stringify(tags)}`);
-    console.error(`      실제 budget=${c.budget} walk=${c.walkMax} tags=${JSON.stringify(c.tags)}`);
+    console.error(`      기대 budget=${budget} walk=${walkMax} tags=${JSON.stringify(tags)} category=${category}`);
+    console.error(`      실제 budget=${c.budget} walk=${c.walkMax} tags=${JSON.stringify(c.tags)} category=${c.category}`);
     fail++;
   }
 }
