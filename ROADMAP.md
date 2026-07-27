@@ -1,14 +1,16 @@
 # ROADMAP
 
-> 마지막 업데이트: 2026-07-22
-> 상태: demoday-run horizon
+> 마지막 업데이트: 2026-07-27
+> 상태: **demoday-run horizon completed(closed)** — 데모데이 2026-07-25 종료. active milestone 0.
+> **PARK (2026-07-27)**: 대회 종료로 개발을 의도적으로 정지했다 (데모데이 2026-07-25 · 미수상 · `archive/reports/2026-07-25-demoday-close.md`). **제품은 완결됐고 멈춘 것은 개발이다** — 라이브 `sixsense.askewly.com` 는 유지비 0으로 계속 서빙하며 팀 공유 자산(GitHub public)으로 남는다. active milestone 0 은 방치가 아니라 완료다.
+> **부활 조건** (하나라도 발생하면 milestone 을 다시 연다): ① 라이브가 죽거나 Upstage API 키 만료로 파싱·추천이 멈춘다 → 복구 또는 정적 데모 모드로 강등 ② 자연캠 확장을 하기로 결정한다 (현재 계획 없음) ③ 팀원이 이식·재사용을 문의한다 → `docs/HANDOFF.md` 갱신. 그때까지 이 레포에 새 milestone 을 만들지 않는다.
 > 북극성: 정해진 예산 안에서 오늘 뭘 먹을지 — 학식과 주변 식당을 한 판에 놓고 정해주는 서비스
 > line budget: <=150
 
 ## Current Horizon
 
-<!-- harness:goal id="demoday-run" -->
-목표: 7/18 "각자 서비스" 전환 이후 남은 전부를 닫는다 — 실데이터 파이프라인 가동, 개인 버전 웹서비스 완성, **내 버전을 미팅 제출 후보로 완결하고 팀에 공유**. (상세 plan → `plans/horizons/demoday-run.md`)
+<!-- harness:goal id="demoday-run" status="completed" -->
+목표(종료): 7/18 "각자 서비스" 전환 이후 남은 전부를 닫는다 — 실데이터 파이프라인 가동, 개인 버전 웹서비스 완성, **내 버전을 미팅 제출 후보로 완결하고 팀에 공유**. **2026-07-25 closed** — 데모데이에서 라이브 시연이 무대에서 실동작(영상 대체 아님)했고 배포 URL·팀 공유(GitHub public·`docs/HANDOFF.md`)까지 충족. 결과는 미수상이며, 원인은 제품이 아니라 발표 전달(시간 초과로 파이프라인·깊이 구간 스킵)이다 — 상세 `archive/reports/2026-07-25-demoday-close.md`, 대회 회고 정본은 `~/projects/ai-contest/contests/upstage-doc-challenge/retro-2026-07-25.md`(플레이북 v2.23 으로 역주입 완료). (상세 plan → `plans/horizons/demoday-run.md`)
 
 일정 제약: **팀 합의 미팅 2026-07-23(목) 21:00 = 실질 마감** · 빌드업 마감 7/24 · 데모데이 7/25.
 본선 조립본(hanipmap 이식) 전제는 폐기 — `docs/adr/0003-no-assembly-build.md`.
